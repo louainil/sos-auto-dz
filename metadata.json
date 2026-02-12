@@ -1,0 +1,7 @@
+{
+  "name": "SOS Auto DZ - Services & Parts",
+  "description": "A comprehensive platform for connecting clients with mechanics, spare parts shops, and towing services across Algeria. Features AI-powered diagnostics and location-based searching.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

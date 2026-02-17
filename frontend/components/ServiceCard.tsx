@@ -1,6 +1,7 @@
 import React from 'react';
-import { Star, Phone, MapPin, Wrench, Truck, Clock } from 'lucide-react';
+import { Star, Phone, MapPin, Wrench, Truck, Clock, MessageCircle } from 'lucide-react';
 import { ServiceProvider, UserRole } from '../types';
+import { Language, translations } from '../translations';
 import DistanceIndicator from './DistanceIndicator';
 import { WILAYAS } from '../constants';
 
@@ -8,14 +9,16 @@ interface ServiceCardProps {
   provider: ServiceProvider;
   userLocation: { lat: number; lng: number } | null;
   onBook: (provider: ServiceProvider) => void;
+  language: Language;
 }
 
-const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBook }) => {
+const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBook, language }) => {
   const providerWilaya = WILAYAS.find(w => w.id === provider.wilayaId);
+  const t = translations[language];
 
   // Helper to check if open
   const getStatus = () => {
-    if (!provider.isAvailable) return { text: 'Unavailable', color: 'bg-red-500', isBookable: false };
+    if (!provider.isAvailable) return { text: t.unavailable, color: 'bg-red-500', isBookable: false };
     
     // Check Schedule
     if (!provider.workingDays || !provider.workingHours) return { text: 'Unknown', color: 'bg-slate-400', isBookable: true };
@@ -32,14 +35,14 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBoo
     const endValue = endH * 60 + endM;
 
     // Check if today is a working day
-    if (!provider.workingDays.includes(currentDay)) return { text: 'Closed Today', color: 'bg-slate-500', isBookable: true };
+    if (!provider.workingDays.includes(currentDay)) return { text: t.closedToday, color: 'bg-slate-500', isBookable: true };
 
     // Check time range
     if (currentTimeValue >= startValue && currentTimeValue <= endValue) {
-      return { text: 'Open Now', color: 'bg-green-500', isBookable: true };
+      return { text: t.openNow, color: 'bg-green-500', isBookable: true };
     }
 
-    return { text: 'Closed Now', color: 'bg-slate-500', isBookable: true };
+    return { text: t.closedNow, color: 'bg-slate-500', isBookable: true };
   };
 
   const status = getStatus();
@@ -145,17 +148,33 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBoo
         </div>
 
         <div className="flex gap-2 mt-auto">
-          <button 
-            onClick={() => onBook(provider)}
-            disabled={!status.isBookable}
-            className="flex-1 bg-slate-900 dark:bg-blue-600 text-white py-2 rounded-lg font-medium text-sm hover:bg-slate-800 dark:hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {provider.role === UserRole.TOWING ? <Truck size={16} /> : <Wrench size={16} />}
-            {provider.role === UserRole.TOWING ? 'Request Tow' : 'Book Now'}
-          </button>
-          <a href={`tel:${provider.phone}`} className="w-10 flex items-center justify-center border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors">
-            <Phone size={18} />
-          </a>
+          {provider.role === UserRole.TOWING || provider.role === UserRole.PARTS_SHOP ? (
+            // For towing and spare parts: only show call and WhatsApp buttons
+            <>
+              <a href={`tel:${provider.phone}`} className="flex-1 bg-slate-900 dark:bg-blue-600 text-white py-2 rounded-lg font-medium text-sm hover:bg-slate-800 dark:hover:bg-blue-500 transition-colors flex items-center justify-center gap-2">
+                <Phone size={18} />
+                {t.callNow}
+              </a>
+              <a href={`https://wa.me/${provider.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="w-10 flex items-center justify-center border border-green-500 bg-green-50 dark:bg-green-900/30 dark:border-green-700 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50 text-green-600 dark:text-green-400 transition-colors">
+                <MessageCircle size={18} />
+              </a>
+            </>
+          ) : (
+            // For mechanic services: show book button and phone
+            <>
+              <button 
+                onClick={() => onBook(provider)}
+                disabled={!status.isBookable}
+                className="flex-1 bg-slate-900 dark:bg-blue-600 text-white py-2 rounded-lg font-medium text-sm hover:bg-slate-800 dark:hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <Wrench size={16} />
+                {t.bookNow}
+              </button>
+              <a href={`tel:${provider.phone}`} className="w-10 flex items-center justify-center border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors">
+                <Phone size={18} />
+              </a>
+            </>
+          )}
         </div>
       </div>
     </div>

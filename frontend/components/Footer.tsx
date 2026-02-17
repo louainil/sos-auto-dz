@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { Car, Mail, Phone, MapPin, Facebook, Instagram, Twitter } from 'lucide-react';
+import { Language, translations } from '../translations';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  language: Language;
+}
+
+const Footer: React.FC<FooterProps> = ({ language }) => {
+  const t = translations[language];
+  
   return (
     <footer className="bg-slate-900 text-slate-300 pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -14,7 +21,7 @@ const Footer: React.FC = () => {
               <span className="font-bold text-xl">SOS Auto DZ</span>
             </div>
             <p className="text-slate-400 text-sm leading-relaxed mb-6">
-              Algeria's #1 platform for connecting vehicle owners with trusted mechanics, spare parts, and towing services.
+              {t.footerTagline}
             </p>
             <div className="flex gap-4">
               <a href="#" className="hover:text-blue-400 transition-colors"><Facebook size={20} /></a>
@@ -24,27 +31,27 @@ const Footer: React.FC = () => {
           </div>
 
           <div>
-            <h3 className="text-white font-bold mb-4">Services</h3>
+            <h3 className="text-white font-bold mb-4">{t.servicesFooter}</h3>
             <ul className="space-y-3 text-sm">
-              <li><a href="#" className="hover:text-white transition-colors">Find a Mechanic</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Spare Parts Shops</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Towing Assistance</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Diagnostic AI</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">{t.findMechanic}</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">{t.sparePartsShops}</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">{t.towingAssistance}</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">{t.diagnosticAI}</a></li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-white font-bold mb-4">Company</h3>
+            <h3 className="text-white font-bold mb-4">{t.company}</h3>
             <ul className="space-y-3 text-sm">
-              <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">For Professionals</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">{t.aboutUs}</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">{t.forProfessionals}</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">{t.pricing}</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">{t.contact}</a></li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-white font-bold mb-4">Contact</h3>
+            <h3 className="text-white font-bold mb-4">{t.contact}</h3>
             <ul className="space-y-4 text-sm">
               <li className="flex items-start gap-3">
                 <MapPin size={18} className="text-blue-500 mt-0.5" />
@@ -63,10 +70,10 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500">
-          <p>&copy; {new Date().getFullYear()} SOS Auto DZ. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} SOS Auto DZ. {t.allRightsReserved}</p>
           <div className="flex gap-6 mt-4 md:mt-0">
-            <a href="#" className="hover:text-white">Privacy Policy</a>
-            <a href="#" className="hover:text-white">Terms of Service</a>
+            <a href="#" className="hover:text-white">{t.privacyPolicy}</a>
+            <a href="#" className="hover:text-white">{t.termsOfService}</a>
           </div>
         </div>
       </div>

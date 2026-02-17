@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Search, MapPin, Filter, AlertTriangle, Navigation, Wrench, Zap, PaintBucket, Car, X, ChevronDown } from 'lucide-react';
 import { MOCK_PROVIDERS, WILAYAS, COMMUNES, CAR_BRANDS } from '../constants';
 import { ServiceProvider, UserRole, GarageType } from '../types';
+import { Language, translations } from '../translations';
 import ServiceCard from '../components/ServiceCard';
 
 interface ServicesPageProps {
@@ -10,13 +11,16 @@ interface ServicesPageProps {
   subtitle: string;
   userLocation: { lat: number; lng: number } | null;
   onBook: (provider: ServiceProvider) => void;
+  language: Language;
 }
 
-const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, userLocation, onBook }) => {
+const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, userLocation, onBook, language }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedWilaya, setSelectedWilaya] = useState<number | 'all'>('all');
   const [selectedCommune, setSelectedCommune] = useState<string>('all');
   const [selectedGarageType, setSelectedGarageType] = useState<GarageType | 'all'>('all');
+  
+  const t = translations[language];
   
   // Brand Search State
   const [selectedBrand, setSelectedBrand] = useState<string>('all');
@@ -240,6 +244,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
                 provider={provider} 
                 userLocation={userLocation}
                 onBook={onBook}
+                language={language}
               />
             ))}
           </div>
@@ -248,8 +253,8 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
              <div className="bg-slate-100 dark:bg-slate-800 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-400 dark:text-slate-500">
                <Search size={32} />
              </div>
-             <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">No results found</h3>
-             <p className="text-slate-500 dark:text-slate-400">Try adjusting your filters or search for a different keyword.</p>
+             <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">{t.noResultsFound}</h3>
+             <p className="text-slate-500 dark:text-slate-400">{t.noResultsDesc}</p>
           </div>
         )}
       </div>

@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import BookingModal from './components/BookingModal';
 import AuthModal from './components/AuthModal';
 import { PageView, ServiceProvider, UserRole, User, Notification } from './types';
+import { Language, translations } from './translations';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<PageView>(PageView.HOME);
@@ -21,6 +22,9 @@ const App: React.FC = () => {
 
   // Dark Mode State - Default to true
   const [isDarkMode, setIsDarkMode] = useState(true);
+  
+  // Language State - Default to English
+  const [language, setLanguage] = useState<Language>('en');
 
   // Apply Dark Mode Class to HTML tag
   useEffect(() => {
@@ -31,6 +35,16 @@ const App: React.FC = () => {
       root.classList.remove('dark');
     }
   }, [isDarkMode]);
+  
+  // Apply RTL direction for Arabic
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (language === 'ar') {
+      root.setAttribute('dir', 'rtl');
+    } else {
+      root.setAttribute('dir', 'ltr');
+    }
+  }, [language]);
 
   // Attempt to get user location on mount
   useEffect(() => {
@@ -115,7 +129,7 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (currentView) {
       case PageView.HOME:
-        return <Home onChangeView={handleViewChange} />;
+        return <Home onChangeView={handleViewChange} language={language} />;
       case PageView.GARAGE:
         return (
           <ServicesPage 
@@ -125,6 +139,7 @@ const App: React.FC = () => {
             subtitle="Find trusted Mechanics, Electricians, and Auto Body Technicians."
             userLocation={userLocation}
             onBook={handleBook}
+            language={language}
           />
         );
       case PageView.PARTS:
@@ -136,6 +151,7 @@ const App: React.FC = () => {
             subtitle="Locate authentic spare parts dealers for all car makes and models."
             userLocation={userLocation}
             onBook={handleBook}
+            language={language}
           />
         );
       case PageView.TOWING:
@@ -147,16 +163,17 @@ const App: React.FC = () => {
             subtitle="24/7 towing and emergency recovery services near you."
             userLocation={userLocation}
             onBook={handleBook}
+            language={language}
           />
         );
       case PageView.DASHBOARD:
         return user ? (
            <Dashboard user={user} onLogout={handleLogout} />
         ) : (
-           <Home onChangeView={handleViewChange} /> // Fallback if manually navigating
+           <Home onChangeView={handleViewChange} language={language} /> // Fallback if manually navigating
         );
       default:
-        return <Home onChangeView={handleViewChange} />;
+        return <Home onChangeView={handleViewChange} language={language} />;
     }
   };
 
@@ -169,6 +186,8 @@ const App: React.FC = () => {
         onProClick={handleProClick}
         isDarkMode={isDarkMode}
         toggleTheme={() => setIsDarkMode(!isDarkMode)}
+        language={language}
+        onLanguageChange={setLanguage}
         user={user}
         onLogout={handleLogout}
         notifications={notifications}
@@ -180,7 +199,7 @@ const App: React.FC = () => {
         {renderContent()}
       </main>
 
-      {currentView !== PageView.DASHBOARD && <Footer />}
+      {currentView !== PageView.DASHBOARD && <Footer language={language} />}
 
       {/* Booking Modal */}
       {selectedProvider && (

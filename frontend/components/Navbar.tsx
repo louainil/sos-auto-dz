@@ -193,8 +193,10 @@ const Navbar: React.FC<NavbarProps> = ({
                      onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                      className="flex items-center gap-2 pl-2 pr-4 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
                    >
-                     <div className="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                       {user.name.charAt(0)}
+                     <div className="w-7 h-7 bg-blue-600 rounded-full overflow-hidden flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                       {user.avatar?.url
+                         ? <img src={user.avatar.url} alt={user.name} className="w-full h-full object-cover" />
+                         : user.name.charAt(0)}
                      </div>
                      <span className="text-sm font-medium text-slate-700 dark:text-slate-200 max-w-[100px] truncate">{user.name}</span>
                    </button>
@@ -367,13 +369,27 @@ const Navbar: React.FC<NavbarProps> = ({
             )}
             <div className="border-t border-slate-100 dark:border-slate-800 pt-3 mt-3 space-y-2">
               {user ? (
-                 <button 
-                  onClick={() => { onLogout(); setIsMobileMenuOpen(false); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 rounded-md"
-                >
-                  <LogOut size={18} />
-                  {t.signOut}
-                </button>
+                <>
+                  {/* User info row */}
+                  <div className="flex items-center gap-3 px-3 py-2">
+                    <div className="w-10 h-10 rounded-full bg-blue-600 overflow-hidden flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                      {user.avatar?.url
+                        ? <img src={user.avatar.url} alt={user.name} className="w-full h-full object-cover" />
+                        : user.name.charAt(0)}
+                    </div>
+                    <div className="overflow-hidden">
+                      <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{user.name}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user.email}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => { onLogout(); setIsMobileMenuOpen(false); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 rounded-md"
+                  >
+                    <LogOut size={18} />
+                    {t.signOut}
+                  </button>
+                </>
               ) : (
                 <button 
                   onClick={() => {

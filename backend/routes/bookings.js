@@ -21,6 +21,7 @@ router.post('/', protect, async (req, res) => {
     const booking = await Booking.create({
       providerId,
       providerName: provider.name,
+      providerPhone: provider.phone || '',
       clientId: req.user._id,
       clientName: req.user.name,
       clientPhone: req.user.phone || '',

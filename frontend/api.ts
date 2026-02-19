@@ -67,6 +67,15 @@ export const authAPI = {
       body: formData
     });
     return handleResponse(response);
+  },
+
+  updateProfile: async (data: { name?: string; phone?: string }) => {
+    const response = await fetch(`${API_URL}/auth/profile`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(response);
   }
 };
 

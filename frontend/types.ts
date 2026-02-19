@@ -63,6 +63,7 @@ export interface Booking {
   id: string;
   providerId: string;
   providerName: string;
+  providerPhone?: string;
   clientId: string;
   clientName: string;
   clientPhone: string;

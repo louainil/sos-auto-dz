@@ -166,6 +166,45 @@ router.get('/me', protect, async (req, res) => {
   });
 });
 
+// @route   PUT /api/auth/profile
+// @desc    Update user name & phone in MongoDB
+// @access  Private
+router.put('/profile', protect, async (req, res) => {
+  try {
+    const { name, phone } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (name && name.trim()) user.name = name.trim();
+    if (phone !== undefined) user.phone = phone;
+    await user.save();
+
+    // Also update ServiceProvider name if professional
+    if (['MECHANIC', 'PARTS_SHOP', 'TOWING'].includes(user.role)) {
+      await ServiceProvider.findOneAndUpdate(
+        { userId: user._id },
+        { name: user.name, phone: user.phone }
+      );
+    }
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      phone: user.phone,
+      garageType: user.garageType,
+      wilayaId: user.wilayaId,
+      commune: user.commune,
+      isAvailable: user.isAvailable,
+      avatar: user.avatar
+    });
+  } catch (error) {
+    console.error('Profile update error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // @route   POST /api/auth/avatar
 // @desc    Upload / update user profile picture (saved to Cloudinary)
 // @access  Private

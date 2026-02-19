@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import connectDB from './config/db.js';
 
 // Import routes
@@ -9,11 +11,10 @@ import providerRoutes from './routes/providers.js';
 import bookingRoutes from './routes/bookings.js';
 import notificationRoutes from './routes/notifications.js';
 
-// Load environment variables
-dotenv.config();
-
-// Connect to MongoDB
-connectDB();
+// Load environment variables (use explicit path for serverless compatibility)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: join(__dirname, '.env') });
 
 const app = express();
 
@@ -29,6 +30,16 @@ if (process.env.NODE_ENV === 'development') {
     next();
   });
 }
+
+// Ensure DB is connected before handling any request
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    res.status(503).json({ message: 'Database connection failed', error: error.message });
+  }
+});
 
 // Routes
 app.use('/api/auth', authRoutes);

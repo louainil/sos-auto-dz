@@ -9,7 +9,7 @@ export interface Translations {
   dashboard: string;
   signIn: string;
   signOut: string;
-  
+
   // Hero - Home Page
   heroTagline: string;
   heroTitle1: string;
@@ -17,7 +17,7 @@ export interface Translations {
   heroSubtitle: string;
   findGarage: string;
   emergencyTowing: string;
-  
+
   // Services Grid - Home Page
   servicesTitle: string;
   servicesSubtitle: string;
@@ -30,7 +30,7 @@ export interface Translations {
   roadsideTitle: string;
   roadsideDesc: string;
   getHelpNow: string;
-  
+
   // Features Section - Home Page
   whyChooseTitle: string;
   smartGeoTitle: string;
@@ -43,11 +43,11 @@ export interface Translations {
   activeMechanics: string;
   avgResponseTime: string;
   userRating: string;
-  
+
   // Buttons
   bookNow: string;
   callNow: string;
-  
+
   // Common
   search: string;
   filter: string;
@@ -56,13 +56,18 @@ export interface Translations {
   rating: string;
   noResultsFound: string;
   noResultsDesc: string;
-  
+
   // Service Card
   openNow: string;
   closedNow: string;
   closedToday: string;
   unavailable: string;
-  
+  hoursNotSet: string;
+  everyDay: string;
+  satThu: string;
+  customSchedule: string;
+  currentlyUnavailable: string;
+
   // Footer
   footerTagline: string;
   servicesFooter: string;
@@ -78,11 +83,152 @@ export interface Translations {
   allRightsReserved: string;
   privacyPolicy: string;
   termsOfService: string;
-  
+
   // Language names
   english: string;
   french: string;
   arabic: string;
+
+  // ServicesPage filters
+  allWilayas: string;
+  selectWilayaFirst: string;
+  allCommunes: string;
+  allGarageTypes: string;
+  mechanicType: string;
+  electricianType: string;
+  autoBodyType: string;
+  searchCarBrand: string;
+  allBrands: string;
+  noBrandsFound: string;
+  loadingProviders: string;
+
+  // BookingModal
+  bookService: string;
+  scheduleWith: string;
+  fullName: string;
+  phoneNumber: string;
+  preferredDate: string;
+  problemDescription: string;
+  describeIssue: string;
+  creatingBooking: string;
+  confirmBooking: string;
+  bookingConfirmed: string;
+  bookingConfirmedDesc: string;
+  close: string;
+
+  // Dashboard – header & sidebar
+  dashboardTitle: string;
+  manageAccount: string;
+  overview: string;
+  myBookings: string;
+  requests: string;
+  settings: string;
+
+  // Dashboard – Client overview
+  activeBookings: string;
+  completedServices: string;
+  recentActivity: string;
+  leaveReview: string;
+
+  // Dashboard – Professional overview
+  welcomePro: string;
+  manageGarage: string;
+  online: string;
+  offline: string;
+  pendingRequests: string;
+  todaysJobs: string;
+  totalRevenue: string;
+  ratingLabel: string;
+  incomingRequests: string;
+  viewAll: string;
+  noPendingRequests: string;
+  issueLabel: string;
+  decline: string;
+  acceptJob: string;
+
+  // Dashboard – Admin overview
+  adminTitle: string;
+  adminSubtitle: string;
+  totalUsers: string;
+  verifiedProviders: string;
+  pendingApprovals: string;
+  reports: string;
+  pendingProviderApprovals: string;
+  nameCol: string;
+  typeCol: string;
+  wilayaCol: string;
+  actionCol: string;
+  reviewAction: string;
+
+  // Dashboard – Bookings tab
+  bookingHistory: string;
+  serviceRequests: string;
+  noBookingsFound: string;
+
+  // Dashboard – Settings tab
+  accountSettings: string;
+  changeProfilePicture: string;
+  emailLabel: string;
+  emailCannotChange: string;
+  phoneLabel: string;
+  saving: string;
+  saveChanges: string;
+  changesSaved: string;
+  saveFailed: string;
+  changePassword: string;
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+  updatePassword: string;
+
+  // AuthModal – tabs & header
+  signInTab: string;
+  signUpTab: string;
+  signInTitle: string;
+  createAccountTitle: string;
+  welcomeBack: string;
+  joinTitle: string;
+  signInSubtitle: string;
+  signUpSubtitle: string;
+
+  // AuthModal – role selector
+  iAmA: string;
+  roleGarage: string;
+  rolePartsShop: string;
+  roleTowing: string;
+  roleClient: string;
+
+  // AuthModal – common fields
+  businessName: string;
+  emailAddress: string;
+  password: string;
+
+  // AuthModal – professional section
+  businessDetails: string;
+  garageType: string;
+  selectType: string;
+  generalMechanic: string;
+  autoElectrician: string;
+  autoBodyPaint: string;
+  workSchedule: string;
+  startTime: string;
+  endTime: string;
+  wilaya: string;
+  commune: string;
+  selectPlaceholder: string;
+  description: string;
+  optional: string;
+  descriptionPlaceholder: string;
+  supportedBrands: string;
+  searchBrands: string;
+  selectAll: string;
+  unselectAll: string;
+  noBrandsFoundShort: string;
+  brandsSelected: string;
+
+  // AuthModal – submit & links
+  processing: string;
+  forgotPassword: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -95,7 +241,7 @@ export const translations: Record<Language, Translations> = {
     dashboard: 'Dashboard',
     signIn: 'Sign In / Sign Up',
     signOut: 'Sign Out',
-    
+
     // Hero - Home Page
     heroTagline: "Algeria's Premium Automotive Network",
     heroTitle1: 'Expert Garages',
@@ -103,7 +249,7 @@ export const translations: Record<Language, Translations> = {
     heroSubtitle: 'Find trusted mechanics, electricians, auto body shops, spare parts, and 24/7 towing services anywhere in Algeria.',
     findGarage: 'Find a Garage',
     emergencyTowing: 'Emergency Towing',
-    
+
     // Services Grid - Home Page
     servicesTitle: 'Everything Your Vehicle Needs',
     servicesSubtitle: "We've simplified the process of maintaining your car. Choose a category below to get started.",
@@ -116,7 +262,7 @@ export const translations: Record<Language, Translations> = {
     roadsideTitle: 'Roadside Assistance',
     roadsideDesc: 'Stuck on the road? Find the nearest towing service and get help fast.',
     getHelpNow: 'Get Help Now',
-    
+
     // Features Section - Home Page
     whyChooseTitle: 'Why Choose SOS Auto DZ?',
     smartGeoTitle: 'Smart Geolocation',
@@ -129,11 +275,11 @@ export const translations: Record<Language, Translations> = {
     activeMechanics: 'Active Mechanics',
     avgResponseTime: 'Avg. Response Time',
     userRating: 'User Rating',
-    
+
     // Buttons
     bookNow: 'Book Now',
     callNow: 'Call Now',
-    
+
     // Common
     search: 'Search',
     filter: 'Filter',
@@ -142,13 +288,18 @@ export const translations: Record<Language, Translations> = {
     rating: 'Rating',
     noResultsFound: 'No results found',
     noResultsDesc: 'Try adjusting your filters or search for a different keyword.',
-    
+
     // Service Card
     openNow: 'Open Now',
     closedNow: 'Closed Now',
     closedToday: 'Closed Today',
     unavailable: 'Unavailable',
-    
+    hoursNotSet: 'Hours not set',
+    everyDay: 'Every Day',
+    satThu: 'Sat – Thu',
+    customSchedule: 'Custom Schedule',
+    currentlyUnavailable: 'Currently Unavailable',
+
     // Footer
     footerTagline: "Algeria's #1 platform for connecting vehicle owners with trusted mechanics, spare parts, and towing services.",
     servicesFooter: 'Services',
@@ -164,11 +315,152 @@ export const translations: Record<Language, Translations> = {
     allRightsReserved: 'All rights reserved.',
     privacyPolicy: 'Privacy Policy',
     termsOfService: 'Terms of Service',
-    
+
     // Language names
     english: 'English',
     french: 'Français',
     arabic: 'العربية',
+
+    // ServicesPage filters
+    allWilayas: 'All Wilayas',
+    selectWilayaFirst: 'Select Wilaya First',
+    allCommunes: 'All Communes',
+    allGarageTypes: 'All Garage Types',
+    mechanicType: 'Mechanic',
+    electricianType: 'Electrician',
+    autoBodyType: 'Auto Body',
+    searchCarBrand: 'Search Car Brand...',
+    allBrands: 'All Brands',
+    noBrandsFound: 'No brands found matching',
+    loadingProviders: 'Loading providers...',
+
+    // BookingModal
+    bookService: 'Book Service',
+    scheduleWith: 'Schedule an appointment with',
+    fullName: 'Full Name',
+    phoneNumber: 'Phone Number',
+    preferredDate: 'Preferred Date',
+    problemDescription: 'Problem Description',
+    describeIssue: 'Describe the issue...',
+    creatingBooking: 'Creating Booking...',
+    confirmBooking: 'Confirm Booking',
+    bookingConfirmed: 'Booking Confirmed!',
+    bookingConfirmedDesc: 'Your request has been sent. They will contact you shortly.',
+    close: 'Close',
+
+    // Dashboard – header & sidebar
+    dashboardTitle: 'Dashboard',
+    manageAccount: 'Manage your account and services',
+    overview: 'Overview',
+    myBookings: 'My Bookings',
+    requests: 'Requests',
+    settings: 'Settings',
+
+    // Dashboard – Client overview
+    activeBookings: 'Active Bookings',
+    completedServices: 'Completed Services',
+    recentActivity: 'Recent Activity',
+    leaveReview: 'Leave Review',
+
+    // Dashboard – Professional overview
+    welcomePro: 'Welcome,',
+    manageGarage: 'Manage your garage and incoming requests.',
+    online: 'Online',
+    offline: 'Offline',
+    pendingRequests: 'Pending Requests',
+    todaysJobs: "Today's Jobs",
+    totalRevenue: 'Total Revenue',
+    ratingLabel: 'Rating',
+    incomingRequests: 'Incoming Requests',
+    viewAll: 'View All',
+    noPendingRequests: 'No pending requests at the moment.',
+    issueLabel: 'Issue:',
+    decline: 'Decline',
+    acceptJob: 'Accept Job',
+
+    // Dashboard – Admin overview
+    adminTitle: 'Admin Control Center',
+    adminSubtitle: 'System overview and user management.',
+    totalUsers: 'Total Users',
+    verifiedProviders: 'Verified Providers',
+    pendingApprovals: 'Pending Approvals',
+    reports: 'Reports',
+    pendingProviderApprovals: 'Pending Provider Approvals',
+    nameCol: 'Name',
+    typeCol: 'Type',
+    wilayaCol: 'Wilaya',
+    actionCol: 'Action',
+    reviewAction: 'Review',
+
+    // Dashboard – Bookings tab
+    bookingHistory: 'Booking History',
+    serviceRequests: 'Service Requests',
+    noBookingsFound: 'No bookings found.',
+
+    // Dashboard – Settings tab
+    accountSettings: 'Account Settings',
+    changeProfilePicture: 'Change profile picture',
+    emailLabel: 'Email',
+    emailCannotChange: 'Email address cannot be changed.',
+    phoneLabel: 'Phone',
+    saving: 'Saving...',
+    saveChanges: 'Save Changes',
+    changesSaved: 'Changes saved successfully!',
+    saveFailed: 'Failed to save changes.',
+    changePassword: 'Change Password',
+    currentPassword: 'Current Password',
+    newPassword: 'New Password',
+    confirmNewPassword: 'Confirm New Password',
+    updatePassword: 'Update Password',
+
+    // AuthModal – tabs & header
+    signInTab: 'SIGN IN',
+    signUpTab: 'SIGN UP',
+    signInTitle: 'Sign In',
+    createAccountTitle: 'Create Account',
+    welcomeBack: 'Welcome Back',
+    joinTitle: 'Join SOS Auto DZ',
+    signInSubtitle: 'Enter your credentials to access your account',
+    signUpSubtitle: 'Create an account to connect with the best automotive network in Algeria',
+
+    // AuthModal – role selector
+    iAmA: 'I am a:',
+    roleGarage: 'Garage',
+    rolePartsShop: 'Parts Shop',
+    roleTowing: 'Broken-down Service',
+    roleClient: 'Client',
+
+    // AuthModal – common fields
+    businessName: 'Business / Shop Name',
+    emailAddress: 'Email Address',
+    password: 'Password',
+
+    // AuthModal – professional section
+    businessDetails: 'Business Details',
+    garageType: 'Garage Type',
+    selectType: 'Select Type...',
+    generalMechanic: 'General Mechanic',
+    autoElectrician: 'Auto Electrician',
+    autoBodyPaint: 'Auto Body & Paint',
+    workSchedule: 'Work Schedule',
+    startTime: 'Start Time',
+    endTime: 'End Time',
+    wilaya: 'Wilaya',
+    commune: 'Commune',
+    selectPlaceholder: 'Select...',
+    description: 'Description',
+    optional: 'Optional',
+    descriptionPlaceholder: 'Briefly describe your services, hours, or specialties...',
+    supportedBrands: 'Supported Car Brands',
+    searchBrands: 'Search brands (e.g. BMW, Toyota)...',
+    selectAll: 'Select All',
+    unselectAll: 'Unselect All',
+    noBrandsFoundShort: 'No brands found.',
+    brandsSelected: 'brands selected',
+
+    // AuthModal – submit & links
+    processing: 'Processing...',
+    forgotPassword: 'Forgot your password?',
   },
   fr: {
     // Navbar
@@ -177,20 +469,20 @@ export const translations: Record<Language, Translations> = {
     spareParts: 'Pièces Détachées',
     towing: 'Dépannage',
     dashboard: 'Tableau de Bord',
-    signIn: 'Se Connecter / S\'inscrire',
+    signIn: "Se Connecter / S'inscrire",
     signOut: 'Se Déconnecter',
-    
+
     // Hero - Home Page
-    heroTagline: 'Réseau Automobile Premium d\'Algérie',
+    heroTagline: "Réseau Automobile Premium d'Algérie",
     heroTitle1: 'Garages Experts',
     heroTitle2: 'À Votre Portée',
-    heroSubtitle: 'Trouvez des mécaniciens de confiance, électriciens automobiles, carrossiers, pièces détachées et services de dépannage 24h/24 partout en Algérie.',
+    heroSubtitle: "Trouvez des mécaniciens de confiance, électriciens automobiles, carrossiers, pièces détachées et services de dépannage 24h/24 partout en Algérie.",
     findGarage: 'Trouver un Garage',
-    emergencyTowing: 'Dépannage d\'Urgence',
-    
+    emergencyTowing: "Dépannage d'Urgence",
+
     // Services Grid - Home Page
     servicesTitle: 'Tout ce dont Votre Véhicule a Besoin',
-    servicesSubtitle: 'Nous avons simplifié le processus d\'entretien de votre voiture. Choisissez une catégorie ci-dessous pour commencer.',
+    servicesSubtitle: "Nous avons simplifié le processus d'entretien de votre voiture. Choisissez une catégorie ci-dessous pour commencer.",
     garageServicesTitle: 'Services Garage',
     garageServicesDesc: 'Mécaniciens certifiés, électriciens et experts en carrosserie pour tous vos besoins de réparation.',
     browseGarages: 'Parcourir les Garages',
@@ -198,26 +490,26 @@ export const translations: Record<Language, Translations> = {
     sparePartsDesc: 'Pièces authentiques pour toutes les marques. Recherchez par nom de pièce ou modèle de véhicule.',
     findParts: 'Trouver des Pièces',
     roadsideTitle: 'Assistance Routière',
-    roadsideDesc: 'Bloqué sur la route ? Trouvez le service de dépannage le plus proche et obtenez de l\'aide rapidement.',
-    getHelpNow: 'Obtenir de l\'Aide',
-    
+    roadsideDesc: "Bloqué sur la route ? Trouvez le service de dépannage le plus proche et obtenez de l'aide rapidement.",
+    getHelpNow: "Obtenir de l'Aide",
+
     // Features Section - Home Page
     whyChooseTitle: 'Pourquoi Choisir SOS Auto DZ ?',
     smartGeoTitle: 'Géolocalisation Intelligente',
-    smartGeoDesc: 'Notre algorithme trouve les prestataires les plus proches de vous, vous faisant gagner du temps et de l\'argent.',
+    smartGeoDesc: "Notre algorithme trouve les prestataires les plus proches de vous, vous faisant gagner du temps et de l'argent.",
     verifiedProsTitle: 'Professionnels Vérifiés',
-    verifiedProsDesc: 'Chaque mécanicien et atelier est vérifié pour garantir un service de qualité et la sécurité.',
+    verifiedProsDesc: "Chaque mécanicien et atelier est vérifié pour garantir un service de qualité et la sécurité.",
     instantBookingTitle: 'Réservation Instantanée',
-    instantBookingDesc: 'Planifiez des rendez-vous directement via l\'application sans interminables appels téléphoniques.',
+    instantBookingDesc: "Planifiez des rendez-vous directement via l'application sans interminables appels téléphoniques.",
     wilayasCovered: 'Wilayas Couvertes',
     activeMechanics: 'Mécaniciens Actifs',
     avgResponseTime: 'Temps de Réponse Moyen',
     userRating: 'Note Utilisateur',
-    
+
     // Buttons
     bookNow: 'Réserver',
     callNow: 'Appeler',
-    
+
     // Common
     search: 'Rechercher',
     filter: 'Filtrer',
@@ -225,16 +517,21 @@ export const translations: Record<Language, Translations> = {
     phone: 'Téléphone',
     rating: 'Note',
     noResultsFound: 'Aucun résultat trouvé',
-    noResultsDesc: 'Essayez d\'ajuster vos filtres ou recherchez un autre mot-clé.',
-    
+    noResultsDesc: "Essayez d'ajuster vos filtres ou recherchez un autre mot-clé.",
+
     // Service Card
     openNow: 'Ouvert Maintenant',
     closedNow: 'Fermé Maintenant',
-    closedToday: 'Fermé Aujourd\'hui',
+    closedToday: "Fermé Aujourd'hui",
     unavailable: 'Indisponible',
-    
+    hoursNotSet: 'Horaires non définis',
+    everyDay: 'Tous les jours',
+    satThu: 'Sam – Jeu',
+    customSchedule: 'Horaires personnalisés',
+    currentlyUnavailable: 'Actuellement indisponible',
+
     // Footer
-    footerTagline: 'La plateforme n°1 en Algérie pour connecter les propriétaires de véhicules avec des mécaniciens de confiance, des pièces détachées et des services de dépannage.',
+    footerTagline: "La plateforme n°1 en Algérie pour connecter les propriétaires de véhicules avec des mécaniciens de confiance, des pièces détachées et des services de dépannage.",
     servicesFooter: 'Services',
     findMechanic: 'Trouver un Mécanicien',
     sparePartsShops: 'Magasins de Pièces Détachées',
@@ -247,13 +544,155 @@ export const translations: Record<Language, Translations> = {
     contact: 'Contact',
     allRightsReserved: 'Tous droits réservés.',
     privacyPolicy: 'Politique de Confidentialité',
-    termsOfService: 'Conditions d\'Utilisation',
-    
+    termsOfService: "Conditions d'Utilisation",
+
     // Language names
     english: 'English',
     french: 'Français',
     arabic: 'العربية',
+
+    // ServicesPage filters
+    allWilayas: 'Toutes les Wilayas',
+    selectWilayaFirst: "Sélectionner d'abord une Wilaya",
+    allCommunes: 'Toutes les Communes',
+    allGarageTypes: 'Tous les Types de Garage',
+    mechanicType: 'Mécanicien',
+    electricianType: 'Électricien',
+    autoBodyType: 'Carrosserie',
+    searchCarBrand: 'Rechercher une Marque...',
+    allBrands: 'Toutes les Marques',
+    noBrandsFound: 'Aucune marque trouvée pour',
+    loadingProviders: 'Chargement des prestataires...',
+
+    // BookingModal
+    bookService: 'Réserver un Service',
+    scheduleWith: 'Prendre rendez-vous avec',
+    fullName: 'Nom Complet',
+    phoneNumber: 'Numéro de Téléphone',
+    preferredDate: 'Date Souhaitée',
+    problemDescription: 'Description du Problème',
+    describeIssue: 'Décrivez le problème...',
+    creatingBooking: 'Création en cours...',
+    confirmBooking: 'Confirmer la Réservation',
+    bookingConfirmed: 'Réservation Confirmée !',
+    bookingConfirmedDesc: 'Votre demande a été envoyée. Ils vous contacteront bientôt.',
+    close: 'Fermer',
+
+    // Dashboard – header & sidebar
+    dashboardTitle: 'Tableau de Bord',
+    manageAccount: 'Gérez votre compte et vos services',
+    overview: 'Aperçu',
+    myBookings: 'Mes Réservations',
+    requests: 'Demandes',
+    settings: 'Paramètres',
+
+    // Dashboard – Client overview
+    activeBookings: 'Réservations Actives',
+    completedServices: 'Services Terminés',
+    recentActivity: 'Activité Récente',
+    leaveReview: 'Laisser un Avis',
+
+    // Dashboard – Professional overview
+    welcomePro: 'Bienvenue,',
+    manageGarage: 'Gérez votre garage et les demandes entrantes.',
+    online: 'En ligne',
+    offline: 'Hors ligne',
+    pendingRequests: 'Demandes en Attente',
+    todaysJobs: 'Travaux du Jour',
+    totalRevenue: 'Revenu Total',
+    ratingLabel: 'Note',
+    incomingRequests: 'Demandes Entrantes',
+    viewAll: 'Voir Tout',
+    noPendingRequests: 'Aucune demande en attente pour le moment.',
+    issueLabel: 'Problème :',
+    decline: 'Refuser',
+    acceptJob: 'Accepter',
+
+    // Dashboard – Admin overview
+    adminTitle: 'Centre de Contrôle Admin',
+    adminSubtitle: "Vue d'ensemble du système et gestion des utilisateurs.",
+    totalUsers: 'Utilisateurs Totaux',
+    verifiedProviders: 'Prestataires Vérifiés',
+    pendingApprovals: 'Approbations en Attente',
+    reports: 'Rapports',
+    pendingProviderApprovals: 'Approbations de Prestataires en Attente',
+    nameCol: 'Nom',
+    typeCol: 'Type',
+    wilayaCol: 'Wilaya',
+    actionCol: 'Action',
+    reviewAction: 'Examiner',
+
+    // Dashboard – Bookings tab
+    bookingHistory: 'Historique des Réservations',
+    serviceRequests: 'Demandes de Service',
+    noBookingsFound: 'Aucune réservation trouvée.',
+
+    // Dashboard – Settings tab
+    accountSettings: 'Paramètres du Compte',
+    changeProfilePicture: 'Changer la photo de profil',
+    emailLabel: 'E-mail',
+    emailCannotChange: "L'adresse e-mail ne peut pas être modifiée.",
+    phoneLabel: 'Téléphone',
+    saving: 'Enregistrement...',
+    saveChanges: 'Enregistrer',
+    changesSaved: 'Modifications enregistrées !',
+    saveFailed: "Échec de l'enregistrement.",
+    changePassword: 'Changer le Mot de Passe',
+    currentPassword: 'Mot de Passe Actuel',
+    newPassword: 'Nouveau Mot de Passe',
+    confirmNewPassword: 'Confirmer le Nouveau Mot de Passe',
+    updatePassword: 'Mettre à Jour le Mot de Passe',
+
+    // AuthModal – tabs & header
+    signInTab: 'CONNEXION',
+    signUpTab: 'INSCRIPTION',
+    signInTitle: 'Se Connecter',
+    createAccountTitle: 'Créer un Compte',
+    welcomeBack: 'Bon Retour',
+    joinTitle: 'Rejoindre SOS Auto DZ',
+    signInSubtitle: 'Entrez vos identifiants pour accéder à votre compte',
+    signUpSubtitle: 'Créez un compte pour vous connecter avec le meilleur réseau automobile en Algérie',
+
+    // AuthModal – role selector
+    iAmA: 'Je suis :',
+    roleGarage: 'Garage',
+    rolePartsShop: 'Pièces Détachées',
+    roleTowing: 'Service de Dépannage',
+    roleClient: 'Client',
+
+    // AuthModal – common fields
+    businessName: 'Nom du Commerce / Atelier',
+    emailAddress: 'Adresse E-mail',
+    password: 'Mot de Passe',
+
+    // AuthModal – professional section
+    businessDetails: 'Informations Professionnelles',
+    garageType: 'Type de Garage',
+    selectType: 'Sélectionner...',
+    generalMechanic: 'Mécanicien Général',
+    autoElectrician: 'Électricien Auto',
+    autoBodyPaint: 'Carrosserie & Peinture',
+    workSchedule: 'Horaires de Travail',
+    startTime: 'Heure de Début',
+    endTime: 'Heure de Fin',
+    wilaya: 'Wilaya',
+    commune: 'Commune',
+    selectPlaceholder: 'Sélectionner...',
+    description: 'Description',
+    optional: 'Facultatif',
+    descriptionPlaceholder: 'Décrivez brièvement vos services, horaires ou spécialités...',
+    supportedBrands: 'Marques de Voitures Supportées',
+    searchBrands: 'Rechercher des marques (ex. BMW, Toyota)...',
+    selectAll: 'Tout Sélectionner',
+    unselectAll: 'Tout Désélectionner',
+    noBrandsFoundShort: 'Aucune marque trouvée.',
+    brandsSelected: 'marques sélectionnées',
+
+    // AuthModal – submit & links
+    processing: 'Traitement...',
+    forgotPassword: 'Mot de passe oublié ?',
   },
+
   ar: {
     // Navbar
     home: 'الرئيسية',
@@ -263,7 +702,7 @@ export const translations: Record<Language, Translations> = {
     dashboard: 'لوحة التحكم',
     signIn: 'تسجيل الدخول / التسجيل',
     signOut: 'تسجيل الخروج',
-    
+
     // Hero - Home Page
     heroTagline: 'شبكة السيارات الممتازة في الجزائر',
     heroTitle1: 'كراجات متخصصة',
@@ -271,7 +710,7 @@ export const translations: Record<Language, Translations> = {
     heroSubtitle: 'اعثر على ميكانيكيين موثوقين، كهربائيين، ورش تصليح، قطع غيار، وخدمات السحب على مدار 24/7 في أي مكان في الجزائر.',
     findGarage: 'ابحث عن كراج',
     emergencyTowing: 'سحب طارئ',
-    
+
     // Services Grid - Home Page
     servicesTitle: 'كل ما تحتاجه سيارتك',
     servicesSubtitle: 'لقد بسطنا عملية صيانة سيارتك. اختر فئة أدناه للبدء.',
@@ -284,7 +723,7 @@ export const translations: Record<Language, Translations> = {
     roadsideTitle: 'المساعدة على الطريق',
     roadsideDesc: 'عالق على الطريق؟ اعثر على أقرب خدمة سحب واحصل على المساعدة بسرعة.',
     getHelpNow: 'احصل على المساعدة الآن',
-    
+
     // Features Section - Home Page
     whyChooseTitle: 'لماذا تختار SOS Auto DZ؟',
     smartGeoTitle: 'تحديد الموقع الذكي',
@@ -297,11 +736,11 @@ export const translations: Record<Language, Translations> = {
     activeMechanics: 'ميكانيكيون نشطون',
     avgResponseTime: 'متوسط وقت الاستجابة',
     userRating: 'تقييم المستخدم',
-    
+
     // Buttons
     bookNow: 'احجز الآن',
     callNow: 'اتصل الآن',
-    
+
     // Common
     search: 'بحث',
     filter: 'تصفية',
@@ -310,13 +749,18 @@ export const translations: Record<Language, Translations> = {
     rating: 'التقييم',
     noResultsFound: 'لم يتم العثور على نتائج',
     noResultsDesc: 'حاول تعديل الفلاتر أو البحث عن كلمة مفتاحية مختلفة.',
-    
+
     // Service Card
     openNow: 'مفتوح الآن',
     closedNow: 'مغلق الآن',
     closedToday: 'مغلق اليوم',
     unavailable: 'غير متاح',
-    
+    hoursNotSet: 'لم يتم تحديد الأوقات',
+    everyDay: 'كل يوم',
+    satThu: 'السبت – الخميس',
+    customSchedule: 'جدول مخصص',
+    currentlyUnavailable: 'غير متاح حاليًا',
+
     // Footer
     footerTagline: 'المنصة رقم 1 في الجزائر لربط أصحاب السيارات بالميكانيكيين الموثوقين وقطع الغيار وخدمات السحب.',
     servicesFooter: 'الخدمات',
@@ -332,10 +776,151 @@ export const translations: Record<Language, Translations> = {
     allRightsReserved: 'جميع الحقوق محفوظة.',
     privacyPolicy: 'سياسة الخصوصية',
     termsOfService: 'شروط الخدمة',
-    
+
     // Language names
     english: 'English',
     french: 'Français',
     arabic: 'العربية',
+
+    // ServicesPage filters
+    allWilayas: 'جميع الولايات',
+    selectWilayaFirst: 'اختر الولاية أولاً',
+    allCommunes: 'جميع البلديات',
+    allGarageTypes: 'جميع أنواع الكراجات',
+    mechanicType: 'ميكانيكي',
+    electricianType: 'كهربائي',
+    autoBodyType: 'هيكل السيارة',
+    searchCarBrand: 'ابحث عن ماركة السيارة...',
+    allBrands: 'جميع الماركات',
+    noBrandsFound: 'لا توجد ماركات تطابق',
+    loadingProviders: 'جارٍ تحميل مقدمي الخدمة...',
+
+    // BookingModal
+    bookService: 'حجز خدمة',
+    scheduleWith: 'حدد موعدًا مع',
+    fullName: 'الاسم الكامل',
+    phoneNumber: 'رقم الهاتف',
+    preferredDate: 'التاريخ المفضل',
+    problemDescription: 'وصف المشكلة',
+    describeIssue: 'صف المشكلة...',
+    creatingBooking: 'جارٍ إنشاء الحجز...',
+    confirmBooking: 'تأكيد الحجز',
+    bookingConfirmed: 'تم تأكيد الحجز!',
+    bookingConfirmedDesc: 'تم إرسال طلبك. سيتصلون بك قريبًا.',
+    close: 'إغلاق',
+
+    // Dashboard – header & sidebar
+    dashboardTitle: 'لوحة التحكم',
+    manageAccount: 'أدر حسابك وخدماتك',
+    overview: 'نظرة عامة',
+    myBookings: 'حجوزاتي',
+    requests: 'الطلبات',
+    settings: 'الإعدادات',
+
+    // Dashboard – Client overview
+    activeBookings: 'الحجوزات النشطة',
+    completedServices: 'الخدمات المنجزة',
+    recentActivity: 'النشاط الأخير',
+    leaveReview: 'اترك تقييمًا',
+
+    // Dashboard – Professional overview
+    welcomePro: 'مرحبًا،',
+    manageGarage: 'أدر كراجك وطلباتك الواردة.',
+    online: 'متصل',
+    offline: 'غير متصل',
+    pendingRequests: 'الطلبات المعلقة',
+    todaysJobs: 'أعمال اليوم',
+    totalRevenue: 'إجمالي الإيرادات',
+    ratingLabel: 'التقييم',
+    incomingRequests: 'الطلبات الواردة',
+    viewAll: 'عرض الكل',
+    noPendingRequests: 'لا توجد طلبات معلقة في الوقت الحالي.',
+    issueLabel: 'المشكلة:',
+    decline: 'رفض',
+    acceptJob: 'قبول العمل',
+
+    // Dashboard – Admin overview
+    adminTitle: 'مركز تحكم المدير',
+    adminSubtitle: 'نظرة عامة على النظام وإدارة المستخدمين.',
+    totalUsers: 'إجمالي المستخدمين',
+    verifiedProviders: 'مقدمو الخدمة الموثقون',
+    pendingApprovals: 'الموافقات المعلقة',
+    reports: 'التقارير',
+    pendingProviderApprovals: 'موافقات مقدمي الخدمة المعلقة',
+    nameCol: 'الاسم',
+    typeCol: 'النوع',
+    wilayaCol: 'الولاية',
+    actionCol: 'الإجراء',
+    reviewAction: 'مراجعة',
+
+    // Dashboard – Bookings tab
+    bookingHistory: 'سجل الحجوزات',
+    serviceRequests: 'طلبات الخدمة',
+    noBookingsFound: 'لا توجد حجوزات.',
+
+    // Dashboard – Settings tab
+    accountSettings: 'إعدادات الحساب',
+    changeProfilePicture: 'تغيير صورة الملف الشخصي',
+    emailLabel: 'البريد الإلكتروني',
+    emailCannotChange: 'لا يمكن تغيير عنوان البريد الإلكتروني.',
+    phoneLabel: 'الهاتف',
+    saving: 'جارٍ الحفظ...',
+    saveChanges: 'حفظ التغييرات',
+    changesSaved: 'تم حفظ التغييرات بنجاح!',
+    saveFailed: 'فشل حفظ التغييرات.',
+    changePassword: 'تغيير كلمة المرور',
+    currentPassword: 'كلمة المرور الحالية',
+    newPassword: 'كلمة المرور الجديدة',
+    confirmNewPassword: 'تأكيد كلمة المرور الجديدة',
+    updatePassword: 'تحديث كلمة المرور',
+
+    // AuthModal – tabs & header
+    signInTab: 'تسجيل الدخول',
+    signUpTab: 'إنشاء حساب',
+    signInTitle: 'تسجيل الدخول',
+    createAccountTitle: 'إنشاء حساب',
+    welcomeBack: 'مرحبًا بعودتك',
+    joinTitle: 'انضم إلى SOS Auto DZ',
+    signInSubtitle: 'أدخل بيانات اعتمادك للوصول إلى حسابك',
+    signUpSubtitle: 'أنشئ حسابًا للتواصل مع أفضل شبكة سيارات في الجزائر',
+
+    // AuthModal – role selector
+    iAmA: 'أنا:',
+    roleGarage: 'كراج',
+    rolePartsShop: 'محل قطع غيار',
+    roleTowing: 'خدمة السحب',
+    roleClient: 'عميل',
+
+    // AuthModal – common fields
+    businessName: 'اسم المشروع / المحل',
+    emailAddress: 'عنوان البريد الإلكتروني',
+    password: 'كلمة المرور',
+
+    // AuthModal – professional section
+    businessDetails: 'تفاصيل العمل',
+    garageType: 'نوع الكراج',
+    selectType: 'اختر النوع...',
+    generalMechanic: 'ميكانيكي عام',
+    autoElectrician: 'كهربائي سيارات',
+    autoBodyPaint: 'هيكل وطلاء',
+    workSchedule: 'جدول العمل',
+    startTime: 'وقت البداية',
+    endTime: 'وقت النهاية',
+    wilaya: 'الولاية',
+    commune: 'البلدية',
+    selectPlaceholder: 'اختر...',
+    description: 'الوصف',
+    optional: 'اختياري',
+    descriptionPlaceholder: 'صف خدماتك وأوقاتك أو تخصصاتك باختصار...',
+    supportedBrands: 'ماركات السيارات المدعومة',
+    searchBrands: 'ابحث عن ماركات (مثل BMW، Toyota)...',
+    selectAll: 'تحديد الكل',
+    unselectAll: 'إلغاء تحديد الكل',
+    noBrandsFoundShort: 'لا توجد ماركات.',
+    brandsSelected: 'ماركة مختارة',
+
+    // AuthModal – submit & links
+    processing: 'جارٍ المعالجة...',
+    forgotPassword: 'نسيت كلمة المرور؟',
   },
 };

@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { User, UserRole, Booking } from '../types';
 import { Calendar, Clock, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertCircle, TrendingUp, DollarSign, User as UserIcon, Shield, Wrench, Camera } from 'lucide-react';
 import { bookingsAPI, authAPI } from '../api';
+import { Language, translations } from '../translations';
 
 interface DashboardProps {
   user: User;
   onLogout: () => void;
   onUserUpdate?: (updatedUser: User) => void;
+  language?: Language;
 }
 
 // Mock Data Generators
@@ -32,7 +34,8 @@ const generateMockBookings = (role: UserRole): Booking[] => {
   }
 };
 
-const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) => {
+const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, language = 'en' }) => {
+  const t = translations[language];
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'BOOKINGS' | 'SETTINGS'>('OVERVIEW');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isAvailable, setIsAvailable] = useState(user.isAvailable ?? true);
@@ -83,11 +86,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
       if (onUserUpdate) {
         onUserUpdate({ ...user, name: data.name, phone: data.phone });
       }
-      setProfileSaveMsg('Changes saved successfully!');
+      setProfileSaveMsg(t.changesSaved);
       setTimeout(() => setProfileSaveMsg(''), 3000);
     } catch (err) {
       console.error('Profile save failed:', err);
-      setProfileSaveMsg('Failed to save changes.');
+      setProfileSaveMsg(t.saveFailed);
     } finally {
       setProfileSaving(false);
     }
@@ -161,13 +164,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
   const ClientOverview = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <StatCard title="Active Bookings" value={bookings.filter(b => b.status === 'PENDING' || b.status === 'CONFIRMED').length} icon={Calendar} color="bg-blue-500" />
-        <StatCard title="Completed Services" value={bookings.filter(b => b.status === 'COMPLETED').length} icon={CheckCircle} color="bg-purple-500" />
+        <StatCard title={t.activeBookings} value={bookings.filter(b => b.status === 'PENDING' || b.status === 'CONFIRMED').length} icon={Calendar} color="bg-blue-500" />
+        <StatCard title={t.completedServices} value={bookings.filter(b => b.status === 'COMPLETED').length} icon={CheckCircle} color="bg-purple-500" />
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden">
         <div className="p-6 border-b border-slate-100 dark:border-slate-700">
-          <h3 className="font-bold text-lg text-slate-800 dark:text-white">Recent Activity</h3>
+          <h3 className="font-bold text-lg text-slate-800 dark:text-white">{t.recentActivity}</h3>
         </div>
         <div className="divide-y divide-slate-100 dark:divide-slate-700">
           {bookings.map(booking => (
@@ -189,7 +192,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
               </div>
               {booking.status === 'COMPLETED' && (
                 <button className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                  Leave Review
+                  {t.leaveReview}
                 </button>
               )}
             </div>
@@ -203,11 +206,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
     <div className="space-y-6">
       <div className="flex justify-between items-center bg-blue-600 p-6 rounded-2xl text-white shadow-lg shadow-blue-500/20">
         <div>
-          <h2 className="text-2xl font-bold mb-1">Welcome, {user.name}</h2>
-          <p className="text-blue-100 opacity-90">Manage your garage and incoming requests.</p>
+          <h2 className="text-2xl font-bold mb-1">{t.welcomePro} {user.name}</h2>
+          <p className="text-blue-100 opacity-90">{t.manageGarage}</p>
         </div>
         <div className="flex items-center gap-3 bg-white/10 p-2 rounded-xl backdrop-blur-sm">
-           <span className="text-sm font-medium">{isAvailable ? 'Online' : 'Offline'}</span>
+           <span className="text-sm font-medium">{isAvailable ? t.online : t.offline}</span>
            <button 
              onClick={() => setIsAvailable(!isAvailable)}
              className={`w-12 h-6 rounded-full p-1 transition-colors ${isAvailable ? 'bg-green-400' : 'bg-slate-400'}`}
@@ -218,20 +221,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard title="Pending Requests" value={bookings.filter(b => b.status === 'PENDING').length} icon={AlertCircle} color="bg-yellow-500" />
-        <StatCard title="Today's Jobs" value="5" icon={Calendar} color="bg-blue-500" />
-        <StatCard title="Total Revenue" value="145k DA" icon={DollarSign} color="bg-green-500" />
-        <StatCard title="Rating" value="4.8" icon={TrendingUp} color="bg-purple-500" />
+        <StatCard title={t.pendingRequests} value={bookings.filter(b => b.status === 'PENDING').length} icon={AlertCircle} color="bg-yellow-500" />
+        <StatCard title={t.todaysJobs} value="5" icon={Calendar} color="bg-blue-500" />
+        <StatCard title={t.totalRevenue} value="145k DA" icon={DollarSign} color="bg-green-500" />
+        <StatCard title={t.ratingLabel} value="4.8" icon={TrendingUp} color="bg-purple-500" />
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden">
         <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-          <h3 className="font-bold text-lg text-slate-800 dark:text-white">Incoming Requests</h3>
-          <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">View All</button>
+          <h3 className="font-bold text-lg text-slate-800 dark:text-white">{t.incomingRequests}</h3>
+          <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">{t.viewAll}</button>
         </div>
         <div className="divide-y divide-slate-100 dark:divide-slate-700">
           {bookings.filter(b => b.status === 'PENDING').length === 0 ? (
-             <div className="p-8 text-center text-slate-400">No pending requests at the moment.</div>
+             <div className="p-8 text-center text-slate-400">{t.noPendingRequests}</div>
           ) : (
             bookings.filter(b => b.status === 'PENDING').map(booking => (
               <div key={booking.id} className="p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
@@ -246,7 +249,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
                       <span className="flex items-center gap-1"><Calendar size={14} /> {booking.date}</span>
                     </div>
                     <div className="mt-2 bg-slate-100 dark:bg-slate-700/50 p-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 inline-block">
-                      Issue: <span className="font-medium">{booking.issue}</span>
+                      {t.issueLabel} <span className="font-medium">{booking.issue}</span>
                     </div>
                   </div>
                 </div>
@@ -255,13 +258,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
                     onClick={() => handleStatusChange(booking.id, 'CANCELLED')}
                     className="px-4 py-2 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
                   >
-                    <XCircle size={18} /> Decline
+                    <XCircle size={18} /> {t.decline}
                   </button>
                   <button 
                     onClick={() => handleStatusChange(booking.id, 'CONFIRMED')}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg shadow-blue-500/20"
                   >
-                    <CheckCircle size={18} /> Accept Job
+                    <CheckCircle size={18} /> {t.acceptJob}
                   </button>
                 </div>
               </div>
@@ -276,28 +279,28 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
     <div className="space-y-6">
        <div className="bg-slate-900 text-white p-8 rounded-2xl relative overflow-hidden">
           <div className="relative z-10">
-            <h2 className="text-3xl font-bold mb-2">Admin Control Center</h2>
-            <p className="text-slate-400">System overview and user management.</p>
+            <h2 className="text-3xl font-bold mb-2">{t.adminTitle}</h2>
+            <p className="text-slate-400">{t.adminSubtitle}</p>
           </div>
           <Shield className="absolute right-[-20px] bottom-[-40px] text-slate-800 w-48 h-48 opacity-50" />
        </div>
 
        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard title="Total Users" value="12,340" icon={UserIcon} color="bg-blue-500" />
-        <StatCard title="Verified Providers" value="845" icon={CheckCircle} color="bg-green-500" />
-        <StatCard title="Pending Approvals" value="12" icon={AlertCircle} color="bg-orange-500" />
-        <StatCard title="Reports" value="3" icon={AlertCircle} color="bg-red-500" />
+        <StatCard title={t.totalUsers} value="12,340" icon={UserIcon} color="bg-blue-500" />
+        <StatCard title={t.verifiedProviders} value="845" icon={CheckCircle} color="bg-green-500" />
+        <StatCard title={t.pendingApprovals} value="12" icon={AlertCircle} color="bg-orange-500" />
+        <StatCard title={t.reports} value="3" icon={AlertCircle} color="bg-red-500" />
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6">
-        <h3 className="font-bold mb-4">Pending Provider Approvals</h3>
+        <h3 className="font-bold mb-4">{t.pendingProviderApprovals}</h3>
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-700 text-sm text-slate-500">
-              <th className="pb-3">Name</th>
-              <th className="pb-3">Type</th>
-              <th className="pb-3">Wilaya</th>
-              <th className="pb-3 text-right">Action</th>
+              <th className="pb-3">{t.nameCol}</th>
+              <th className="pb-3">{t.typeCol}</th>
+              <th className="pb-3">{t.wilayaCol}</th>
+              <th className="pb-3 text-right">{t.actionCol}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -307,7 +310,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
                 <td className="py-4 text-sm text-slate-500">Mechanic</td>
                 <td className="py-4 text-sm text-slate-500">Algiers</td>
                 <td className="py-4 text-right">
-                  <button className="text-blue-600 hover:underline text-sm font-medium">Review</button>
+                  <button className="text-blue-600 hover:underline text-sm font-medium">{t.reviewAction}</button>
                 </td>
               </tr>
             ))}
@@ -324,15 +327,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
         {/* Dashboard Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
-            <p className="text-slate-500 dark:text-slate-400">Manage your account and services</p>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{t.dashboardTitle}</h1>
+            <p className="text-slate-500 dark:text-slate-400">{t.manageAccount}</p>
           </div>
           <button 
             onClick={onLogout}
             className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors shadow-sm"
           >
             <LogOut size={18} />
-            Sign Out
+            {t.signOut}
           </button>
         </div>
 
@@ -349,7 +352,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
                       : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
                     }`}
                  >
-                   <TrendingUp size={20} /> Overview
+                   <TrendingUp size={20} /> {t.overview}
                  </button>
                  <button 
                     onClick={() => setActiveTab('BOOKINGS')}
@@ -360,7 +363,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
                     }`}
                  >
                    <Calendar size={20} /> 
-                   {user.role === UserRole.CLIENT ? 'My Bookings' : 'Requests'}
+                   {user.role === UserRole.CLIENT ? t.myBookings : t.requests}
                  </button>
                  <button 
                     onClick={() => setActiveTab('SETTINGS')}
@@ -370,7 +373,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
                       : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
                     }`}
                  >
-                   <Settings size={20} /> Settings
+                   <Settings size={20} /> {t.settings}
                  </button>
                </nav>
 
@@ -403,11 +406,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
             {activeTab === 'BOOKINGS' && (
                <div className="animate-fade-in bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 min-h-[400px]">
                  <h2 className="text-xl font-bold mb-6">
-                   {user.role === UserRole.CLIENT ? 'Booking History' : 'Service Requests'}
+                   {user.role === UserRole.CLIENT ? t.bookingHistory : t.serviceRequests}
                  </h2>
                  {/* Reusing the logic from Overview components for simplicity, but expanded */}
                  {bookings.length === 0 ? (
-                   <div className="text-center py-12 text-slate-400">No bookings found.</div>
+                   <div className="text-center py-12 text-slate-400">{t.noBookingsFound}</div>
                  ) : (
                    <div className="space-y-4">
                      {bookings.map(b => (
@@ -460,7 +463,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
 
             {activeTab === 'SETTINGS' && (
               <div className="animate-fade-in bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-8 min-h-[400px]">
-                 <h2 className="text-xl font-bold mb-6">Account Settings</h2>
+                 <h2 className="text-xl font-bold mb-6">{t.accountSettings}</h2>
 
                  {/* Profile Picture */}
                  <div className="flex items-center gap-5 mb-6">
@@ -484,13 +487,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
                    </div>
                    <div>
                      <p className="text-sm font-semibold text-slate-800 dark:text-white">{profileName || user.name}</p>
-                     <button type="button" onClick={() => picInputRef.current?.click()} className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-0.5">Change profile picture</button>
+                     <button type="button" onClick={() => picInputRef.current?.click()} className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-0.5">{t.changeProfilePicture}</button>
                    </div>
                  </div>
 
                  <form className="space-y-4 max-w-lg" onSubmit={handleProfileSave}>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.fullName}</label>
                       <input
                         type="text"
                         value={profileName}
@@ -499,12 +502,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.emailLabel}</label>
                       <input type="email" value={user.email} disabled className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900/60 text-slate-400 dark:text-slate-500 cursor-not-allowed" />
-                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Email address cannot be changed.</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{t.emailCannotChange}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone</label>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.phoneLabel}</label>
                       <input
                         type="tel"
                         value={profilePhone}
@@ -519,7 +522,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
                         className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:bg-blue-400 transition-colors mt-2 flex items-center gap-2"
                       >
                         {profileSaving && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-                        {profileSaving ? 'Saving...' : 'Save Changes'}
+                        {profileSaving ? t.saving : t.saveChanges}
                       </button>
                       {profileSaveMsg && (
                         <p className={`text-sm mt-2 ${profileSaveMsg.includes('success') ? 'text-green-600' : 'text-red-500'}`}>{profileSaveMsg}</p>
@@ -528,21 +531,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) =
                  </form>
 
                  <div className="border-t border-slate-100 dark:border-slate-700 mt-8 pt-8">
-                   <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Change Password</h3>
+                   <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">{t.changePassword}</h3>
                    <form className="space-y-4 max-w-lg">
                      <div>
-                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Current Password</label>
+                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.currentPassword}</label>
                        <input type="password" placeholder="••••••••" className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" />
                      </div>
                      <div>
-                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">New Password</label>
+                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.newPassword}</label>
                        <input type="password" placeholder="••••••••" className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" />
                      </div>
                      <div>
-                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Confirm New Password</label>
+                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.confirmNewPassword}</label>
                        <input type="password" placeholder="••••••••" className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" />
                      </div>
-                     <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 mt-2">Update Password</button>
+                     <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 mt-2">{t.updatePassword}</button>
                    </form>
                  </div>
               </div>

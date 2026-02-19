@@ -223,7 +223,7 @@ const App: React.FC = () => {
         );
       case PageView.DASHBOARD:
         return user ? (
-           <Dashboard user={user} onLogout={handleLogout} onUserUpdate={setUser} />
+           <Dashboard user={user} onLogout={handleLogout} onUserUpdate={setUser} language={language} />
         ) : (
            <Home onChangeView={handleViewChange} language={language} /> // Fallback if manually navigating
         );
@@ -260,7 +260,8 @@ const App: React.FC = () => {
       {selectedProvider && (
         <BookingModal 
           provider={selectedProvider} 
-          onClose={() => setSelectedProvider(null)} 
+          onClose={() => setSelectedProvider(null)}
+          language={language}
         />
       )}
 
@@ -270,6 +271,7 @@ const App: React.FC = () => {
         onClose={() => setIsAuthModalOpen(false)}
         initialMode={authInitialMode}
         onLoginSuccess={handleLoginSuccess}
+        language={language}
       />
     </div>
   );

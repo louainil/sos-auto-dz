@@ -146,7 +146,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
                 value={selectedWilaya}
                 onChange={(e) => setSelectedWilaya(e.target.value === 'all' ? 'all' : Number(e.target.value))}
               >
-                <option value="all">All Wilayas</option>
+                <option value="all">{t.allWilayas}</option>
                 {WILAYAS.map(w => (
                   <option key={w.id} value={w.id}>{w.id} - {w.name}</option>
                 ))}
@@ -162,7 +162,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
                 onChange={(e) => setSelectedCommune(e.target.value)}
                 disabled={selectedWilaya === 'all'}
               >
-                <option value="all">{selectedWilaya === 'all' ? 'Select Wilaya First' : 'All Communes'}</option>
+                <option value="all">{selectedWilaya === 'all' ? t.selectWilayaFirst : t.allCommunes}</option>
                 {availableCommunes.map(c => (
                   <option key={c} value={c}>{c}</option>
                 ))}
@@ -181,10 +181,10 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
                       value={selectedGarageType}
                       onChange={(e) => setSelectedGarageType(e.target.value as GarageType | 'all')}
                   >
-                      <option value="all">All Garage Types</option>
-                      <option value="MECHANIC">Mechanic</option>
-                      <option value="ELECTRICIAN">Electrician</option>
-                      <option value="AUTO_BODY">Auto Body</option>
+                      <option value="all">{t.allGarageTypes}</option>
+                      <option value="MECHANIC">{t.mechanicType}</option>
+                      <option value="ELECTRICIAN">{t.electricianType}</option>
+                      <option value="AUTO_BODY">{t.autoBodyType}</option>
                   </select>
                 </div>
               )}
@@ -196,7 +196,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
                 <div className="relative">
                   <input 
                       type="text"
-                      placeholder="Search Car Brand..."
+                      placeholder={t.searchCarBrand}
                       className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-500 outline-none transition-all"
                       value={brandSearchTerm}
                       onChange={(e) => {
@@ -230,7 +230,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
                                   setShowBrandList(false);
                               }}
                           >
-                              All Brands
+                              {t.allBrands}
                           </div>
                           {filteredBrands.map(brand => (
                               <div 
@@ -243,7 +243,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
                           ))}
                           {filteredBrands.length === 0 && (
                               <div className="px-4 py-3 text-slate-400 text-sm text-center italic">
-                                  No brands found matching "{brandSearchTerm}"
+                                  {t.noBrandsFound} "{brandSearchTerm}"
                               </div>
                           )}
                       </div>
@@ -262,7 +262,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-slate-500 dark:text-slate-400">Loading providers...</p>
+            <p className="text-slate-500 dark:text-slate-400">{t.loadingProviders}</p>
           </div>
         ) : filteredProviders.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

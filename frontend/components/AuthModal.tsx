@@ -3,12 +3,14 @@ import { X, Mail, Lock, User as UserIcon, Briefcase, Phone, MapPin, Check, Chevr
 import { UserRole, GarageType, User } from '../types';
 import { WILAYAS, COMMUNES, CAR_BRANDS } from '../constants';
 import { authAPI } from '../api';
+import { Language, translations } from '../translations';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialMode?: 'LOGIN' | 'SIGNUP';
   onLoginSuccess: (user: User) => void;
+  language?: Language;
 }
 
 const DAYS = [
@@ -21,7 +23,8 @@ const DAYS = [
   { id: 6, label: 'Sat' },
 ];
 
-const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'LOGIN', onLoginSuccess }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'LOGIN', onLoginSuccess, language = 'en' }) => {
+  const t = translations[language];
   const [isLogin, setIsLogin] = useState(initialMode === 'LOGIN');
   const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.CLIENT);
   const [isLoading, setIsLoading] = useState(false);
@@ -129,10 +132,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
 
   const getRoleLabel = (role: UserRole) => {
     switch (role) {
-      case UserRole.MECHANIC: return 'Garage';
-      case UserRole.PARTS_SHOP: return 'Parts Shop';
-      case UserRole.TOWING: return 'Broken-down Service';
-      default: return role.charAt(0) + role.slice(1).toLowerCase();
+      case UserRole.MECHANIC: return t.roleGarage;
+      case UserRole.PARTS_SHOP: return t.rolePartsShop;
+      case UserRole.TOWING: return t.roleTowing;
+      default: return t.roleClient;
     }
   };
 
@@ -160,7 +163,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden relative border border-slate-200 dark:border-slate-800 my-8 flex flex-col max-h-[90vh]">
         <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 sticky top-0 z-20">
              <h3 className="font-bold text-slate-800 dark:text-white">
-                {isLogin ? 'Sign In' : 'Create Account'}
+                {isLogin ? t.signInTitle : t.createAccountTitle}
              </h3>
             <button 
                 onClick={onClose}
@@ -182,7 +185,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
-              SIGN IN
+              {t.signInTab}
             </button>
             <button
               type="button"
@@ -193,18 +196,18 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
-              SIGN UP
+              {t.signUpTab}
             </button>
           </div>
 
           <div className="text-center mb-6">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-              {isLogin ? 'Welcome Back' : 'Join SOS Auto DZ'}
+              {isLogin ? t.welcomeBack : t.joinTitle}
             </h2>
             <p className="text-slate-500 dark:text-slate-400 text-sm">
               {isLogin 
-                ? 'Enter your credentials to access your account' 
-                : 'Create an account to connect with the best automotive network in Algeria'}
+                ? t.signInSubtitle
+                : t.signUpSubtitle}
             </p>
             {error && (
               <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
@@ -218,7 +221,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
             {/* Unified Sign In doesn't need role selection visually, but Sign Up does */}
             {!isLogin && (
               <div className="mb-6">
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">I am a:</label>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">{t.iAmA}</label>
                 <div className="grid grid-cols-2 gap-2">
                   {Object.values(UserRole)
                     .filter(role => role !== UserRole.ADMIN) // Filter out ADMIN from signup
@@ -247,7 +250,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
             {!isLogin && (
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  {!isLogin && selectedRole !== UserRole.CLIENT ? 'Business / Shop Name' : 'Full Name'}
+                  {!isLogin && selectedRole !== UserRole.CLIENT ? t.businessName : t.fullName}
                 </label>
                 <div className="relative">
                   <UserIcon className="absolute left-3 top-2.5 text-slate-400" size={18} />
@@ -264,7 +267,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
             )}
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.emailAddress}</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-2.5 text-slate-400" size={18} />
                 <input 
@@ -279,7 +282,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Password</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.password}</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-2.5 text-slate-400" size={18} />
                 <input 
@@ -298,13 +301,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
               <div className="space-y-4 pt-4 mt-2 border-t border-slate-100 dark:border-slate-800 animate-fade-in bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
                 <h4 className="text-sm font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
                     <Briefcase size={16} className="text-blue-500" />
-                    Business Details
+                    {t.businessDetails}
                 </h4>
 
                 {/* Mechanic Specific: Garage Type */}
                 {selectedRole === UserRole.MECHANIC && (
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Garage Type</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.garageType}</label>
                     <div className="relative">
                       <Settings className="absolute left-3 top-2.5 text-slate-400" size={18} />
                       <select 
@@ -313,10 +316,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
                         value={selectedGarageType}
                         onChange={(e) => setSelectedGarageType(e.target.value as GarageType)}
                       >
-                        <option value="">Select Type...</option>
-                        <option value="MECHANIC">General Mechanic</option>
-                        <option value="ELECTRICIAN">Auto Electrician</option>
-                        <option value="AUTO_BODY">Auto Body & Paint</option>
+                        <option value="">{t.selectType}</option>
+                        <option value="MECHANIC">{t.generalMechanic}</option>
+                        <option value="ELECTRICIAN">{t.autoElectrician}</option>
+                        <option value="AUTO_BODY">{t.autoBodyPaint}</option>
                       </select>
                     </div>
                   </div>
@@ -325,7 +328,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
                 {/* Work Schedule - Hide for Towing (24/7) */}
                 {selectedRole !== UserRole.TOWING && (
                   <div>
-                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Work Schedule</label>
+                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.workSchedule}</label>
                      
                      {/* Days */}
                      <div className="flex justify-between mb-3">
@@ -348,7 +351,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
                      {/* Hours */}
                      <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="text-xs text-slate-400 mb-1 block">Start Time</label>
+                          <label className="text-xs text-slate-400 mb-1 block">{t.startTime}</label>
                           <input 
                             type="time" 
                             value={startTime}
@@ -357,7 +360,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-slate-400 mb-1 block">End Time</label>
+                          <label className="text-xs text-slate-400 mb-1 block">{t.endTime}</label>
                           <input 
                             type="time" 
                             value={endTime}
@@ -371,7 +374,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
 
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Wilaya</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.wilaya}</label>
                         <div className="relative">
                         <MapPin className="absolute left-3 top-2.5 text-slate-400" size={18} />
                         <select 
@@ -383,7 +386,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
                                 setSelectedCommune(''); // Reset commune
                             }}
                         >
-                            <option value="">Select...</option>
+                            <option value="">{t.selectPlaceholder}</option>
                             {WILAYAS.map(w => (
                                 <option key={w.id} value={w.id}>{w.id} - {w.name}</option>
                             ))}
@@ -391,7 +394,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
                         </div>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Commune</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.commune}</label>
                         <div className="relative">
                         <Navigation className="absolute left-3 top-2.5 text-slate-400" size={18} />
                         <select 
@@ -401,7 +404,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
                             value={selectedCommune}
                             onChange={(e) => setSelectedCommune(e.target.value)}
                         >
-                            <option value="">Select...</option>
+                        <option value="">{t.selectPlaceholder}</option>
                             {availableCommunes.map(c => (
                                 <option key={c} value={c}>{c}</option>
                             ))}
@@ -411,7 +414,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.phoneLabel}</label>
                     <div className="relative">
                     <Phone className="absolute left-3 top-2.5 text-slate-400" size={18} />
                     <input 
@@ -428,13 +431,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
                 {/* Optional Description for Professionals */}
                 <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                        Description <span className="text-slate-400 text-xs font-normal">(Optional)</span>
+                        {t.description} <span className="text-slate-400 text-xs font-normal">({t.optional})</span>
                     </label>
                     <div className="relative">
                     <FileText className="absolute left-3 top-3 text-slate-400" size={18} />
                     <textarea 
                         className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none resize-none h-20 custom-scrollbar"
-                        placeholder="Briefly describe your services, hours, or specialties..."
+                    placeholder={t.descriptionPlaceholder}
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                     />
@@ -444,12 +447,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
                 {/* Mechanic & Spare Parts: Car Brands Multi-Select */}
                 {(selectedRole === UserRole.MECHANIC || selectedRole === UserRole.PARTS_SHOP) && (
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Supported Car Brands</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.supportedBrands}</label>
                     
                     <div className="mb-2">
                         <input 
                             type="text"
-                            placeholder="Search brands (e.g. BMW, Toyota)..."
+                            placeholder={t.searchBrands}
                             className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
                             value={brandSearch}
                             onChange={e => setBrandSearch(e.target.value)}
@@ -467,7 +470,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
                                     : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-600'
                                 }`}
                             >
-                                {selectedBrands.length === CAR_BRANDS.length ? 'Unselect All' : 'Select All'}
+                                {selectedBrands.length === CAR_BRANDS.length ? t.unselectAll : t.selectAll}
                             </button>
                             
                             {filteredBrands.map(brand => (
@@ -485,12 +488,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
                                 </button>
                             ))}
                             {filteredBrands.length === 0 && (
-                                <p className="text-xs text-slate-400 w-full text-center py-2">No brands found.</p>
+                                <p className="text-xs text-slate-400 w-full text-center py-2">{t.noBrandsFoundShort}</p>
                             )}
                         </div>
                     </div>
                     <p className="text-xs text-slate-400 mt-1 text-right">
-                        {selectedBrands.length} brands selected
+                        {selectedBrands.length} {t.brandsSelected}
                     </p>
                   </div>
                 )}
@@ -502,13 +505,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
               disabled={isLoading}
               className="w-full mt-6 py-3 rounded-lg font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')} <ChevronRight size={18} />
+                {isLoading ? t.processing : (isLogin ? t.signInTitle : t.createAccountTitle)} <ChevronRight size={18} />
             </button>
           </form>
 
           {isLogin && (
               <p className="mt-4 text-center text-xs text-slate-400 hover:text-blue-500 cursor-pointer transition-colors">
-                  Forgot your password?
+                  {t.forgotPassword}
               </p>
           )}
         </div>

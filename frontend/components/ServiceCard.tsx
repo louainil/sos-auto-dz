@@ -21,7 +21,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBoo
     if (!provider.isAvailable) return { text: t.unavailable, color: 'bg-red-500', isBookable: false };
     
     // Check Schedule
-    if (!provider.workingDays || !provider.workingHours) return { text: 'Unknown', color: 'bg-slate-400', isBookable: true };
+    if (!provider.workingDays || !provider.workingHours) return { text: t.unavailable, color: 'bg-slate-400', isBookable: true };
 
     const now = new Date();
     const currentDay = now.getDay(); // 0=Sun
@@ -83,7 +83,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBoo
 
           {!status.isBookable && (
             <div className="absolute inset-0 bg-slate-900/60 flex items-center justify-center backdrop-blur-[1px]">
-              <span className="text-white font-bold text-lg px-4 py-2 border-2 border-white rounded-lg">Currently Unavailable</span>
+              <span className="text-white font-bold text-lg px-4 py-2 border-2 border-white rounded-lg">{t.currentlyUnavailable}</span>
             </div>
           )}
         </div>
@@ -110,13 +110,13 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBoo
             <span>
                 {provider.workingHours 
                  ? `${provider.workingHours.start} - ${provider.workingHours.end}` 
-                 : 'Hours not set'}
+                 : t.hoursNotSet}
             </span>
             <span className="text-slate-300">|</span>
             <span>
-               {provider.workingDays?.length === 7 ? 'Every Day' : 
-                provider.workingDays?.length === 6 && !provider.workingDays.includes(5) ? 'Sat - Thu' : 
-                'Custom Schedule'}
+               {provider.workingDays?.length === 7 ? t.everyDay : 
+                provider.workingDays?.length === 6 && !provider.workingDays.includes(5) ? t.satThu : 
+                t.customSchedule}
             </span>
         </div>
 

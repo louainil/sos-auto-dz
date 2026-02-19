@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { User, UserRole, Booking } from '../types';
 import { Calendar, Clock, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertCircle, TrendingUp, DollarSign, User as UserIcon, Shield, Wrench, Camera } from 'lucide-react';
-import { bookingsAPI } from '../api';
+import { bookingsAPI, authAPI } from '../api';
 
 interface DashboardProps {
   user: User;
   onLogout: () => void;
+  onUserUpdate?: (updatedUser: User) => void;
 }
 
 // Mock Data Generators
@@ -31,20 +32,34 @@ const generateMockBookings = (role: UserRole): Booking[] => {
   }
 };
 
-const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
+const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate }) => {
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'BOOKINGS' | 'SETTINGS'>('OVERVIEW');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isAvailable, setIsAvailable] = useState(user.isAvailable ?? true);
   const [loading, setLoading] = useState(true);
-  const [profilePic, setProfilePic] = useState<string | null>(null);
+  const [profilePic, setProfilePic] = useState<string | null>(user.avatar?.url || null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const picInputRef = useRef<HTMLInputElement>(null);
 
-  const handlePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePicChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => setProfilePic(ev.target?.result as string);
-      reader.readAsDataURL(file);
+    if (!file) return;
+    // Optimistic preview
+    const reader = new FileReader();
+    reader.onload = (ev) => setProfilePic(ev.target?.result as string);
+    reader.readAsDataURL(file);
+    // Upload to Cloudinary via backend
+    setAvatarUploading(true);
+    try {
+      const data = await authAPI.uploadAvatar(file);
+      setProfilePic(data.avatar.url);
+      if (onUserUpdate) {
+        onUserUpdate({ ...user, avatar: data.avatar });
+      }
+    } catch (err) {
+      console.error('Avatar upload failed:', err);
+    } finally {
+      setAvatarUploading(false);
     }
   };
 
@@ -397,9 +412,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                      <button
                        type="button"
                        onClick={() => picInputRef.current?.click()}
-                       className="absolute bottom-0 right-0 w-7 h-7 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-md transition-colors"
+                       disabled={avatarUploading}
+                       className="absolute bottom-0 right-0 w-7 h-7 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-full flex items-center justify-center shadow-md transition-colors"
                      >
-                       <Camera size={14} />
+                       {avatarUploading
+                         ? <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                         : <Camera size={14} />}
                      </button>
                      <input ref={picInputRef} type="file" accept="image/*" className="hidden" onChange={handlePicChange} />
                    </div>

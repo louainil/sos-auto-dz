@@ -1,9 +1,36 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import multer from 'multer';
+import { Readable } from 'stream';
 import User from '../models/User.js';
 import ServiceProvider from '../models/ServiceProvider.js';
 import Notification from '../models/Notification.js';
 import { protect } from '../middleware/auth.js';
+import cloudinary from '../config/cloudinary.js';
+
+// Multer memory storage (no disk writes)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Only image files are allowed'), false);
+  }
+});
+
+// Helper: upload buffer to Cloudinary
+const uploadToCloudinary = (buffer, folder, publicId) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder, public_id: publicId, overwrite: true, resource_type: 'image' },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    );
+    Readable.from(buffer).pipe(stream);
+  });
+};
 
 const router = express.Router();
 
@@ -66,6 +93,7 @@ router.post('/register', async (req, res) => {
       wilayaId: user.wilayaId,
       commune: user.commune,
       isAvailable: user.isAvailable,
+      avatar: user.avatar,
       token: generateToken(user._id)
     });
   } catch (error) {
@@ -111,6 +139,7 @@ router.post('/login', async (req, res) => {
       wilayaId: user.wilayaId,
       commune: user.commune,
       isAvailable: user.isAvailable,
+      avatar: user.avatar,
       token: generateToken(user._id)
     });
   } catch (error) {
@@ -132,8 +161,49 @@ router.get('/me', protect, async (req, res) => {
     garageType: req.user.garageType,
     wilayaId: req.user.wilayaId,
     commune: req.user.commune,
-    isAvailable: req.user.isAvailable
+    isAvailable: req.user.isAvailable,
+    avatar: req.user.avatar
   });
+});
+
+// @route   POST /api/auth/avatar
+// @desc    Upload / update user profile picture (saved to Cloudinary)
+// @access  Private
+router.post('/avatar', protect, upload.single('avatar'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image file provided' });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    // Delete old image from Cloudinary if it exists
+    if (user.avatar?.publicId) {
+      await cloudinary.uploader.destroy(user.avatar.publicId);
+    }
+
+    // Upload new image to Cloudinary
+    const result = await uploadToCloudinary(
+      req.file.buffer,
+      'sos-auto-dz/avatars',
+      `avatar_${req.user._id}`
+    );
+
+    // Save Cloudinary URL and public_id to MongoDB
+    user.avatar = {
+      url: result.secure_url,
+      publicId: result.public_id
+    };
+    await user.save();
+
+    res.json({
+      message: 'Avatar updated successfully',
+      avatar: user.avatar
+    });
+  } catch (error) {
+    console.error('Avatar upload error:', error);
+    res.status(500).json({ message: 'Failed to upload avatar', error: error.message });
+  }
 });
 
 export default router;

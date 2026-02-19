@@ -43,6 +43,16 @@ const userSchema = new mongoose.Schema({
   isAvailable: {
     type: Boolean,
     default: true
+  },
+  avatar: {
+    url: {
+      type: String,
+      default: ''
+    },
+    publicId: {
+      type: String,
+      default: ''
+    }
   }
 }, {
   timestamps: true

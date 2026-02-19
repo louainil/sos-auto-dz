@@ -20,6 +20,7 @@ export interface User {
   wilayaId?: number;
   commune?: string;
   isAvailable?: boolean;
+  avatar?: { url: string; publicId: string };
 }
 
 export interface Notification {

@@ -70,7 +70,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
           garageType: data.garageType,
           wilayaId: data.wilayaId,
           commune: data.commune,
-          isAvailable: data.isAvailable
+          isAvailable: data.isAvailable,
+          avatar: data.avatar
         };
         onLoginSuccess(user);
         onClose();
@@ -97,7 +98,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
           garageType: data.garageType,
           wilayaId: data.wilayaId,
           commune: data.commune,
-          isAvailable: data.isAvailable
+          isAvailable: data.isAvailable,
+          avatar: data.avatar
         };
         onLoginSuccess(user);
         onClose();

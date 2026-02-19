@@ -63,7 +63,8 @@ const App: React.FC = () => {
             garageType: userData.garageType,
             wilayaId: userData.wilayaId,
             commune: userData.commune,
-            isAvailable: userData.isAvailable
+            isAvailable: userData.isAvailable,
+            avatar: userData.avatar
           };
           setUser(userObj);
           // Fetch notifications
@@ -222,7 +223,7 @@ const App: React.FC = () => {
         );
       case PageView.DASHBOARD:
         return user ? (
-           <Dashboard user={user} onLogout={handleLogout} />
+           <Dashboard user={user} onLogout={handleLogout} onUserUpdate={setUser} />
         ) : (
            <Home onChangeView={handleViewChange} language={language} /> // Fallback if manually navigating
         );

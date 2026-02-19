@@ -55,6 +55,18 @@ export const authAPI = {
       headers: getAuthHeaders()
     });
     return handleResponse(response);
+  },
+
+  uploadAvatar: async (file: File) => {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('avatar', file);
+    const response = await fetch(`${API_URL}/auth/avatar`, {
+      method: 'POST',
+      headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+      body: formData
+    });
+    return handleResponse(response);
   }
 };
 

@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Search, MapPin, Filter, AlertTriangle, Navigation, Wrench, Zap, PaintBucket, Car, X, ChevronDown } from 'lucide-react';
-import { MOCK_PROVIDERS, WILAYAS, COMMUNES, CAR_BRANDS } from '../constants';
+import { WILAYAS, COMMUNES, CAR_BRANDS } from '../constants';
 import { ServiceProvider, UserRole, GarageType } from '../types';
 import { Language, translations } from '../translations';
 import ServiceCard from '../components/ServiceCard';
+import { providersAPI } from '../api';
 
 interface ServicesPageProps {
   type: UserRole;
@@ -19,6 +20,8 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
   const [selectedWilaya, setSelectedWilaya] = useState<number | 'all'>('all');
   const [selectedCommune, setSelectedCommune] = useState<string>('all');
   const [selectedGarageType, setSelectedGarageType] = useState<GarageType | 'all'>('all');
+  const [providers, setProviders] = useState<ServiceProvider[]>([]);
+  const [loading, setLoading] = useState(true);
   
   const t = translations[language];
   
@@ -26,6 +29,47 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
   const [selectedBrand, setSelectedBrand] = useState<string>('all');
   const [brandSearchTerm, setBrandSearchTerm] = useState('');
   const [showBrandList, setShowBrandList] = useState(false);
+
+  // Fetch providers from API
+  useEffect(() => {
+    const fetchProviders = async () => {
+      setLoading(true);
+      try {
+        const filters: any = { role: type };
+        if (selectedWilaya !== 'all') filters.wilayaId = selectedWilaya;
+        if (selectedCommune !== 'all') filters.commune = selectedCommune;
+        if (type === UserRole.MECHANIC && selectedGarageType !== 'all') {
+          filters.garageType = selectedGarageType;
+        }
+        if (selectedBrand !== 'all') filters.specialty = selectedBrand;
+        
+        const data = await providersAPI.getAll(filters);
+        // Map backend data to frontend format
+        const mappedProviders = data.map((p: any) => ({
+          id: p._id,
+          name: p.name,
+          role: p.role,
+          garageType: p.garageType,
+          wilayaId: p.wilayaId,
+          commune: p.commune,
+          description: p.description,
+          rating: p.rating,
+          phone: p.phone,
+          specialty: p.specialty,
+          image: p.image,
+          isAvailable: p.isAvailable,
+          workingDays: p.workingDays,
+          workingHours: p.workingHours
+        }));
+        setProviders(mappedProviders);
+      } catch (error) {
+        console.error('Failed to fetch providers:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProviders();
+  }, [type, selectedWilaya, selectedCommune, selectedGarageType, selectedBrand]);
 
   // Reset commune when wilaya changes
   useEffect(() => {
@@ -45,29 +89,8 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
   };
 
   const filteredProviders = useMemo(() => {
-    return MOCK_PROVIDERS.filter(p => {
-      // 1. Filter by User Role
-      if (p.role !== type) return false;
-
-      // 2. Filter by Wilaya
-      if (selectedWilaya !== 'all' && p.wilayaId !== selectedWilaya) return false;
-
-      // 3. Filter by Commune
-      if (selectedCommune !== 'all' && p.commune !== selectedCommune) return false;
-
-      // 4. Filter by Garage Type (Only for Mechanic Role)
-      if (type === UserRole.MECHANIC && selectedGarageType !== 'all') {
-        if (p.garageType !== selectedGarageType) return false;
-      }
-
-      // 5. Filter by Car Brand (Specialty)
-      // Only apply if NOT Towing, as Towing doesn't filter by brand usually, or if the filter is hidden we shouldn't apply it implicitly if state persists
-      if (type !== UserRole.TOWING && selectedBrand !== 'all') {
-        // If provider has no specialty listed, we assume they might handle it or we exclude them.
-        if (!p.specialty || !p.specialty.includes(selectedBrand)) return false;
-      }
-
-      // 6. Filter by Search Term (Name or Description)
+    return providers.filter(p => {
+      // Filter by Search Term (Name or Description)
       if (searchTerm && !p.name.toLowerCase().includes(searchTerm.toLowerCase()) && 
           !p.description.toLowerCase().includes(searchTerm.toLowerCase())) {
         return false;
@@ -75,7 +98,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
 
       return true;
     });
-  }, [type, selectedWilaya, selectedCommune, selectedGarageType, selectedBrand, searchTerm]);
+  }, [providers, searchTerm]);
 
   const availableCommunes = selectedWilaya !== 'all' ? COMMUNES[selectedWilaya] || [] : [];
 
@@ -236,7 +259,12 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
 
       {/* Results Grid */}
       <div className="max-w-7xl mx-auto px-4 py-12">
-        {filteredProviders.length > 0 ? (
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-slate-500 dark:text-slate-400">Loading providers...</p>
+          </div>
+        ) : filteredProviders.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredProviders.map(provider => (
               <ServiceCard 

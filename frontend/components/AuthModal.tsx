@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { X, Mail, Lock, User as UserIcon, Briefcase, Phone, MapPin, Check, ChevronRight, Shield, Wrench, Truck, ShoppingBag, Navigation, Settings, FileText, Clock, Calendar } from 'lucide-react';
 import { UserRole, GarageType, User } from '../types';
 import { WILAYAS, COMMUNES, CAR_BRANDS } from '../constants';
+import { authAPI } from '../api';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -24,8 +25,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
   const [isLogin, setIsLogin] = useState(initialMode === 'LOGIN');
   const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.CLIENT);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   // Professional Registration State
   const [selectedWilaya, setSelectedWilaya] = useState<number | ''>('');
@@ -45,32 +48,65 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
 
   const handleModeSwitch = (login: boolean) => {
     setIsLogin(login);
+    setError('');
     if (login) setSelectedRole(UserRole.CLIENT); // Reset role on switch to login
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API Call
-    setTimeout(() => {
+    setError('');
+    
+    try {
+      if (isLogin) {
+        // Login
+        const data = await authAPI.login(email, password);
+        const user: User = {
+          id: data._id,
+          name: data.name,
+          email: data.email,
+          role: data.role,
+          phone: data.phone,
+          garageType: data.garageType,
+          wilayaId: data.wilayaId,
+          commune: data.commune,
+          isAvailable: data.isAvailable
+        };
+        onLoginSuccess(user);
+        onClose();
+      } else {
+        // Register
+        const userData = {
+          name,
+          email,
+          password,
+          role: selectedRole,
+          phone: selectedRole !== UserRole.CLIENT ? phone : undefined,
+          garageType: selectedRole === UserRole.MECHANIC ? selectedGarageType : undefined,
+          wilayaId: selectedRole !== UserRole.CLIENT ? selectedWilaya : undefined,
+          commune: selectedRole !== UserRole.CLIENT ? selectedCommune : undefined
+        };
+        
+        const data = await authAPI.register(userData);
+        const user: User = {
+          id: data._id,
+          name: data.name,
+          email: data.email,
+          role: data.role,
+          phone: data.phone,
+          garageType: data.garageType,
+          wilayaId: data.wilayaId,
+          commune: data.commune,
+          isAvailable: data.isAvailable
+        };
+        onLoginSuccess(user);
+        onClose();
+      }
+    } catch (err: any) {
+      setError(err.message || 'An error occurred. Please try again.');
+    } finally {
       setIsLoading(false);
-      
-      // Construct Mock User Object
-      const mockUser: User = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: isLogin ? (name || "Amine Benali") : name,
-        email: email,
-        role: selectedRole,
-        phone: phone || "0550123456",
-        garageType: selectedGarageType !== '' ? selectedGarageType as GarageType : undefined,
-        wilayaId: selectedWilaya !== '' ? selectedWilaya as number : undefined,
-        commune: selectedCommune,
-        isAvailable: true
-      };
-      
-      onLoginSuccess(mockUser);
-      onClose();
-    }, 1500);
+    }
   };
 
   const toggleDay = (dayId: number) => {
@@ -168,6 +204,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
                 ? 'Enter your credentials to access your account' 
                 : 'Create an account to connect with the best automotive network in Algeria'}
             </p>
+            {error && (
+              <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                {error}
+              </div>
+            )}
           </div>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -201,7 +242,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
               </div>
             )}
 
-            {( !isLogin || (isLogin && selectedRole === UserRole.CLIENT) ) && (
+            {!isLogin && (
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   {!isLogin && selectedRole !== UserRole.CLIENT ? 'Business / Shop Name' : 'Full Name'}
@@ -241,7 +282,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
                 <Lock className="absolute left-3 top-2.5 text-slate-400" size={18} />
                 <input 
                   required
-                  type="password" 
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
                   placeholder="••••••••"
                 />

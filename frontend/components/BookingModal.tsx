@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Calendar, MessageCircle, CheckCircle } from 'lucide-react';
 import { ServiceProvider } from '../types';
+import { bookingsAPI } from '../api';
 
 interface BookingModalProps {
   provider: ServiceProvider;
@@ -9,6 +10,8 @@ interface BookingModalProps {
 
 const BookingModal: React.FC<BookingModalProps> = ({ provider, onClose }) => {
   const [step, setStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -16,12 +19,23 @@ const BookingModal: React.FC<BookingModalProps> = ({ provider, onClose }) => {
     description: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate API call
-    setTimeout(() => {
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      await bookingsAPI.create({
+        providerId: provider.id,
+        date: formData.date,
+        issue: formData.description
+      });
       setStep(2);
-    }, 1000);
+    } catch (err: any) {
+      setError(err.message || 'Failed to create booking. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -38,6 +52,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ provider, onClose }) => {
           <div className="p-8">
             <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Book Service</h2>
             <p className="text-slate-500 dark:text-slate-400 mb-6">Schedule an appointment with <span className="font-semibold text-blue-600 dark:text-blue-400">{provider.name}</span></p>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                {error}
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -94,9 +114,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ provider, onClose }) => {
 
               <button 
                 type="submit"
-                className="w-full bg-slate-900 dark:bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-slate-800 dark:hover:bg-blue-700 transform hover:scale-[1.02] transition-all duration-200"
+                disabled={isLoading}
+                className="w-full bg-slate-900 dark:bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-slate-800 dark:hover:bg-blue-700 transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                Confirm Booking
+                {isLoading ? 'Creating Booking...' : 'Confirm Booking'}
               </button>
             </form>
           </div>

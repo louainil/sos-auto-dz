@@ -1,7 +1,7 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { User, UserRole, Booking } from '../types';
-import { Calendar, Clock, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertCircle, TrendingUp, DollarSign, User as UserIcon, Shield } from 'lucide-react';
+import { Calendar, Clock, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertCircle, TrendingUp, DollarSign, User as UserIcon, Shield, Wrench, Camera } from 'lucide-react';
+import { bookingsAPI } from '../api';
 
 interface DashboardProps {
   user: User;
@@ -33,11 +33,57 @@ const generateMockBookings = (role: UserRole): Booking[] => {
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'BOOKINGS' | 'SETTINGS'>('OVERVIEW');
-  const [bookings, setBookings] = useState<Booking[]>(generateMockBookings(user.role));
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [isAvailable, setIsAvailable] = useState(user.isAvailable ?? true);
+  const [loading, setLoading] = useState(true);
+  const [profilePic, setProfilePic] = useState<string | null>(null);
+  const picInputRef = useRef<HTMLInputElement>(null);
 
-  const handleStatusChange = (id: string, newStatus: 'CONFIRMED' | 'CANCELLED' | 'COMPLETED') => {
-    setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus } : b));
+  const handlePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => setProfilePic(ev.target?.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Fetch bookings from API
+  useEffect(() => {
+    const fetchBookings = async () => {
+      setLoading(true);
+      try {
+        const data = await bookingsAPI.getAll();
+        // Map backend data to frontend format
+        const mappedBookings = data.map((b: any) => ({
+          id: b._id,
+          providerId: b.providerId,
+          providerName: b.providerName,
+          clientId: b.clientId,
+          clientName: b.clientName,
+          clientPhone: b.clientPhone,
+          date: b.date,
+          issue: b.issue,
+          status: b.status,
+          price: b.price
+        }));
+        setBookings(mappedBookings);
+      } catch (error) {
+        console.error('Failed to fetch bookings:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBookings();
+  }, []);
+
+  const handleStatusChange = async (id: string, newStatus: 'CONFIRMED' | 'CANCELLED' | 'COMPLETED') => {
+    try {
+      await bookingsAPI.update(id, { status: newStatus });
+      setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus } : b));
+    } catch (error) {
+      console.error('Failed to update booking status:', error);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -68,9 +114,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   const ClientOverview = () => (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <StatCard title="Active Bookings" value={bookings.filter(b => b.status === 'PENDING' || b.status === 'CONFIRMED').length} icon={Calendar} color="bg-blue-500" />
-        <StatCard title="Total Spent" value="12,500 DA" icon={DollarSign} color="bg-green-500" />
         <StatCard title="Completed Services" value={bookings.filter(b => b.status === 'COMPLETED').length} icon={CheckCircle} color="bg-purple-500" />
       </div>
 
@@ -340,6 +385,30 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             {activeTab === 'SETTINGS' && (
               <div className="animate-fade-in bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-8 min-h-[400px]">
                  <h2 className="text-xl font-bold mb-6">Account Settings</h2>
+
+                 {/* Profile Picture */}
+                 <div className="flex items-center gap-5 mb-6">
+                   <div className="relative w-20 h-20 flex-shrink-0">
+                     <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 overflow-hidden flex items-center justify-center">
+                       {profilePic
+                         ? <img src={profilePic} alt="Profile" className="w-full h-full object-cover" />
+                         : <UserIcon size={36} className="text-slate-400" />}
+                     </div>
+                     <button
+                       type="button"
+                       onClick={() => picInputRef.current?.click()}
+                       className="absolute bottom-0 right-0 w-7 h-7 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-md transition-colors"
+                     >
+                       <Camera size={14} />
+                     </button>
+                     <input ref={picInputRef} type="file" accept="image/*" className="hidden" onChange={handlePicChange} />
+                   </div>
+                   <div>
+                     <p className="text-sm font-semibold text-slate-800 dark:text-white">{user.name}</p>
+                     <button type="button" onClick={() => picInputRef.current?.click()} className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-0.5">Change profile picture</button>
+                   </div>
+                 </div>
+
                  <form className="space-y-4 max-w-lg">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
@@ -347,7 +416,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
-                      <input type="email" defaultValue={user.email} className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900" />
+                      <input type="email" defaultValue={user.email} disabled className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900/60 text-slate-400 dark:text-slate-500 cursor-not-allowed" />
+                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Email address cannot be changed.</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone</label>
@@ -355,6 +425,25 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     </div>
                     <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 mt-4">Save Changes</button>
                  </form>
+
+                 <div className="border-t border-slate-100 dark:border-slate-700 mt-8 pt-8">
+                   <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Change Password</h3>
+                   <form className="space-y-4 max-w-lg">
+                     <div>
+                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Current Password</label>
+                       <input type="password" placeholder="••••••••" className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" />
+                     </div>
+                     <div>
+                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">New Password</label>
+                       <input type="password" placeholder="••••••••" className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" />
+                     </div>
+                     <div>
+                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Confirm New Password</label>
+                       <input type="password" placeholder="••••••••" className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" />
+                     </div>
+                     <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 mt-2">Update Password</button>
+                   </form>
+                 </div>
               </div>
             )}
           </div>
@@ -364,5 +453,5 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   );
 };
 
-export default Dashboard;
-import { Wrench } from 'lucide-react';
+export { Dashboard };
+

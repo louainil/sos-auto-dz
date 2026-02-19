@@ -3,11 +3,12 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import ServicesPage from './pages/ServicesPage';
-import Dashboard from './pages/Dashboard';
+import { Dashboard } from './pages/Dashboard';
 import BookingModal from './components/BookingModal';
 import AuthModal from './components/AuthModal';
 import { PageView, ServiceProvider, UserRole, User, Notification } from './types';
 import { Language, translations } from './translations';
+import { notificationsAPI, authAPI } from './api';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<PageView>(PageView.HOME);
@@ -45,6 +46,44 @@ const App: React.FC = () => {
       root.setAttribute('dir', 'ltr');
     }
   }, [language]);
+
+  // Check for existing auth token and fetch user data
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const userData = await authAPI.getCurrentUser();
+          const userObj: User = {
+            id: userData._id,
+            name: userData.name,
+            email: userData.email,
+            role: userData.role,
+            phone: userData.phone,
+            garageType: userData.garageType,
+            wilayaId: userData.wilayaId,
+            commune: userData.commune,
+            isAvailable: userData.isAvailable
+          };
+          setUser(userObj);
+          // Fetch notifications
+          const notifs = await notificationsAPI.getAll();
+          setNotifications(notifs.map((n: any) => ({
+            id: n._id,
+            title: n.title,
+            message: n.message,
+            type: n.type,
+            isRead: n.isRead,
+            timestamp: new Date(n.timestamp)
+          })));
+        } catch (error) {
+          console.error('Auth check failed:', error);
+          localStorage.removeItem('token');
+        }
+      }
+    };
+    checkAuth();
+  }, []);
 
   // Attempt to get user location on mount
   useEffect(() => {
@@ -92,19 +131,23 @@ const App: React.FC = () => {
   };
 
   // Handle successful login
-  const handleLoginSuccess = (loggedInUser: User) => {
+  const handleLoginSuccess = async (loggedInUser: User) => {
     setUser(loggedInUser);
     
-    // Create Welcome Notification
-    const welcomeNotif: Notification = {
-      id: Date.now().toString(),
-      title: `Welcome, ${loggedInUser.name}!`,
-      message: 'You have successfully logged in to SOS Auto DZ.',
-      type: 'SUCCESS',
-      isRead: false,
-      timestamp: new Date()
-    };
-    setNotifications(prev => [welcomeNotif, ...prev]);
+    // Fetch notifications from backend
+    try {
+      const notifs = await notificationsAPI.getAll();
+      setNotifications(notifs.map((n: any) => ({
+        id: n._id,
+        title: n.title,
+        message: n.message,
+        type: n.type,
+        isRead: n.isRead,
+        timestamp: new Date(n.timestamp)
+      })));
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    }
 
     // Redirect logic could be here, but sticking to current view or Dashboard if pro
     if (loggedInUser.role !== UserRole.CLIENT) {
@@ -113,17 +156,28 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
+    authAPI.logout();
     setUser(null);
     setNotifications([]);
     setCurrentView(PageView.HOME);
   };
 
-  const handleMarkNotifRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+  const handleMarkNotifRead = async (id: string) => {
+    try {
+      await notificationsAPI.markAsRead(id);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+    }
   };
 
-  const handleClearNotifications = () => {
-    setNotifications([]);
+  const handleClearNotifications = async () => {
+    try {
+      await notificationsAPI.clearAll();
+      setNotifications([]);
+    } catch (error) {
+      console.error('Failed to clear notifications:', error);
+    }
   };
 
   const renderContent = () => {

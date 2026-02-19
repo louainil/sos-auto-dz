@@ -1,6 +1,5 @@
 /// <reference types="vite/client" />
-const API_URL = import.meta.env.VITE_API_URL ||
-  (import.meta.env.DEV ? 'http://localhost:5000/api' : '/api');
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Helper function to get auth headers
 const getAuthHeaders = () => {

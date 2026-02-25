@@ -193,7 +193,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
           clientId: b.clientId,
           clientName: b.clientName,
           clientPhone: b.clientPhone,
-          date: b.date,
+          date: b.date ? new Date(b.date).toISOString().slice(0, 10) : b.date,
           issue: b.issue,
           status: b.status,
           price: b.price

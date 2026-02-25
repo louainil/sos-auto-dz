@@ -25,7 +25,7 @@ router.post('/', protect, async (req, res) => {
       clientId: req.user._id,
       clientName: req.user.name,
       clientPhone: req.user.phone || '',
-      date,
+      date: new Date(date),
       issue,
       status: 'PENDING'
     });

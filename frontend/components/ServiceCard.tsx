@@ -64,7 +64,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBoo
       ) : (
         <div className="relative h-48 overflow-hidden">
           <img 
-            src={provider.image} 
+            src={provider.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(provider.name)}&size=400&background=0f172a&color=f8fafc&bold=true`} 
             alt={provider.name} 
             className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
           />

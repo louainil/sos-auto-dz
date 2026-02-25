@@ -47,7 +47,7 @@ const serviceProviderSchema = new mongoose.Schema({
   }],
   image: {
     type: String,
-    default: 'https://picsum.photos/400/300'
+    default: ''
   },
   isAvailable: {
     type: Boolean,

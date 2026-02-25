@@ -46,6 +46,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const [profilePhone, setProfilePhone] = useState(user.phone || '');
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSaveMsg, setProfileSaveMsg] = useState('');
+  const [currentPw, setCurrentPw] = useState('');
+  const [newPw, setNewPw] = useState('');
+  const [confirmPw, setConfirmPw] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwMsg, setPwMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const picInputRef = useRef<HTMLInputElement>(null);
 
   // Sync local state when parent user prop updates (e.g. after avatar upload)
@@ -74,6 +79,32 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
       console.error('Avatar upload failed:', err);
     } finally {
       setAvatarUploading(false);
+    }
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwMsg(null);
+    if (newPw.length < 6) {
+      setPwMsg({ text: 'New password must be at least 6 characters.', ok: false });
+      return;
+    }
+    if (newPw !== confirmPw) {
+      setPwMsg({ text: 'New passwords do not match.', ok: false });
+      return;
+    }
+    setPwSaving(true);
+    try {
+      await authAPI.changePassword({ currentPassword: currentPw, newPassword: newPw });
+      setPwMsg({ text: 'Password updated successfully.', ok: true });
+      setCurrentPw('');
+      setNewPw('');
+      setConfirmPw('');
+      setTimeout(() => setPwMsg(null), 4000);
+    } catch (err: any) {
+      setPwMsg({ text: err.message || 'Failed to update password.', ok: false });
+    } finally {
+      setPwSaving(false);
     }
   };
 
@@ -532,20 +563,64 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
 
                  <div className="border-t border-slate-100 dark:border-slate-700 mt-8 pt-8">
                    <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">{t.changePassword}</h3>
-                   <form className="space-y-4 max-w-lg">
+                   <form className="space-y-4 max-w-lg" onSubmit={handlePasswordChange}>
                      <div>
                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.currentPassword}</label>
-                       <input type="password" placeholder="••••••••" className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" />
+                       <input
+                         type="password"
+                         required
+                         placeholder="••••••••"
+                         value={currentPw}
+                         onChange={(e) => setCurrentPw(e.target.value)}
+                         className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white"
+                       />
                      </div>
                      <div>
                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.newPassword}</label>
-                       <input type="password" placeholder="••••••••" className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" />
+                       <input
+                         type="password"
+                         required
+                         minLength={6}
+                         placeholder="••••••••"
+                         value={newPw}
+                         onChange={(e) => setNewPw(e.target.value)}
+                         className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white"
+                       />
                      </div>
                      <div>
                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.confirmNewPassword}</label>
-                       <input type="password" placeholder="••••••••" className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" />
+                       <input
+                         type="password"
+                         required
+                         minLength={6}
+                         placeholder="••••••••"
+                         value={confirmPw}
+                         onChange={(e) => setConfirmPw(e.target.value)}
+                         className={`w-full px-4 py-2 rounded-lg border bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white ${
+                           confirmPw && confirmPw !== newPw
+                             ? 'border-red-400 dark:border-red-600'
+                             : 'border-slate-200 dark:border-slate-700'
+                         }`}
+                       />
+                       {confirmPw && confirmPw !== newPw && (
+                         <p className="text-xs text-red-500 mt-1">Passwords do not match.</p>
+                       )}
                      </div>
-                     <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 mt-2">{t.updatePassword}</button>
+                     <div className="flex items-center gap-4">
+                       <button
+                         type="submit"
+                         disabled={pwSaving}
+                         className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:bg-blue-400 transition-colors mt-2 flex items-center gap-2"
+                       >
+                         {pwSaving && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                         {pwSaving ? t.saving : t.updatePassword}
+                       </button>
+                       {pwMsg && (
+                         <p className={`text-sm mt-2 ${pwMsg.ok ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
+                           {pwMsg.text}
+                         </p>
+                       )}
+                     </div>
                    </form>
                  </div>
               </div>

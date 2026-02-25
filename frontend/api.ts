@@ -77,6 +77,15 @@ export const authAPI = {
       body: JSON.stringify(data)
     });
     return handleResponse(response);
+  },
+
+  changePassword: async (data: { currentPassword: string; newPassword: string }) => {
+    const response = await fetch(`${API_URL}/auth/password`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(response);
   }
 };
 

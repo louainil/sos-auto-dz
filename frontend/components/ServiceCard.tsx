@@ -142,6 +142,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBoo
                  userLng={userLocation?.lng}
                  targetLat={providerWilaya.latitude}
                  targetLng={providerWilaya.longitude}
+                 language={language}
                />
              </div>
           )}

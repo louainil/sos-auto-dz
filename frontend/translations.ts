@@ -235,6 +235,12 @@ export interface Translations {
   clearAll: string;
   noNewNotifications: string;
   markAsRead: string;
+
+  // DistanceIndicator
+  distanceUnknown: string;
+  nearYou: string;
+  moderateDistance: string;
+  farLocation: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -473,6 +479,12 @@ export const translations: Record<Language, Translations> = {
     clearAll: 'Clear all',
     noNewNotifications: 'No new notifications',
     markAsRead: 'Mark as read',
+
+    // DistanceIndicator
+    distanceUnknown: 'Distance unknown',
+    nearYou: 'Near you',
+    moderateDistance: 'Moderate distance',
+    farLocation: 'Far location',
   },
   fr: {
     // Navbar
@@ -709,6 +721,12 @@ export const translations: Record<Language, Translations> = {
     clearAll: 'Tout effacer',
     noNewNotifications: 'Aucune nouvelle notification',
     markAsRead: 'Marquer comme lu',
+
+    // DistanceIndicator
+    distanceUnknown: 'Distance inconnue',
+    nearYou: 'Près de vous',
+    moderateDistance: 'Distance moyenne',
+    farLocation: 'Emplacement éloigné',
   },
 
   ar: {
@@ -946,5 +964,11 @@ export const translations: Record<Language, Translations> = {
     clearAll: 'مسح الكل',
     noNewNotifications: 'لا توجد إشعارات جديدة',
     markAsRead: 'وضع علامة كمقروء',
+
+    // DistanceIndicator
+    distanceUnknown: 'المسافة غير معروفة',
+    nearYou: 'بالقرب منك',
+    moderateDistance: 'مسافة متوسطة',
+    farLocation: 'موقع بعيد',
   },
 };

@@ -1,19 +1,22 @@
 import React from 'react';
 import { MapPin } from 'lucide-react';
+import { Language, translations } from '../translations';
 
 interface DistanceIndicatorProps {
   userLat?: number;
   userLng?: number;
   targetLat: number;
   targetLng: number;
+  language: Language;
 }
 
-const DistanceIndicator: React.FC<DistanceIndicatorProps> = ({ userLat, userLng, targetLat, targetLng }) => {
+const DistanceIndicator: React.FC<DistanceIndicatorProps> = ({ userLat, userLng, targetLat, targetLng, language }) => {
+  const t = translations[language];
   if (!userLat || !userLng) {
     return (
       <div className="flex items-center text-slate-400 text-xs">
         <MapPin size={14} className="mr-1" />
-        <span>Distance unknown</span>
+        <span>{t.distanceUnknown}</span>
       </div>
     );
   }
@@ -30,15 +33,15 @@ const DistanceIndicator: React.FC<DistanceIndicatorProps> = ({ userLat, userLng,
   const distance = R * c; // Distance in km
 
   let colorClass = 'bg-green-500';
-  let text = 'Near you';
+  let text = t.nearYou;
 
   if (distance > 50) {
     colorClass = 'bg-yellow-500';
-    text = 'Moderate distance';
+    text = t.moderateDistance;
   }
   if (distance > 150) {
     colorClass = 'bg-red-500';
-    text = 'Far location';
+    text = t.farLocation;
   }
 
   return (

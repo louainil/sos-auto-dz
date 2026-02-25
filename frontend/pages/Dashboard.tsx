@@ -11,29 +11,6 @@ interface DashboardProps {
   language?: Language;
 }
 
-// Mock Data Generators
-const generateMockBookings = (role: UserRole): Booking[] => {
-  const common = {
-    issue: "Engine making strange noise when accelerating",
-    date: "2024-05-20",
-  };
-  
-  if (role === UserRole.CLIENT) {
-    return [
-      { id: '1', providerId: 'p1', providerName: 'Garage Expert Auto', clientId: 'me', clientName: 'Me', clientPhone: '', date: '2024-05-20', issue: 'Oil Change', status: 'PENDING' },
-      { id: '2', providerId: 'p2', providerName: 'Rapid Towing Oran', clientId: 'me', clientName: 'Me', clientPhone: '', date: '2024-05-18', issue: 'Car Breakdown', status: 'COMPLETED', price: 5000 },
-      { id: '3', providerId: 'p3', providerName: 'Sétif Spare Parts', clientId: 'me', clientName: 'Me', clientPhone: '', date: '2024-05-15', issue: 'Brake Pads Order', status: 'CONFIRMED' },
-    ];
-  } else {
-    // Professional View
-    return [
-      { id: '101', providerId: 'me', providerName: 'My Shop', clientId: 'c1', clientName: 'Amine Benali', clientPhone: '0550112233', date: '2024-05-21', issue: 'Brake replacement required', status: 'PENDING' },
-      { id: '102', providerId: 'me', providerName: 'My Shop', clientId: 'c2', clientName: 'Sarah K.', clientPhone: '0660998877', date: '2024-05-21', issue: 'Full Diagnostic', status: 'CONFIRMED' },
-      { id: '103', providerId: 'me', providerName: 'My Shop', clientId: 'c3', clientName: 'Karim T.', clientPhone: '0770554433', date: '2024-05-20', issue: 'Towing Request - Highway East', status: 'COMPLETED', price: 8000 },
-    ];
-  }
-};
-
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, language = 'en' }) => {
   const t = translations[language];
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'BOOKINGS' | 'SETTINGS'>('OVERVIEW');

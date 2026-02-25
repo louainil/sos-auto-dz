@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
             target: env.VITE_REACT_APP_BACKEND_BASEURL,
             changeOrigin: true,
             secure: false,
+            rewrite: (path) => path.replace(/^\/api/, ''),
           },
         },
       },

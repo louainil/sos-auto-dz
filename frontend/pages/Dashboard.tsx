@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { User, UserRole, Booking } from '../types';
 import { Calendar, Clock, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertCircle, TrendingUp, DollarSign, User as UserIcon, Shield, Wrench, Camera } from 'lucide-react';
-import { bookingsAPI, authAPI, providersAPI } from '../api';
+import { bookingsAPI, authAPI, providersAPI, adminAPI } from '../api';
 import { Language, translations } from '../translations';
 
 interface DashboardProps {
@@ -42,6 +42,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const [providerId, setProviderId] = useState<string | null>(null);
   const [availabilityUpdating, setAvailabilityUpdating] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [adminStats, setAdminStats] = useState<{ totalUsers: number; totalProviders: number; pendingProviders: number } | null>(null);
+  const [pendingProviders, setPendingProviders] = useState<any[]>([]);
+  const [adminLoading, setAdminLoading] = useState(false);
   const [profilePic, setProfilePic] = useState<string | null>(user.avatar?.url || null);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [profileName, setProfileName] = useState(user.name);
@@ -96,6 +99,41 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
       console.error('Avatar upload failed:', err);
     } finally {
       setAvatarUploading(false);
+    }
+  };
+
+  // Fetch admin stats and pending providers
+  useEffect(() => {
+    if (user.role !== UserRole.ADMIN) return;
+    const fetchAdminData = async () => {
+      setAdminLoading(true);
+      try {
+        const [stats, pending] = await Promise.all([
+          adminAPI.getStats(),
+          adminAPI.getPendingProviders(),
+        ]);
+        setAdminStats(stats);
+        setPendingProviders(pending);
+      } catch (err) {
+        console.error('Failed to fetch admin data:', err);
+      } finally {
+        setAdminLoading(false);
+      }
+    };
+    fetchAdminData();
+  }, [user.role]);
+
+  const handleApproveProvider = async (id: string) => {
+    try {
+      await adminAPI.approveProvider(id);
+      setPendingProviders(prev => prev.filter((p: any) => p._id !== id));
+      setAdminStats(prev => prev ? {
+        ...prev,
+        totalProviders: prev.totalProviders + 1,
+        pendingProviders: prev.pendingProviders - 1,
+      } : prev);
+    } catch (err) {
+      console.error('Failed to approve provider:', err);
     }
   };
 
@@ -349,38 +387,54 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
           <Shield className="absolute right-[-20px] bottom-[-40px] text-slate-800 w-48 h-48 opacity-50" />
        </div>
 
-       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard title={t.totalUsers} value="12,340" icon={UserIcon} color="bg-blue-500" />
-        <StatCard title={t.verifiedProviders} value="845" icon={CheckCircle} color="bg-green-500" />
-        <StatCard title={t.pendingApprovals} value="12" icon={AlertCircle} color="bg-orange-500" />
-        <StatCard title={t.reports} value="3" icon={AlertCircle} color="bg-red-500" />
-      </div>
+       {adminLoading ? (
+         <div className="flex justify-center py-12">
+           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+         </div>
+       ) : (
+         <>
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+             <StatCard title={t.totalUsers} value={adminStats?.totalUsers ?? '—'} icon={UserIcon} color="bg-blue-500" />
+             <StatCard title={t.verifiedProviders} value={adminStats?.totalProviders ?? '—'} icon={CheckCircle} color="bg-green-500" />
+             <StatCard title={t.pendingApprovals} value={adminStats?.pendingProviders ?? '—'} icon={AlertCircle} color="bg-orange-500" />
+           </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6">
-        <h3 className="font-bold mb-4">{t.pendingProviderApprovals}</h3>
-        <table className="w-full text-left">
-          <thead>
-            <tr className="border-b border-slate-200 dark:border-slate-700 text-sm text-slate-500">
-              <th className="pb-3">{t.nameCol}</th>
-              <th className="pb-3">{t.typeCol}</th>
-              <th className="pb-3">{t.wilayaCol}</th>
-              <th className="pb-3 text-right">{t.actionCol}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-            {[1,2,3].map(i => (
-              <tr key={i} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                <td className="py-4 font-medium">Garage Auto {i}</td>
-                <td className="py-4 text-sm text-slate-500">Mechanic</td>
-                <td className="py-4 text-sm text-slate-500">Algiers</td>
-                <td className="py-4 text-right">
-                  <button className="text-blue-600 hover:underline text-sm font-medium">{t.reviewAction}</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+           <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6">
+             <h3 className="font-bold mb-4">{t.pendingProviderApprovals}</h3>
+             {pendingProviders.length === 0 ? (
+               <p className="text-slate-500 dark:text-slate-400 text-sm py-4 text-center">No pending approvals</p>
+             ) : (
+               <table className="w-full text-left">
+                 <thead>
+                   <tr className="border-b border-slate-200 dark:border-slate-700 text-sm text-slate-500">
+                     <th className="pb-3">{t.nameCol}</th>
+                     <th className="pb-3">{t.typeCol}</th>
+                     <th className="pb-3">{t.wilayaCol}</th>
+                     <th className="pb-3 text-right">{t.actionCol}</th>
+                   </tr>
+                 </thead>
+                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                   {pendingProviders.map((p: any) => (
+                     <tr key={p._id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                       <td className="py-4 font-medium">{p.name}</td>
+                       <td className="py-4 text-sm text-slate-500">{p.role}</td>
+                       <td className="py-4 text-sm text-slate-500">{p.wilayaId}</td>
+                       <td className="py-4 text-right">
+                         <button
+                           onClick={() => handleApproveProvider(p._id)}
+                           className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
+                         >
+                           {t.reviewAction}
+                         </button>
+                       </td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </table>
+             )}
+           </div>
+         </>
+       )}
     </div>
   );
 

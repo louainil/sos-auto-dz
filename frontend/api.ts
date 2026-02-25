@@ -202,3 +202,28 @@ export const notificationsAPI = {
     return handleResponse(response);
   }
 };
+
+// Admin API
+export const adminAPI = {
+  getStats: async () => {
+    const response = await fetch(`${API_URL}/admin/stats`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getPendingProviders: async () => {
+    const response = await fetch(`${API_URL}/admin/providers/pending`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  approveProvider: async (id: string) => {
+    const response = await fetch(`${API_URL}/admin/providers/${id}/approve`, {
+      method: 'PUT',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  }
+};

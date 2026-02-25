@@ -46,7 +46,10 @@ const generateToken = (id) => {
 // @access  Public
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, role, phone, garageType, wilayaId, commune } = req.body;
+    const {
+      name, email, password, role, phone, garageType, wilayaId, commune,
+      description, specialty, workingDays, workingHours
+    } = req.body;
 
     // Check if user exists
     const userExists = await User.findOne({ email });
@@ -75,11 +78,14 @@ router.post('/register', async (req, res) => {
         garageType: role === 'MECHANIC' ? garageType : undefined,
         wilayaId,
         commune,
-        description: `Professional ${role.toLowerCase()} service`,
+        description: description?.trim() || `Professional ${role.toLowerCase()} service`,
         phone,
-        specialty: [],
-        workingDays: [0, 1, 2, 3, 4, 6],
-        workingHours: { start: '08:00', end: '17:00' }
+        specialty: Array.isArray(specialty) ? specialty : [],
+        workingDays: Array.isArray(workingDays) ? workingDays : [0, 1, 2, 3, 4, 6],
+        workingHours: {
+          start: workingHours?.start || '08:00',
+          end: workingHours?.end || '17:00'
+        }
       });
     }
 

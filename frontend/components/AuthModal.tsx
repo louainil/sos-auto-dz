@@ -80,15 +80,21 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
         onClose();
       } else {
         // Register
+        const isPro = selectedRole !== UserRole.CLIENT && selectedRole !== UserRole.ADMIN;
         const userData = {
           name,
           email,
           password,
           role: selectedRole,
-          phone: selectedRole !== UserRole.CLIENT ? phone : undefined,
+          phone: isPro ? phone : undefined,
           garageType: selectedRole === UserRole.MECHANIC ? selectedGarageType : undefined,
-          wilayaId: selectedRole !== UserRole.CLIENT ? selectedWilaya : undefined,
-          commune: selectedRole !== UserRole.CLIENT ? selectedCommune : undefined
+          wilayaId: isPro ? selectedWilaya : undefined,
+          commune: isPro ? selectedCommune : undefined,
+          // Professional-only fields
+          description: isPro && description.trim() ? description.trim() : undefined,
+          specialty: isPro ? selectedBrands : undefined,
+          workingDays: isPro ? selectedDays : undefined,
+          workingHours: isPro ? { start: startTime, end: endTime } : undefined
         };
         
         const data = await authAPI.register(userData);

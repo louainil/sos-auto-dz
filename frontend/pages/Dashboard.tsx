@@ -52,7 +52,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const [profileName, setProfileName] = useState(user.name);
   const [profilePhone, setProfilePhone] = useState(user.phone || '');
   const [profileSaving, setProfileSaving] = useState(false);
-  const [profileSaveMsg, setProfileSaveMsg] = useState('');
+  const [profileSaveMsg, setProfileSaveMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
@@ -185,17 +185,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setProfileSaving(true);
-    setProfileSaveMsg('');
+    setProfileSaveMsg(null);
     try {
       const data = await authAPI.updateProfile({ name: profileName, phone: profilePhone });
       if (onUserUpdate) {
         onUserUpdate({ ...user, name: data.name, phone: data.phone });
       }
-      setProfileSaveMsg(t.changesSaved);
-      setTimeout(() => setProfileSaveMsg(''), 3000);
+      setProfileSaveMsg({ text: t.changesSaved, ok: true });
+      setTimeout(() => setProfileSaveMsg(null), 3000);
     } catch (err) {
       console.error('Profile save failed:', err);
-      setProfileSaveMsg(t.saveFailed);
+      setProfileSaveMsg({ text: t.saveFailed, ok: false });
     } finally {
       setProfileSaving(false);
     }
@@ -647,7 +647,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                         {profileSaving ? t.saving : t.saveChanges}
                       </button>
                       {profileSaveMsg && (
-                        <p className={`text-sm mt-2 ${profileSaveMsg.includes('success') ? 'text-green-600' : 'text-red-500'}`}>{profileSaveMsg}</p>
+                        <p className={`text-sm mt-2 ${profileSaveMsg.ok ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>{profileSaveMsg.text}</p>
                       )}
                     </div>
                  </form>

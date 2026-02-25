@@ -229,6 +229,12 @@ export interface Translations {
   // AuthModal – submit & links
   processing: string;
   forgotPassword: string;
+
+  // NotificationDropdown
+  notifications: string;
+  clearAll: string;
+  noNewNotifications: string;
+  markAsRead: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -461,6 +467,12 @@ export const translations: Record<Language, Translations> = {
     // AuthModal – submit & links
     processing: 'Processing...',
     forgotPassword: 'Forgot your password?',
+
+    // NotificationDropdown
+    notifications: 'Notifications',
+    clearAll: 'Clear all',
+    noNewNotifications: 'No new notifications',
+    markAsRead: 'Mark as read',
   },
   fr: {
     // Navbar
@@ -691,6 +703,12 @@ export const translations: Record<Language, Translations> = {
     // AuthModal – submit & links
     processing: 'Traitement...',
     forgotPassword: 'Mot de passe oublié ?',
+
+    // NotificationDropdown
+    notifications: 'Notifications',
+    clearAll: 'Tout effacer',
+    noNewNotifications: 'Aucune nouvelle notification',
+    markAsRead: 'Marquer comme lu',
   },
 
   ar: {
@@ -922,5 +940,11 @@ export const translations: Record<Language, Translations> = {
     // AuthModal – submit & links
     processing: 'جارٍ المعالجة...',
     forgotPassword: 'نسيت كلمة المرور؟',
+
+    // NotificationDropdown
+    notifications: 'الإشعارات',
+    clearAll: 'مسح الكل',
+    noNewNotifications: 'لا توجد إشعارات جديدة',
+    markAsRead: 'وضع علامة كمقروء',
   },
 };

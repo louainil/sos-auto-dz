@@ -2,15 +2,18 @@
 import React from 'react';
 import { Bell, Check, Trash2, Info, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { Notification } from '../types';
+import { Language, translations } from '../translations';
 
 interface NotificationDropdownProps {
   notifications: Notification[];
   onMarkAsRead: (id: string) => void;
   onClearAll: () => void;
   onClose: () => void;
+  language: Language;
 }
 
-const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ notifications, onMarkAsRead, onClearAll, onClose }) => {
+const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ notifications, onMarkAsRead, onClearAll, onClose, language }) => {
+  const t = translations[language];
   
   const getIcon = (type: string) => {
     switch (type) {
@@ -26,13 +29,13 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ notificatio
       <div className="fixed inset-0 z-40" onClick={onClose}></div>
       <div className="absolute top-12 right-0 w-80 md:w-96 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 overflow-hidden animate-fade-in origin-top-right">
         <div className="p-3 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
-          <h3 className="font-bold text-slate-800 dark:text-white text-sm">Notifications</h3>
+          <h3 className="font-bold text-slate-800 dark:text-white text-sm">{t.notifications}</h3>
           {notifications.length > 0 && (
             <button 
               onClick={onClearAll}
               className="text-xs text-slate-500 hover:text-red-500 flex items-center gap-1 transition-colors"
             >
-              <Trash2 size={12} /> Clear all
+              <Trash2 size={12} /> {t.clearAll}
             </button>
           )}
         </div>
@@ -41,7 +44,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ notificatio
           {notifications.length === 0 ? (
             <div className="p-8 text-center text-slate-400">
               <Bell size={32} className="mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No new notifications</p>
+              <p className="text-sm">{t.noNewNotifications}</p>
             </div>
           ) : (
             <div className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -72,7 +75,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ notificatio
                     <button 
                       onClick={() => onMarkAsRead(notif.id)}
                       className="absolute bottom-2 right-2 p-1 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Mark as read"
+                      title={t.markAsRead}
                     >
                       <Check size={14} />
                     </button>

@@ -183,6 +183,7 @@ const Navbar: React.FC<NavbarProps> = ({
                       onMarkAsRead={onMarkNotificationRead}
                       onClearAll={onClearNotifications}
                       onClose={() => setIsNotifOpen(false)}
+                      language={language}
                     />
                   )}
                 </div>

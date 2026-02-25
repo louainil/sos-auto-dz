@@ -40,6 +40,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isAvailable, setIsAvailable] = useState(user.isAvailable ?? true);
   const [providerId, setProviderId] = useState<string | null>(null);
+  const [providerRating, setProviderRating] = useState(0);
+  const [providerTotalReviews, setProviderTotalReviews] = useState(0);
   const [availabilityUpdating, setAvailabilityUpdating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [adminStats, setAdminStats] = useState<{ totalUsers: number; totalProviders: number; pendingProviders: number } | null>(null);
@@ -73,6 +75,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
         const data = await providersAPI.getByUserId(user.id);
         setProviderId(data._id);
         setIsAvailable(data.isAvailable ?? true);
+        setProviderRating(data.rating ?? 0);
+        setProviderTotalReviews(data.totalReviews ?? 0);
       } catch (err) {
         console.error('Failed to fetch provider profile:', err);
       }
@@ -324,9 +328,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <StatCard title={t.pendingRequests} value={bookings.filter(b => b.status === 'PENDING').length} icon={AlertCircle} color="bg-yellow-500" />
-        <StatCard title={t.todaysJobs} value="5" icon={Calendar} color="bg-blue-500" />
-        <StatCard title={t.totalRevenue} value="145k DA" icon={DollarSign} color="bg-green-500" />
-        <StatCard title={t.ratingLabel} value="4.8" icon={TrendingUp} color="bg-purple-500" />
+        <StatCard title={t.todaysJobs} value={bookings.filter(b => b.date === new Date().toISOString().slice(0,10) && (b.status === 'CONFIRMED' || b.status === 'COMPLETED')).length} icon={Calendar} color="bg-blue-500" />
+        <StatCard title={t.totalRevenue} value={`${bookings.filter(b => b.status === 'COMPLETED' && b.price).reduce((sum, b) => sum + (b.price || 0), 0).toLocaleString()} DA`} icon={DollarSign} color="bg-green-500" />
+        <StatCard title={t.ratingLabel} value={providerRating > 0 ? providerRating.toFixed(1) : '—'} icon={TrendingUp} color="bg-purple-500" />
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden">

@@ -127,14 +127,6 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Create welcome notification
-    await Notification.create({
-      userId: user._id,
-      title: `Welcome back, ${user.name}!`,
-      message: 'You have successfully logged in to SOS Auto DZ.',
-      type: 'SUCCESS'
-    });
-
     res.json({
       _id: user._id,
       name: user.name,

@@ -60,7 +60,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ notificatio
                           {notif.title}
                         </h4>
                         <span className="text-[10px] text-slate-400 whitespace-nowrap ml-2">
-                          {notif.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {notif.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">

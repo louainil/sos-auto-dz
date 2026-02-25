@@ -29,7 +29,7 @@ export interface Notification {
   message: string;
   type: 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR';
   isRead: boolean;
-  timestamp: Date;
+  createdAt: Date;
 }
 
 export interface Wilaya {

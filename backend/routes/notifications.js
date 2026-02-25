@@ -10,7 +10,7 @@ const router = express.Router();
 router.get('/', protect, async (req, res) => {
   try {
     const notifications = await Notification.find({ userId: req.user._id })
-      .sort({ timestamp: -1 })
+      .sort({ createdAt: -1 })
       .limit(50);
     
     res.json(notifications);

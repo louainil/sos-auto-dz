@@ -75,7 +75,7 @@ const App: React.FC = () => {
             message: n.message,
             type: n.type,
             isRead: n.isRead,
-            timestamp: new Date(n.timestamp)
+            createdAt: new Date(n.createdAt)
           })));
         } catch (error) {
           console.error('Auth check failed:', error);
@@ -144,7 +144,7 @@ const App: React.FC = () => {
         message: n.message,
         type: n.type,
         isRead: n.isRead,
-        timestamp: new Date(n.timestamp)
+        createdAt: new Date(n.createdAt)
       })));
     } catch (error) {
       console.error('Failed to fetch notifications:', error);

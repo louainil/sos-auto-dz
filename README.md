@@ -109,7 +109,7 @@ NODE_ENV=development
 
 ### Frontend (.env)
 ```
-VITE_API_URL=http://localhost:5000/api
+VITE_REACT_APP_BACKEND_BASEURL=http://localhost:5000
 ```
 
 ## User Roles

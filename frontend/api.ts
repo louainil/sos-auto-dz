@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+const API_URL = `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}`;
 
 // Helper function to get auth headers
 const getAuthHeaders = () => {

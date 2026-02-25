@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { User, UserRole, Booking } from '../types';
 import { Calendar, Clock, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertCircle, TrendingUp, DollarSign, User as UserIcon, Shield, Wrench, Camera } from 'lucide-react';
-import { bookingsAPI, authAPI } from '../api';
+import { bookingsAPI, authAPI, providersAPI } from '../api';
 import { Language, translations } from '../translations';
 
 interface DashboardProps {
@@ -39,6 +39,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'BOOKINGS' | 'SETTINGS'>('OVERVIEW');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isAvailable, setIsAvailable] = useState(user.isAvailable ?? true);
+  const [providerId, setProviderId] = useState<string | null>(null);
+  const [availabilityUpdating, setAvailabilityUpdating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [profilePic, setProfilePic] = useState<string | null>(user.avatar?.url || null);
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -60,6 +62,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
     setProfilePhone(user.phone || '');
   }, [user]);
 
+  // Fetch provider profile to get _id and real isAvailable value
+  useEffect(() => {
+    if (user.role === UserRole.CLIENT || user.role === UserRole.ADMIN) return;
+    const fetchProvider = async () => {
+      try {
+        const data = await providersAPI.getByUserId(user.id);
+        setProviderId(data._id);
+        setIsAvailable(data.isAvailable ?? true);
+      } catch (err) {
+        console.error('Failed to fetch provider profile:', err);
+      }
+    };
+    fetchProvider();
+  }, [user.id, user.role]);
+
   const handlePicChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -79,6 +96,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
       console.error('Avatar upload failed:', err);
     } finally {
       setAvatarUploading(false);
+    }
+  };
+
+  const handleToggleAvailability = async () => {
+    if (!providerId || availabilityUpdating) return;
+    const next = !isAvailable;
+    setIsAvailable(next);
+    setAvailabilityUpdating(true);
+    try {
+      await providersAPI.update(providerId, { isAvailable: next });
+    } catch (err) {
+      console.error('Failed to update availability:', err);
+      setIsAvailable(!next); // revert on failure
+    } finally {
+      setAvailabilityUpdating(false);
     }
   };
 
@@ -243,8 +275,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
         <div className="flex items-center gap-3 bg-white/10 p-2 rounded-xl backdrop-blur-sm">
            <span className="text-sm font-medium">{isAvailable ? t.online : t.offline}</span>
            <button 
-             onClick={() => setIsAvailable(!isAvailable)}
-             className={`w-12 h-6 rounded-full p-1 transition-colors ${isAvailable ? 'bg-green-400' : 'bg-slate-400'}`}
+             onClick={handleToggleAvailability}
+             disabled={availabilityUpdating || !providerId}
+             className={`w-12 h-6 rounded-full p-1 transition-colors ${isAvailable ? 'bg-green-400' : 'bg-slate-400'} disabled:opacity-60`}
            >
              <div className={`w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform ${isAvailable ? 'translate-x-6' : 'translate-x-0'}`}></div>
            </button>

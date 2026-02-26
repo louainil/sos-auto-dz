@@ -229,6 +229,30 @@ export const publicStatsAPI = {
   }
 };
 
+// Reviews API
+export const reviewsAPI = {
+  create: async (data: { bookingId: string; providerId: string; rating: number; comment?: string }) => {
+    const response = await fetch(`${API_URL}/reviews`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(response);
+  },
+
+  getByProvider: async (providerId: string) => {
+    const response = await fetch(`${API_URL}/reviews/provider/${providerId}`);
+    return handleResponse(response);
+  },
+
+  checkBooking: async (bookingId: string) => {
+    const response = await fetch(`${API_URL}/reviews/booking/${bookingId}`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  }
+};
+
 // Admin API
 export const adminAPI = {
   getStats: async () => {

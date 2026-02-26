@@ -11,6 +11,7 @@ import providerRoutes from './routes/providers.js';
 import bookingRoutes from './routes/bookings.js';
 import notificationRoutes from './routes/notifications.js';
 import adminRoutes from './routes/admin.js';
+import reviewRoutes from './routes/reviews.js';
 
 // Load environment variables (use explicit path for serverless compatibility)
 const __filename = fileURLToPath(import.meta.url);
@@ -53,6 +54,7 @@ app.use('/api/providers', providerRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

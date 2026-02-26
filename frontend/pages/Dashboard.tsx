@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { User, UserRole, Booking } from '../types';
 import { Calendar, Clock, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertCircle, TrendingUp, DollarSign, User as UserIcon, Shield, Wrench, Camera } from 'lucide-react';
-import { bookingsAPI, authAPI, providersAPI, adminAPI } from '../api';
+import { bookingsAPI, authAPI, providersAPI, adminAPI, reviewsAPI } from '../api';
 import { Language, translations } from '../translations';
+import ReviewModal from '../components/ReviewModal';
 
 interface DashboardProps {
   user: User;
@@ -36,6 +37,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const [pwSaving, setPwSaving] = useState(false);
   const [pwMsg, setPwMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const picInputRef = useRef<HTMLInputElement>(null);
+
+  // Review modal state
+  const [reviewBooking, setReviewBooking] = useState<Booking | null>(null);
+  const [reviewedBookingIds, setReviewedBookingIds] = useState<Set<string>>(new Set());
 
   // Sync local state when parent user prop updates (e.g. after avatar upload)
   useEffect(() => {
@@ -199,6 +204,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
           price: b.price
         }));
         setBookings(mappedBookings);
+
+        // Check which completed bookings already have reviews
+        if (user.role === UserRole.CLIENT) {
+          const completedIds = mappedBookings
+            .filter((b: Booking) => b.status === 'COMPLETED')
+            .map((b: Booking) => b.id);
+          const reviewed = new Set<string>();
+          await Promise.all(
+            completedIds.map(async (id: string) => {
+              try {
+                const res = await reviewsAPI.checkBooking(id);
+                if (res.reviewed) reviewed.add(id);
+              } catch { /* ignore */ }
+            })
+          );
+          setReviewedBookingIds(reviewed);
+        }
       } catch (error) {
         console.error('Failed to fetch bookings:', error);
       } finally {
@@ -273,9 +295,18 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                 </div>
               </div>
               {booking.status === 'COMPLETED' && (
-                <button className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                  {t.leaveReview}
-                </button>
+                reviewedBookingIds.has(booking.id) ? (
+                  <span className="px-4 py-2 text-sm font-medium text-green-600 dark:text-green-400 flex items-center gap-1">
+                    <CheckCircle size={16} /> {t.reviewed}
+                  </span>
+                ) : (
+                  <button 
+                    onClick={() => setReviewBooking(booking)}
+                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    {t.leaveReview}
+                  </button>
+                )
               )}
             </div>
           ))}
@@ -696,6 +727,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
           </div>
         </div>
       </div>
+
+      {/* Review Modal */}
+      {reviewBooking && (
+        <ReviewModal
+          isOpen={!!reviewBooking}
+          onClose={() => setReviewBooking(null)}
+          booking={reviewBooking}
+          language={language}
+          onReviewSubmitted={(bookingId) => {
+            setReviewedBookingIds(prev => new Set(prev).add(bookingId));
+          }}
+        />
+      )}
     </div>
   );
 };

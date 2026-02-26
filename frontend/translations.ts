@@ -129,6 +129,19 @@ export interface Translations {
   recentActivity: string;
   leaveReview: string;
 
+  // Review Modal
+  reviewModalTitle: string;
+  reviewForProvider: string;
+  yourRating: string;
+  tapToRate: string;
+  yourReview: string;
+  reviewPlaceholder: string;
+  submitReview: string;
+  submittingReview: string;
+  reviewSuccess: string;
+  reviewAlreadyExists: string;
+  reviewed: string;
+
   // Dashboard – Professional overview
   welcomePro: string;
   manageGarage: string;
@@ -391,6 +404,19 @@ export const translations: Record<Language, Translations> = {
     recentActivity: 'Recent Activity',
     leaveReview: 'Leave Review',
 
+    // Review Modal
+    reviewModalTitle: 'Leave a Review',
+    reviewForProvider: 'How was your experience with',
+    yourRating: 'Your Rating',
+    tapToRate: 'Tap a star to rate',
+    yourReview: 'Your Review',
+    reviewPlaceholder: 'Tell us about your experience (optional)...',
+    submitReview: 'Submit Review',
+    submittingReview: 'Submitting...',
+    reviewSuccess: 'Thank you! Your review has been submitted.',
+    reviewAlreadyExists: 'You have already reviewed this booking.',
+    reviewed: 'Reviewed',
+
     // Dashboard – Professional overview
     welcomePro: 'Welcome,',
     manageGarage: 'Manage your garage and incoming requests.',
@@ -650,6 +676,19 @@ export const translations: Record<Language, Translations> = {
     completedServices: 'Services Terminés',
     recentActivity: 'Activité Récente',
     leaveReview: 'Laisser un Avis',
+
+    // Review Modal
+    reviewModalTitle: 'Laisser un Avis',
+    reviewForProvider: 'Comment était votre expérience avec',
+    yourRating: 'Votre Note',
+    tapToRate: 'Appuyez sur une étoile pour noter',
+    yourReview: 'Votre Avis',
+    reviewPlaceholder: 'Parlez-nous de votre expérience (optionnel)...',
+    submitReview: 'Envoyer l\'Avis',
+    submittingReview: 'Envoi...',
+    reviewSuccess: 'Merci ! Votre avis a été envoyé.',
+    reviewAlreadyExists: 'Vous avez déjà donné un avis pour cette réservation.',
+    reviewed: 'Avis donné',
 
     // Dashboard – Professional overview
     welcomePro: 'Bienvenue,',
@@ -911,6 +950,19 @@ export const translations: Record<Language, Translations> = {
     completedServices: 'الخدمات المنجزة',
     recentActivity: 'النشاط الأخير',
     leaveReview: 'اترك تقييمًا',
+
+    // Review Modal
+    reviewModalTitle: 'اترك تقييمًا',
+    reviewForProvider: 'كيف كانت تجربتك مع',
+    yourRating: 'تقييمك',
+    tapToRate: 'اضغط على نجمة للتقييم',
+    yourReview: 'مراجعتك',
+    reviewPlaceholder: 'أخبرنا عن تجربتك (اختياري)...',
+    submitReview: 'إرسال التقييم',
+    submittingReview: 'جارٍ الإرسال...',
+    reviewSuccess: 'شكرًا! تم إرسال تقييمك.',
+    reviewAlreadyExists: 'لقد قمت بتقييم هذا الحجز مسبقًا.',
+    reviewed: 'تم التقييم',
 
     // Dashboard – Professional overview
     welcomePro: 'مرحبًا،',

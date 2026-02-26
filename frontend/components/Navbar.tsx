@@ -283,6 +283,28 @@ const Navbar: React.FC<NavbarProps> = ({
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             {user && (
+              <div className="relative">
+                <button 
+                  onClick={() => setIsNotifOpen(!isNotifOpen)}
+                  className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative"
+                >
+                  <Bell size={20} />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white dark:ring-slate-900"></span>
+                  )}
+                </button>
+                {isNotifOpen && (
+                  <NotificationDropdown 
+                    notifications={notifications} 
+                    onMarkAsRead={onMarkNotificationRead}
+                    onClearAll={onClearNotifications}
+                    onClose={() => setIsNotifOpen(false)}
+                    language={language}
+                  />
+                )}
+              </div>
+            )}
+            {user && (
               <button 
                  onClick={() => { onChangeView(PageView.DASHBOARD); setIsMobileMenuOpen(false); }}
                  className="p-2 rounded-full text-slate-500 dark:text-slate-400"

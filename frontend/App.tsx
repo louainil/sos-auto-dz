@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -10,8 +11,28 @@ import { PageView, ServiceProvider, UserRole, User, Notification } from './types
 import { Language, translations } from './translations';
 import { notificationsAPI, authAPI } from './api';
 
+const PAGE_VIEW_PATHS: Record<PageView, string> = {
+  [PageView.HOME]: '/',
+  [PageView.GARAGE]: '/garage',
+  [PageView.PARTS]: '/parts',
+  [PageView.TOWING]: '/towing',
+  [PageView.DASHBOARD]: '/dashboard',
+  [PageView.LOGIN]: '/',
+};
+
+const PATH_TO_VIEW: Record<string, PageView> = {
+  '/': PageView.HOME,
+  '/garage': PageView.GARAGE,
+  '/parts': PageView.PARTS,
+  '/towing': PageView.TOWING,
+  '/dashboard': PageView.DASHBOARD,
+};
+
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<PageView>(PageView.HOME);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const currentView = PATH_TO_VIEW[location.pathname] || PageView.HOME;
+
   const [selectedProvider, setSelectedProvider] = useState<ServiceProvider | null>(null);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   
@@ -30,6 +51,7 @@ const App: React.FC = () => {
   
   // Language State - Default to English
   const [language, setLanguage] = useState<Language>('en');
+  const t = translations[language];
 
   // Apply Dark Mode Class to HTML tag
   useEffect(() => {
@@ -123,9 +145,13 @@ const App: React.FC = () => {
     }
   }, []);
 
-  const handleViewChange = (view: PageView) => {
-    setCurrentView(view);
+  // Scroll to top on route change
+  useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [location.pathname]);
+
+  const handleViewChange = (view: PageView) => {
+    navigate(PAGE_VIEW_PATHS[view]);
   };
 
   const handleBook = (provider: ServiceProvider) => {
@@ -170,7 +196,7 @@ const App: React.FC = () => {
 
     // Redirect logic could be here, but sticking to current view or Dashboard if pro
     if (loggedInUser.role !== UserRole.CLIENT) {
-      setCurrentView(PageView.DASHBOARD);
+      navigate('/dashboard');
     }
   };
 
@@ -178,7 +204,7 @@ const App: React.FC = () => {
     authAPI.logout();
     setUser(null);
     setNotifications([]);
-    setCurrentView(PageView.HOME);
+    navigate('/');
   };
 
   const handleMarkNotifRead = async (id: string) => {
@@ -196,57 +222,6 @@ const App: React.FC = () => {
       setNotifications([]);
     } catch (error) {
       console.error('Failed to clear notifications:', error);
-    }
-  };
-
-  const renderContent = () => {
-    switch (currentView) {
-      case PageView.HOME:
-        return <Home onChangeView={handleViewChange} language={language} />;
-      case PageView.GARAGE:
-        return (
-          <ServicesPage 
-            key="garage"
-            type={UserRole.MECHANIC} 
-            title="Garage Services" 
-            subtitle="Find trusted Mechanics, Electricians, and Auto Body Technicians."
-            userLocation={userLocation}
-            onBook={handleBook}
-            language={language}
-          />
-        );
-      case PageView.PARTS:
-        return (
-          <ServicesPage 
-            key="parts"
-            type={UserRole.PARTS_SHOP} 
-            title="Spare Parts Shops" 
-            subtitle="Locate authentic spare parts dealers for all car makes and models."
-            userLocation={userLocation}
-            onBook={handleBook}
-            language={language}
-          />
-        );
-      case PageView.TOWING:
-        return (
-          <ServicesPage 
-            key="towing"
-            type={UserRole.TOWING} 
-            title="Roadside Assistance" 
-            subtitle="24/7 towing and emergency recovery services near you."
-            userLocation={userLocation}
-            onBook={handleBook}
-            language={language}
-          />
-        );
-      case PageView.DASHBOARD:
-        return user ? (
-           <Dashboard user={user} onLogout={handleLogout} onUserUpdate={setUser} language={language} />
-        ) : (
-           <Home onChangeView={handleViewChange} language={language} /> // Fallback if manually navigating
-        );
-      default:
-        return <Home onChangeView={handleViewChange} language={language} />;
     }
   };
 
@@ -269,10 +244,25 @@ const App: React.FC = () => {
       />
       
       <main className="flex-grow">
-        {renderContent()}
+        <Routes>
+          <Route path="/" element={<Home onChangeView={handleViewChange} language={language} />} />
+          <Route path="/garage" element={
+            <ServicesPage key="garage" type={UserRole.MECHANIC} title={t.garageServicesTitle} subtitle={t.garageServicesDesc} userLocation={userLocation} onBook={handleBook} language={language} />
+          } />
+          <Route path="/parts" element={
+            <ServicesPage key="parts" type={UserRole.PARTS_SHOP} title={t.sparePartsTitle} subtitle={t.sparePartsDesc} userLocation={userLocation} onBook={handleBook} language={language} />
+          } />
+          <Route path="/towing" element={
+            <ServicesPage key="towing" type={UserRole.TOWING} title={t.roadsideTitle} subtitle={t.roadsideDesc} userLocation={userLocation} onBook={handleBook} language={language} />
+          } />
+          <Route path="/dashboard" element={
+            user ? <Dashboard user={user} onLogout={handleLogout} onUserUpdate={setUser} language={language} /> : <Navigate to="/" replace />
+          } />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
 
-      {currentView !== PageView.DASHBOARD && <Footer language={language} onChangeView={setCurrentView} />}
+      {currentView !== PageView.DASHBOARD && <Footer language={language} onChangeView={handleViewChange} />}
 
       {/* Booking Modal */}
       {selectedProvider && (

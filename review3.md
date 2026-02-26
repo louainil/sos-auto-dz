@@ -269,7 +269,7 @@ interface ProviderFilters { role?: string; wilayaId?: number; ... }
 **Problem:** `NAV_LINKS` is exported but never imported. The Navbar manually renders each nav button.  
 **Fix:** Either use `NAV_LINKS` in Navbar (map through them) or delete the constant.
 
-### 5.8 — ServicesPage title/subtitle are hardcoded English (MEDIUM)
+### 5.8 — ServicesPage title/subtitle are hardcoded English (MEDIUM)//*
 **File:** `frontend/App.tsx` — `renderContent()`  
 **Problem:** `title="Garage Services"` and `subtitle="Find trusted Mechanics..."` are passed as English-only strings from App.tsx. They don't use the translation system.  
 **Fix:** Pass translation keys instead:

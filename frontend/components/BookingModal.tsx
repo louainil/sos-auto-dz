@@ -68,6 +68,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ provider, onClose, language
                   <input 
                     required
                     type="date" 
+                    min={new Date().toISOString().slice(0, 10)}
                     className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
                     value={formData.date}
                     onChange={e => setFormData({...formData, date: e.target.value})}

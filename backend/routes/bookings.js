@@ -21,6 +21,14 @@ router.post('/', protect, [
   try {
     const { providerId, date, issue } = req.body;
 
+    // Reject bookings in the past
+    const bookingDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (bookingDate < today) {
+      return res.status(400).json({ message: 'Cannot book a date in the past' });
+    }
+
     const provider = await ServiceProvider.findById(providerId);
     if (!provider) {
       return res.status(404).json({ message: 'Provider not found' });

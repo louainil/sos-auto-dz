@@ -156,7 +156,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBoo
                 <Phone size={18} />
                 {t.callNow}
               </a>
-              <a href={`https://wa.me/${provider.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="w-10 flex items-center justify-center border border-green-500 bg-green-50 dark:bg-green-900/30 dark:border-green-700 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50 text-green-600 dark:text-green-400 transition-colors">
+              <a href={`https://wa.me/${(() => { const d = provider.phone.replace(/\D/g, ''); return d.startsWith('0') ? '213' + d.slice(1) : d; })()}`} target="_blank" rel="noopener noreferrer" className="w-10 flex items-center justify-center border border-green-500 bg-green-50 dark:bg-green-900/30 dark:border-green-700 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50 text-green-600 dark:text-green-400 transition-colors">
                 <MessageCircle size={18} />
               </a>
             </>

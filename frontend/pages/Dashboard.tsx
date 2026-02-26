@@ -344,7 +344,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden">
         <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
           <h3 className="font-bold text-lg text-slate-800 dark:text-white">{t.incomingRequests}</h3>
-          <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">{t.viewAll}</button>
+          <button onClick={() => setActiveTab('BOOKINGS')} className="text-sm text-blue-600 hover:text-blue-700 font-medium">{t.viewAll}</button>
         </div>
         <div className="divide-y divide-slate-100 dark:divide-slate-700">
           {bookings.filter(b => b.status === 'PENDING').length === 0 ? (

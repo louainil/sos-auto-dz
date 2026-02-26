@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowRight, Search, Map, Shield, Calendar, Wrench, Settings, Truck } from 'lucide-react';
 import { PageView } from '../types';
 import { Language, translations } from '../translations';
+import { publicStatsAPI } from '../api';
 
 interface HomeProps {
   onChangeView: (view: PageView) => void;
@@ -10,6 +11,13 @@ interface HomeProps {
 
 const Home: React.FC<HomeProps> = ({ onChangeView, language }) => {
   const t = translations[language];
+  const [stats, setStats] = useState({ totalProviders: 0, wilayasCovered: 0, avgRating: 0 });
+
+  useEffect(() => {
+    publicStatsAPI.get()
+      .then((data) => setStats(data))
+      .catch(() => {});
+  }, []);
   
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
@@ -151,19 +159,15 @@ const Home: React.FC<HomeProps> = ({ onChangeView, language }) => {
             <div className="bg-slate-800 dark:bg-slate-900 p-8 rounded-3xl border border-slate-700">
               <div className="grid grid-cols-2 gap-6">
                  <div className="text-center p-6 bg-slate-900/50 rounded-2xl">
-                   <div className="text-4xl font-bold text-blue-400 mb-2">58</div>
+                   <div className="text-4xl font-bold text-blue-400 mb-2">{stats.wilayasCovered || '—'}</div>
                    <div className="text-sm text-slate-400">{t.wilayasCovered}</div>
                  </div>
                  <div className="text-center p-6 bg-slate-900/50 rounded-2xl">
-                   <div className="text-4xl font-bold text-emerald-400 mb-2">2k+</div>
+                   <div className="text-4xl font-bold text-emerald-400 mb-2">{stats.totalProviders || '—'}</div>
                    <div className="text-sm text-slate-400">{t.activeMechanics}</div>
                  </div>
                  <div className="text-center p-6 bg-slate-900/50 rounded-2xl">
-                   <div className="text-4xl font-bold text-orange-400 mb-2">15m</div>
-                   <div className="text-sm text-slate-400">{t.avgResponseTime}</div>
-                 </div>
-                 <div className="text-center p-6 bg-slate-900/50 rounded-2xl">
-                   <div className="text-4xl font-bold text-purple-400 mb-2">5.0</div>
+                   <div className="text-4xl font-bold text-orange-400 mb-2">{stats.avgRating ? stats.avgRating.toFixed(1) : '—'}</div>
                    <div className="text-sm text-slate-400">{t.userRating}</div>
                  </div>
               </div>

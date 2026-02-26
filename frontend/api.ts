@@ -203,6 +203,14 @@ export const notificationsAPI = {
   }
 };
 
+// Public Stats API
+export const publicStatsAPI = {
+  get: async () => {
+    const response = await fetch(`${API_URL}/providers/stats`);
+    return handleResponse(response);
+  }
+};
+
 // Admin API
 export const adminAPI = {
   getStats: async () => {

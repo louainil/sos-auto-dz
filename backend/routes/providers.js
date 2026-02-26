@@ -30,6 +30,31 @@ router.get('/', async (req, res) => {
   }
 });
 
+// @route   GET /api/providers/stats
+// @desc    Get public platform statistics for homepage
+// @access  Public
+router.get('/stats', async (req, res) => {
+  try {
+    const [totalProviders, wilayaIds, ratingResult] = await Promise.all([
+      ServiceProvider.countDocuments({ isVerified: true }),
+      ServiceProvider.distinct('wilayaId', { isVerified: true }),
+      ServiceProvider.aggregate([
+        { $match: { isVerified: true, totalReviews: { $gt: 0 } } },
+        { $group: { _id: null, avgRating: { $avg: '$rating' } } }
+      ])
+    ]);
+
+    res.json({
+      totalProviders,
+      wilayasCovered: wilayaIds.length,
+      avgRating: ratingResult.length > 0 ? Math.round(ratingResult[0].avgRating * 10) / 10 : 0,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // @route   GET /api/providers/:id
 // @desc    Get single service provider
 // @access  Public

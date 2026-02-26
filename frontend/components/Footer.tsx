@@ -55,15 +55,15 @@ const Footer: React.FC<FooterProps> = ({ language }) => {
             <ul className="space-y-4 text-sm">
               <li className="flex items-start gap-3">
                 <MapPin size={18} className="text-blue-500 mt-0.5" />
-                <span>123 Didouche Mourad St,<br />Algiers, 16000, DZ</span>
+                <span>Dergana, Bordj El Kiffan,<br />Algiers, DZ</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={18} className="text-blue-500" />
-                <span>+213 550 00 00 00</span>
+                <a href="tel:+213791341641" className="hover:text-white transition-colors">+213 791 34 16 41</a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={18} className="text-blue-500" />
-                <span>contact@sosautodz.com</span>
+                <a href="mailto:nedjari088@gmail.com" className="hover:text-white transition-colors">nedjari088@gmail.com</a>
               </li>
             </ul>
           </div>

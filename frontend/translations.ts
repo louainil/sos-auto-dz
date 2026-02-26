@@ -74,7 +74,6 @@ export interface Translations {
   findMechanic: string;
   sparePartsShops: string;
   towingAssistance: string;
-  diagnosticAI: string;
   company: string;
   aboutUs: string;
   forProfessionals: string;
@@ -315,10 +314,9 @@ export const translations: Record<Language, Translations> = {
     // Footer
     footerTagline: "Algeria's #1 platform for connecting vehicle owners with trusted mechanics, spare parts, and towing services.",
     servicesFooter: 'Services',
-    findMechanic: 'Find a Mechanic',
+    findMechanic: 'Garage Services',
     sparePartsShops: 'Spare Parts Shops',
     towingAssistance: 'Towing Assistance',
-    diagnosticAI: 'Diagnostic AI',
     company: 'Company',
     aboutUs: 'About Us',
     forProfessionals: 'For Professionals',
@@ -557,10 +555,9 @@ export const translations: Record<Language, Translations> = {
     // Footer
     footerTagline: "La plateforme n°1 en Algérie pour connecter les propriétaires de véhicules avec des mécaniciens de confiance, des pièces détachées et des services de dépannage.",
     servicesFooter: 'Services',
-    findMechanic: 'Trouver un Mécanicien',
+    findMechanic: 'Services Garage',
     sparePartsShops: 'Magasins de Pièces Détachées',
     towingAssistance: 'Assistance au Dépannage',
-    diagnosticAI: 'Diagnostic IA',
     company: 'Entreprise',
     aboutUs: 'À Propos',
     forProfessionals: 'Pour les Professionnels',
@@ -800,10 +797,9 @@ export const translations: Record<Language, Translations> = {
     // Footer
     footerTagline: 'المنصة رقم 1 في الجزائر لربط أصحاب السيارات بالميكانيكيين الموثوقين وقطع الغيار وخدمات السحب.',
     servicesFooter: 'الخدمات',
-    findMechanic: 'ابحث عن ميكانيكي',
+    findMechanic: 'خدمات الكراج',
     sparePartsShops: 'محلات قطع الغيار',
     towingAssistance: 'المساعدة في السحب',
-    diagnosticAI: 'تشخيص بالذكاء الاصطناعي',
     company: 'الشركة',
     aboutUs: 'من نحن',
     forProfessionals: 'للمحترفين',

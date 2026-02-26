@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Car, Mail, Phone, MapPin, Instagram, Github } from 'lucide-react';
 import { Language, translations } from '../translations';
+import { PageView } from '../types';
 
 interface FooterProps {
   language: Language;
+  onChangeView: (view: PageView) => void;
 }
 
-const Footer: React.FC<FooterProps> = ({ language }) => {
+const Footer: React.FC<FooterProps> = ({ language, onChangeView }) => {
   const t = translations[language];
   
   return (
@@ -35,10 +37,9 @@ const Footer: React.FC<FooterProps> = ({ language }) => {
           <div>
             <h3 className="text-white font-bold mb-4">{t.servicesFooter}</h3>
             <ul className="space-y-3 text-sm">
-              <li><a href="#" className="hover:text-white transition-colors">{t.findMechanic}</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">{t.sparePartsShops}</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">{t.towingAssistance}</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">{t.diagnosticAI}</a></li>
+              <li><button onClick={() => onChangeView(PageView.GARAGE)} className="hover:text-white transition-colors">{t.findMechanic}</button></li>
+              <li><button onClick={() => onChangeView(PageView.PARTS)} className="hover:text-white transition-colors">{t.sparePartsShops}</button></li>
+              <li><button onClick={() => onChangeView(PageView.TOWING)} className="hover:text-white transition-colors">{t.towingAssistance}</button></li>
             </ul>
           </div>
 

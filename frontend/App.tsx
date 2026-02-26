@@ -254,7 +254,7 @@ const App: React.FC = () => {
         {renderContent()}
       </main>
 
-      {currentView !== PageView.DASHBOARD && <Footer language={language} />}
+      {currentView !== PageView.DASHBOARD && <Footer language={language} onChangeView={setCurrentView} />}
 
       {/* Booking Modal */}
       {selectedProvider && (

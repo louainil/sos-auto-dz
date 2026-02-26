@@ -62,7 +62,7 @@
 **Problem:** No rate limiting on `/api/auth/login`, `/api/auth/register`, or `/api/auth/password`. Brute-force attacks are trivially possible.  
 **Fix:** Install `express-rate-limit`. Apply a strict limiter (e.g. 5 attempts per 15 minutes) on login and password-change endpoints.
 
-### 1.4 — No `helmet` security headers (MEDIUM)
+### 1.4 — No `helmet` security headers (MEDIUM) //
 **File:** `backend/server.js`  
 **Problem:** HTTP security headers (X-Content-Type-Options, Strict-Transport-Security, X-Frame-Options, etc.) are not set.  
 **Fix:** `npm install helmet` and add `app.use(helmet())` before routes.
@@ -106,7 +106,7 @@
 **Problem:** The "View All" button for incoming requests has no handler.  
 **Fix:** Make it switch to the BOOKINGS tab: `onClick={() => setActiveTab('BOOKINGS')}`.
 
-### 2.4 — BookingModal allows past dates (BUG)
+### 2.4 — BookingModal allows past dates (BUG) 
 **File:** `frontend/components/BookingModal.tsx` — date `<input>`  
 **Problem:** The date picker has no `min` attribute. Users can book appointments in the past.  
 **Fix:** Set `min={new Date().toISOString().slice(0, 10)}` on the date input. Also validate server-side in `POST /api/bookings`.

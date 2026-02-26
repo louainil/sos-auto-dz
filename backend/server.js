@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import rateLimit from 'express-rate-limit';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import connectDB from './config/db.js';
@@ -47,6 +48,30 @@ app.use(async (req, res, next) => {
     res.status(503).json({ message: 'Database connection failed', error: error.message });
   }
 });
+
+// Rate limiters for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5,                   // 5 attempts per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many attempts. Please try again after 15 minutes.' },
+});
+
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10,                  // 10 registrations per hour per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many accounts created from this IP. Please try again after an hour.' },
+});
+
+// Apply strict rate limiting to sensitive auth endpoints
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/password', authLimiter);
+app.use('/api/auth/forgot-password', authLimiter);
+app.use('/api/auth/reset-password', authLimiter);
+app.use('/api/auth/register', registerLimiter);
 
 // Routes
 app.use('/api/auth', authRoutes);

@@ -11,6 +11,8 @@ interface AuthModalProps {
   initialMode?: 'LOGIN' | 'SIGNUP';
   onLoginSuccess: (user: User) => void;
   language?: Language;
+  resetToken?: string;
+  resetEmail?: string;
 }
 
 const DAYS = [
@@ -23,7 +25,7 @@ const DAYS = [
   { id: 6, label: 'Sat' },
 ];
 
-const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'LOGIN', onLoginSuccess, language = 'en' }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'LOGIN', onLoginSuccess, language = 'en', resetToken, resetEmail }) => {
   const t = translations[language];
   const [isLogin, setIsLogin] = useState(initialMode === 'LOGIN');
   const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.CLIENT);
@@ -32,6 +34,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // Forgot / Reset password state
+  type ModalView = 'AUTH' | 'FORGOT_PASSWORD' | 'FORGOT_SUCCESS' | 'RESET_PASSWORD' | 'RESET_SUCCESS';
+  const [view, setView] = useState<ModalView>(resetToken ? 'RESET_PASSWORD' : 'AUTH');
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [resetNewPassword, setResetNewPassword] = useState('');
+  const [resetConfirmPassword, setResetConfirmPassword] = useState('');
 
   // Professional Registration State
   const [selectedWilaya, setSelectedWilaya] = useState<number | ''>('');
@@ -52,6 +61,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
   const handleModeSwitch = (login: boolean) => {
     setIsLogin(login);
     setError('');
+    setView('AUTH');
     if (login) setSelectedRole(UserRole.CLIENT); // Reset role on switch to login
   };
 
@@ -126,6 +136,42 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
     );
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+    try {
+      await authAPI.forgotPassword(forgotEmail);
+      setView('FORGOT_SUCCESS');
+    } catch (err: any) {
+      setError(err.message || 'An error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (resetNewPassword.length < 6) {
+      setError(t.passwordMinLength);
+      return;
+    }
+    if (resetNewPassword !== resetConfirmPassword) {
+      setError(t.passwordsDoNotMatch);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await authAPI.resetPassword(resetToken || '', resetEmail || '', resetNewPassword);
+      setView('RESET_SUCCESS');
+    } catch (err: any) {
+      setError(err.message || 'An error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const getRoleIcon = (role: UserRole) => {
     switch (role) {
       case UserRole.ADMIN: return <Shield size={16} />;
@@ -169,7 +215,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden relative border border-slate-200 dark:border-slate-800 my-8 flex flex-col max-h-[90vh]">
         <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 sticky top-0 z-20">
              <h3 className="font-bold text-slate-800 dark:text-white">
-                {isLogin ? t.signInTitle : t.createAccountTitle}
+                {view === 'AUTH' ? (isLogin ? t.signInTitle : t.createAccountTitle) 
+                 : view === 'FORGOT_PASSWORD' || view === 'FORGOT_SUCCESS' ? t.forgotPasswordTitle
+                 : view === 'RESET_PASSWORD' || view === 'RESET_SUCCESS' ? t.resetPasswordTitle
+                 : t.signInTitle}
              </h3>
             <button 
                 onClick={onClose}
@@ -180,6 +229,147 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
         </div>
 
         <div className="overflow-y-auto p-6 md:p-8 flex-1">
+
+        {/* ── Forgot Password: enter email ── */}
+        {view === 'FORGOT_PASSWORD' && (
+          <div className="animate-fade-in">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Mail className="text-blue-600 dark:text-blue-400" size={28} />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{t.forgotPasswordTitle}</h2>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">{t.forgotPasswordSubtitle}</p>
+              {error && (
+                <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                  {error}
+                </div>
+              )}
+            </div>
+            <form className="space-y-4" onSubmit={handleForgotPassword}>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.emailAddress}</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-2.5 text-slate-400" size={18} />
+                  <input
+                    required
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                    placeholder="name@example.com"
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3 rounded-lg font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isLoading ? t.sendingResetLink : t.sendResetLink} <ChevronRight size={18} />
+              </button>
+            </form>
+            <p
+              className="mt-4 text-center text-xs text-slate-400 hover:text-blue-500 cursor-pointer transition-colors"
+              onClick={() => { setError(''); setView('AUTH'); setIsLogin(true); }}
+            >
+              {t.backToLogin}
+            </p>
+          </div>
+        )}
+
+        {/* ── Forgot Password: success / check email ── */}
+        {view === 'FORGOT_SUCCESS' && (
+          <div className="animate-fade-in text-center">
+            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Check className="text-green-600 dark:text-green-400" size={28} />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{t.resetLinkSent}</h2>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">{t.resetLinkSentDesc}</p>
+            <button
+              type="button"
+              onClick={() => { setError(''); setView('AUTH'); setIsLogin(true); }}
+              className="w-full py-3 rounded-lg font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
+            >
+              {t.backToLogin} <ChevronRight size={18} />
+            </button>
+          </div>
+        )}
+
+        {/* ── Reset Password: enter new password (from email link) ── */}
+        {view === 'RESET_PASSWORD' && (
+          <div className="animate-fade-in">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Lock className="text-blue-600 dark:text-blue-400" size={28} />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{t.resetPasswordTitle}</h2>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">{t.resetPasswordSubtitle}</p>
+              {error && (
+                <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                  {error}
+                </div>
+              )}
+            </div>
+            <form className="space-y-4" onSubmit={handleResetPassword}>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.newPassword}</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-2.5 text-slate-400" size={18} />
+                  <input
+                    required
+                    type="password"
+                    value={resetNewPassword}
+                    onChange={(e) => setResetNewPassword(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.confirmNewPassword}</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-2.5 text-slate-400" size={18} />
+                  <input
+                    required
+                    type="password"
+                    value={resetConfirmPassword}
+                    onChange={(e) => setResetConfirmPassword(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3 rounded-lg font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isLoading ? t.resettingPassword : t.resetPassword} <ChevronRight size={18} />
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* ── Reset Password: success ── */}
+        {view === 'RESET_SUCCESS' && (
+          <div className="animate-fade-in text-center">
+            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Check className="text-green-600 dark:text-green-400" size={28} />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{t.passwordResetSuccess}</h2>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">{t.passwordResetSuccessDesc}</p>
+            <button
+              type="button"
+              onClick={() => { setError(''); setView('AUTH'); setIsLogin(true); }}
+              className="w-full py-3 rounded-lg font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
+            >
+              {t.backToLogin} <ChevronRight size={18} />
+            </button>
+          </div>
+        )}
+
+        {/* ── Normal Auth (Login / Signup) ── */}
+        {view === 'AUTH' && (<>
           {/* Tab Switcher */}
           <div className="flex border-b border-slate-100 dark:border-slate-800 mb-6">
             <button
@@ -516,10 +706,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
           </form>
 
           {isLogin && (
-              <p className="mt-4 text-center text-xs text-slate-400 hover:text-blue-500 cursor-pointer transition-colors">
+              <p 
+                className="mt-4 text-center text-xs text-slate-400 hover:text-blue-500 cursor-pointer transition-colors"
+                onClick={() => { setError(''); setView('FORGOT_PASSWORD'); }}
+              >
                   {t.forgotPassword}
               </p>
           )}
+        </>)}
         </div>
       </div>
     </div>

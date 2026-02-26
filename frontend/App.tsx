@@ -21,6 +21,10 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
+  // Password reset token from email link
+  const [resetToken, setResetToken] = useState<string | undefined>(undefined);
+  const [resetEmail, setResetEmail] = useState<string | undefined>(undefined);
+
   // Dark Mode State - Default to true
   const [isDarkMode, setIsDarkMode] = useState(true);
   
@@ -36,6 +40,20 @@ const App: React.FC = () => {
       root.classList.remove('dark');
     }
   }, [isDarkMode]);
+
+  // Check URL for password reset token and auto-open modal
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('resetToken');
+    const email = params.get('email');
+    if (token && email) {
+      setResetToken(token);
+      setResetEmail(email);
+      setIsAuthModalOpen(true);
+      // Clean URL params without reloading
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
   
   // Apply RTL direction for Arabic
   useEffect(() => {
@@ -268,10 +286,12 @@ const App: React.FC = () => {
       {/* Auth Modal */}
       <AuthModal 
         isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
+        onClose={() => { setIsAuthModalOpen(false); setResetToken(undefined); setResetEmail(undefined); }}
         initialMode={authInitialMode}
         onLoginSuccess={handleLoginSuccess}
         language={language}
+        resetToken={resetToken}
+        resetEmail={resetEmail}
       />
     </div>
   );

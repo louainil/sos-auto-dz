@@ -229,6 +229,25 @@ export interface Translations {
   processing: string;
   forgotPassword: string;
 
+  // Forgot / Reset Password flow
+  forgotPasswordTitle: string;
+  forgotPasswordSubtitle: string;
+  sendResetLink: string;
+  sendingResetLink: string;
+  resetLinkSent: string;
+  resetLinkSentDesc: string;
+  backToLogin: string;
+  resetPasswordTitle: string;
+  resetPasswordSubtitle: string;
+  newPassword: string;
+  confirmNewPassword: string;
+  resetPassword: string;
+  resettingPassword: string;
+  passwordResetSuccess: string;
+  passwordResetSuccessDesc: string;
+  passwordsDoNotMatch: string;
+  passwordMinLength: string;
+
   // NotificationDropdown
   notifications: string;
   clearAll: string;
@@ -472,6 +491,25 @@ export const translations: Record<Language, Translations> = {
     processing: 'Processing...',
     forgotPassword: 'Forgot your password?',
 
+    // Forgot / Reset Password flow
+    forgotPasswordTitle: 'Reset your password',
+    forgotPasswordSubtitle: 'Enter your email and we\'ll send you a link to reset your password.',
+    sendResetLink: 'Send Reset Link',
+    sendingResetLink: 'Sending...',
+    resetLinkSent: 'Check your email',
+    resetLinkSentDesc: 'If an account with that email exists, we sent a password reset link. Check your inbox (and spam folder).',
+    backToLogin: 'Back to Login',
+    resetPasswordTitle: 'Set new password',
+    resetPasswordSubtitle: 'Enter your new password below.',
+    newPassword: 'New Password',
+    confirmNewPassword: 'Confirm New Password',
+    resetPassword: 'Reset Password',
+    resettingPassword: 'Resetting...',
+    passwordResetSuccess: 'Password reset!',
+    passwordResetSuccessDesc: 'Your password has been reset successfully. You can now log in with your new password.',
+    passwordsDoNotMatch: 'Passwords do not match.',
+    passwordMinLength: 'Password must be at least 6 characters.',
+
     // NotificationDropdown
     notifications: 'Notifications',
     clearAll: 'Clear all',
@@ -712,6 +750,25 @@ export const translations: Record<Language, Translations> = {
     // AuthModal – submit & links
     processing: 'Traitement...',
     forgotPassword: 'Mot de passe oublié ?',
+
+    // Forgot / Reset Password flow
+    forgotPasswordTitle: 'Réinitialiser le mot de passe',
+    forgotPasswordSubtitle: 'Entrez votre email et nous vous enverrons un lien de réinitialisation.',
+    sendResetLink: 'Envoyer le lien',
+    sendingResetLink: 'Envoi...',
+    resetLinkSent: 'Vérifiez votre email',
+    resetLinkSentDesc: 'Si un compte avec cet email existe, nous avons envoyé un lien de réinitialisation. Vérifiez votre boîte de réception (et les spams).',
+    backToLogin: 'Retour à la connexion',
+    resetPasswordTitle: 'Nouveau mot de passe',
+    resetPasswordSubtitle: 'Entrez votre nouveau mot de passe ci-dessous.',
+    newPassword: 'Nouveau mot de passe',
+    confirmNewPassword: 'Confirmer le mot de passe',
+    resetPassword: 'Réinitialiser',
+    resettingPassword: 'Réinitialisation...',
+    passwordResetSuccess: 'Mot de passe réinitialisé !',
+    passwordResetSuccessDesc: 'Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.',
+    passwordsDoNotMatch: 'Les mots de passe ne correspondent pas.',
+    passwordMinLength: 'Le mot de passe doit contenir au moins 6 caractères.',
 
     // NotificationDropdown
     notifications: 'Notifications',
@@ -954,6 +1011,25 @@ export const translations: Record<Language, Translations> = {
     // AuthModal – submit & links
     processing: 'جارٍ المعالجة...',
     forgotPassword: 'نسيت كلمة المرور؟',
+
+    // Forgot / Reset Password flow
+    forgotPasswordTitle: 'إعادة تعيين كلمة المرور',
+    forgotPasswordSubtitle: 'أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين.',
+    sendResetLink: 'إرسال رابط التعيين',
+    sendingResetLink: 'جارٍ الإرسال...',
+    resetLinkSent: 'تحقق من بريدك',
+    resetLinkSentDesc: 'إذا كان هناك حساب بهذا البريد، فقد أرسلنا رابط إعادة التعيين. تحقق من صندوق الوارد (ومجلد الرسائل غير المرغوبة).',
+    backToLogin: 'العودة لتسجيل الدخول',
+    resetPasswordTitle: 'كلمة مرور جديدة',
+    resetPasswordSubtitle: 'أدخل كلمة المرور الجديدة أدناه.',
+    newPassword: 'كلمة المرور الجديدة',
+    confirmNewPassword: 'تأكيد كلمة المرور',
+    resetPassword: 'إعادة التعيين',
+    resettingPassword: 'جارٍ إعادة التعيين...',
+    passwordResetSuccess: 'تم إعادة التعيين!',
+    passwordResetSuccessDesc: 'تم إعادة تعيين كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة.',
+    passwordsDoNotMatch: 'كلمات المرور غير متطابقة.',
+    passwordMinLength: 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.',
 
     // NotificationDropdown
     notifications: 'الإشعارات',

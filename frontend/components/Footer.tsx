@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Car, Mail, Phone, MapPin, Facebook, Instagram, Twitter } from 'lucide-react';
+import { Car, Mail, Phone, MapPin, Instagram, Github } from 'lucide-react';
 import { Language, translations } from '../translations';
 
 interface FooterProps {
@@ -24,9 +24,11 @@ const Footer: React.FC<FooterProps> = ({ language }) => {
               {t.footerTagline}
             </p>
             <div className="flex gap-4">
-              <a href="#" className="hover:text-blue-400 transition-colors"><Facebook size={20} /></a>
-              <a href="#" className="hover:text-pink-400 transition-colors"><Instagram size={20} /></a>
-              <a href="#" className="hover:text-blue-300 transition-colors"><Twitter size={20} /></a>
+              <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" className="hover:text-pink-400 transition-colors"><Instagram size={20} /></a>
+              <a href="https://x.com/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                <svg width="20" height="20" viewBox="0 0 512 512" fill="currentColor"><path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8l164.9-188.5L26.8 48h145.6l100.5 132.9L389.2 48zm-24.8 373.8h39.1L151.1 88h-42L364.4 421.8z"/></svg>
+              </a>
+              <a href="https://github.com/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors"><Github size={20} /></a>
             </div>
           </div>
 

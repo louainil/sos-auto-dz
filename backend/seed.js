@@ -145,7 +145,8 @@ const seedDatabase = async () => {
       // Create provider profile
       await ServiceProvider.create({
         ...providerData,
-        userId: user._id
+        userId: user._id,
+        isVerified: true
       });
 
       console.log(`Created: ${providerData.name}`);

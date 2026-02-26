@@ -1,15 +1,23 @@
 import express from 'express';
+import { body, param } from 'express-validator';
 import Booking from '../models/Booking.js';
 import ServiceProvider from '../models/ServiceProvider.js';
 import Notification from '../models/Notification.js';
 import { protect } from '../middleware/auth.js';
+import validate from '../middleware/validate.js';
 
 const router = express.Router();
 
 // @route   POST /api/bookings
 // @desc    Create a new booking
 // @access  Private
-router.post('/', protect, async (req, res) => {
+router.post('/', protect, [
+  body('providerId').isMongoId().withMessage('Valid provider ID is required'),
+  body('date').isISO8601().withMessage('Valid date is required (ISO 8601)'),
+  body('issue').trim().notEmpty().withMessage('Issue description is required')
+    .isLength({ max: 2000 }).withMessage('Issue must be at most 2000 characters'),
+  validate
+], async (req, res) => {
   try {
     const { providerId, date, issue } = req.body;
 
@@ -78,7 +86,10 @@ router.get('/', protect, async (req, res) => {
 // @route   GET /api/bookings/:id
 // @desc    Get single booking
 // @access  Private
-router.get('/:id', protect, async (req, res) => {
+router.get('/:id', protect, [
+  param('id').isMongoId().withMessage('Valid booking ID is required'),
+  validate
+], async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
 
@@ -106,7 +117,12 @@ router.get('/:id', protect, async (req, res) => {
 // @route   PUT /api/bookings/:id
 // @desc    Update booking status
 // @access  Private
-router.put('/:id', protect, async (req, res) => {
+router.put('/:id', protect, [
+  param('id').isMongoId().withMessage('Valid booking ID is required'),
+  body('status').optional().isIn(['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED']).withMessage('Status must be PENDING, CONFIRMED, COMPLETED, or CANCELLED'),
+  body('price').optional().isFloat({ min: 0 }).withMessage('Price must be a non-negative number'),
+  validate
+], async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
 
@@ -149,7 +165,10 @@ router.put('/:id', protect, async (req, res) => {
 // @route   DELETE /api/bookings/:id
 // @desc    Delete/Cancel booking
 // @access  Private
-router.delete('/:id', protect, async (req, res) => {
+router.delete('/:id', protect, [
+  param('id').isMongoId().withMessage('Valid booking ID is required'),
+  validate
+], async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
 

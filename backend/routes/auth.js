@@ -4,10 +4,12 @@ import crypto from 'crypto';
 import multer from 'multer';
 import { Readable } from 'stream';
 import nodemailer from 'nodemailer';
+import { body } from 'express-validator';
 import User from '../models/User.js';
 import ServiceProvider from '../models/ServiceProvider.js';
 import Notification from '../models/Notification.js';
 import { protect } from '../middleware/auth.js';
+import validate from '../middleware/validate.js';
 import cloudinary from '../config/cloudinary.js';
 
 // Multer memory storage (no disk writes)
@@ -43,10 +45,29 @@ const generateToken = (id) => {
   });
 };
 
+// Allowed roles for registration (ADMIN is excluded)
+const ALLOWED_ROLES = ['CLIENT', 'MECHANIC', 'PARTS_SHOP', 'TOWING'];
+
 // @route   POST /api/auth/register
 // @desc    Register a new user
 // @access  Public
-router.post('/register', async (req, res) => {
+router.post('/register', [
+  body('name').trim().notEmpty().withMessage('Name is required')
+    .isLength({ min: 2, max: 100 }).withMessage('Name must be 2-100 characters'),
+  body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('role').isIn(ALLOWED_ROLES).withMessage(`Role must be one of: ${ALLOWED_ROLES.join(', ')}`),
+  body('phone').optional().trim().isLength({ max: 20 }).withMessage('Phone must be at most 20 characters'),
+  body('wilayaId').optional().isInt({ min: 1, max: 58 }).withMessage('Wilaya ID must be between 1 and 58').toInt(),
+  body('commune').optional().trim().isLength({ max: 100 }),
+  body('garageType').optional().trim(),
+  body('description').optional().trim().isLength({ max: 1000 }),
+  body('specialty').optional().isArray(),
+  body('workingDays').optional().isArray(),
+  body('workingHours.start').optional().matches(/^\d{2}:\d{2}$/).withMessage('workingHours.start must be HH:MM'),
+  body('workingHours.end').optional().matches(/^\d{2}:\d{2}$/).withMessage('workingHours.end must be HH:MM'),
+  validate
+], async (req, res) => {
   try {
     const {
       name, email, password, role, phone, garageType, wilayaId, commune,
@@ -113,7 +134,11 @@ router.post('/register', async (req, res) => {
 // @route   POST /api/auth/login
 // @desc    Authenticate user & get token
 // @access  Public
-router.post('/login', async (req, res) => {
+router.post('/login', [
+  body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+  body('password').notEmpty().withMessage('Password is required'),
+  validate
+], async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -169,7 +194,11 @@ router.get('/me', protect, async (req, res) => {
 // @route   PUT /api/auth/profile
 // @desc    Update user name & phone in MongoDB
 // @access  Private
-router.put('/profile', protect, async (req, res) => {
+router.put('/profile', protect, [
+  body('name').optional().trim().isLength({ min: 2, max: 100 }).withMessage('Name must be 2-100 characters'),
+  body('phone').optional().trim().isLength({ max: 20 }).withMessage('Phone must be at most 20 characters'),
+  validate
+], async (req, res) => {
   try {
     const { name, phone } = req.body;
     const user = await User.findById(req.user._id);
@@ -248,17 +277,14 @@ router.post('/avatar', protect, upload.single('avatar'), async (req, res) => {
 // @route   PUT /api/auth/password
 // @desc    Change user password
 // @access  Private
-router.put('/password', protect, async (req, res) => {
+// Validated with: currentPassword (required), newPassword (min 6 chars)
+router.put('/password', protect, [
+  body('currentPassword').notEmpty().withMessage('Current password is required'),
+  body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters'),
+  validate
+], async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({ message: 'Please provide current and new password' });
-    }
-
-    if (newPassword.length < 6) {
-      return res.status(400).json({ message: 'New password must be at least 6 characters' });
-    }
 
     const user = await User.findById(req.user._id).select('+password');
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -281,12 +307,12 @@ router.put('/password', protect, async (req, res) => {
 // @route   POST /api/auth/forgot-password
 // @desc    Send password reset email with token
 // @access  Public
-router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', [
+  body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+  validate
+], async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: 'Please provide an email address' });
-    }
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -348,17 +374,14 @@ router.post('/forgot-password', async (req, res) => {
 // @route   POST /api/auth/reset-password
 // @desc    Reset password using token from email
 // @access  Public
-router.post('/reset-password', async (req, res) => {
+router.post('/reset-password', [
+  body('token').notEmpty().withMessage('Reset token is required'),
+  body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+  body('newPassword').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  validate
+], async (req, res) => {
   try {
     const { token, email, newPassword } = req.body;
-
-    if (!token || !email || !newPassword) {
-      return res.status(400).json({ message: 'Missing required fields' });
-    }
-
-    if (newPassword.length < 6) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters' });
-    }
 
     // Hash the incoming token to compare with the stored hash
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');

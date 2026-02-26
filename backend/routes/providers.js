@@ -1,13 +1,23 @@
 import express from 'express';
+import { body, param, query } from 'express-validator';
 import ServiceProvider from '../models/ServiceProvider.js';
 import { protect, isProfessional } from '../middleware/auth.js';
+import validate from '../middleware/validate.js';
 
 const router = express.Router();
 
 // @route   GET /api/providers
 // @desc    Get all service providers with filters
 // @access  Public
-router.get('/', async (req, res) => {
+router.get('/', [
+  query('role').optional().isIn(['MECHANIC', 'PARTS_SHOP', 'TOWING']).withMessage('Invalid role'),
+  query('wilayaId').optional().isInt({ min: 1, max: 58 }).withMessage('Wilaya ID must be 1-58'),
+  query('commune').optional().trim(),
+  query('garageType').optional().trim(),
+  query('specialty').optional().trim(),
+  query('isAvailable').optional().isIn(['true', 'false']).withMessage('isAvailable must be true or false'),
+  validate
+], async (req, res) => {
   try {
     const { role, wilayaId, commune, garageType, specialty, isAvailable } = req.query;
 
@@ -58,7 +68,10 @@ router.get('/stats', async (req, res) => {
 // @route   GET /api/providers/:id
 // @desc    Get single service provider
 // @access  Public
-router.get('/:id', async (req, res) => {
+router.get('/:id', [
+  param('id').isMongoId().withMessage('Valid provider ID is required'),
+  validate
+], async (req, res) => {
   try {
     const provider = await ServiceProvider.findById(req.params.id).populate('userId', 'name email phone');
     
@@ -76,7 +89,19 @@ router.get('/:id', async (req, res) => {
 // @route   PUT /api/providers/:id
 // @desc    Update service provider
 // @access  Private (Professional)
-router.put('/:id', protect, isProfessional, async (req, res) => {
+router.put('/:id', protect, isProfessional, [
+  param('id').isMongoId().withMessage('Valid provider ID is required'),
+  body('name').optional().trim().isLength({ min: 2, max: 100 }).withMessage('Name must be 2-100 characters'),
+  body('description').optional().trim().isLength({ max: 2000 }).withMessage('Description must be at most 2000 characters'),
+  body('phone').optional().trim().isLength({ max: 20 }).withMessage('Phone must be at most 20 characters'),
+  body('specialty').optional().isArray().withMessage('Specialty must be an array'),
+  body('image').optional().trim().isURL().withMessage('Image must be a valid URL'),
+  body('isAvailable').optional().isBoolean().withMessage('isAvailable must be a boolean'),
+  body('workingDays').optional().isArray().withMessage('Working days must be an array'),
+  body('workingHours.start').optional().matches(/^\d{2}:\d{2}$/).withMessage('workingHours.start must be HH:MM'),
+  body('workingHours.end').optional().matches(/^\d{2}:\d{2}$/).withMessage('workingHours.end must be HH:MM'),
+  validate
+], async (req, res) => {
   try {
     const provider = await ServiceProvider.findById(req.params.id);
 
@@ -121,7 +146,10 @@ router.put('/:id', protect, isProfessional, async (req, res) => {
 // @route   GET /api/providers/user/:userId
 // @desc    Get provider profile by user ID
 // @access  Private
-router.get('/user/:userId', protect, async (req, res) => {
+router.get('/user/:userId', protect, [
+  param('userId').isMongoId().withMessage('Valid user ID is required'),
+  validate
+], async (req, res) => {
   try {
     const provider = await ServiceProvider.findOne({ userId: req.params.userId });
     

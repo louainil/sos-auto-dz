@@ -1,6 +1,8 @@
 import express from 'express';
+import { param } from 'express-validator';
 import Notification from '../models/Notification.js';
 import { protect } from '../middleware/auth.js';
+import validate from '../middleware/validate.js';
 
 const router = express.Router();
 
@@ -23,7 +25,10 @@ router.get('/', protect, async (req, res) => {
 // @route   PUT /api/notifications/:id/read
 // @desc    Mark notification as read
 // @access  Private
-router.put('/:id/read', protect, async (req, res) => {
+router.put('/:id/read', protect, [
+  param('id').isMongoId().withMessage('Valid notification ID is required'),
+  validate
+], async (req, res) => {
   try {
     const notification = await Notification.findById(req.params.id);
 
@@ -62,7 +67,10 @@ router.delete('/', protect, async (req, res) => {
 // @route   DELETE /api/notifications/:id
 // @desc    Delete single notification
 // @access  Private
-router.delete('/:id', protect, async (req, res) => {
+router.delete('/:id', protect, [
+  param('id').isMongoId().withMessage('Valid notification ID is required'),
+  validate
+], async (req, res) => {
   try {
     const notification = await Notification.findById(req.params.id);
 

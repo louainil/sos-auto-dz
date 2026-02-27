@@ -275,6 +275,18 @@ export interface Translations {
   verifyEmailExpired: string;
   goToLogin: string;
 
+  // Provider Profile
+  providerProfile: string;
+  contactInfo: string;
+  workingSchedule: string;
+  customerReviews: string;
+  noReviewsYet: string;
+  specialties: string;
+  viewProfile: string;
+  backToList: string;
+  providerNotFound: string;
+  dayNames: string[];
+
   // NotificationDropdown
   notifications: string;
   clearAll: string;
@@ -564,6 +576,18 @@ export const translations: Record<Language, Translations> = {
     verifyEmailExpired: 'This verification link is invalid or has expired. Please request a new one.',
     goToLogin: 'Go to Login',
 
+    // Provider Profile
+    providerProfile: 'Provider Profile',
+    contactInfo: 'Contact Information',
+    workingSchedule: 'Working Schedule',
+    customerReviews: 'Customer Reviews',
+    noReviewsYet: 'No reviews yet. Be the first to leave a review!',
+    specialties: 'Specialties',
+    viewProfile: 'View Profile',
+    backToList: 'Back to list',
+    providerNotFound: 'Provider not found',
+    dayNames: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+
     // NotificationDropdown
     notifications: 'Notifications',
     clearAll: 'Clear all',
@@ -850,6 +874,18 @@ export const translations: Record<Language, Translations> = {
     verifyEmailFailed: 'Échec de la vérification',
     verifyEmailExpired: 'Ce lien de vérification est invalide ou a expiré. Veuillez en demander un nouveau.',
     goToLogin: 'Aller à la connexion',
+
+    // Provider Profile
+    providerProfile: 'Profil du prestataire',
+    contactInfo: 'Coordonnées',
+    workingSchedule: 'Horaires de travail',
+    customerReviews: 'Avis des clients',
+    noReviewsYet: 'Aucun avis pour le moment. Soyez le premier à laisser un avis !',
+    specialties: 'Spécialités',
+    viewProfile: 'Voir le profil',
+    backToList: 'Retour à la liste',
+    providerNotFound: 'Prestataire introuvable',
+    dayNames: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
 
     // NotificationDropdown
     notifications: 'Notifications',
@@ -1138,6 +1174,18 @@ export const translations: Record<Language, Translations> = {
     verifyEmailFailed: 'فشل التحقق',
     verifyEmailExpired: 'رابط التحقق هذا غير صالح أو منتهي الصلاحية. يرجى طلب رابط جديد.',
     goToLogin: 'الذهاب لتسجيل الدخول',
+
+    // Provider Profile
+    providerProfile: 'ملف مقدم الخدمة',
+    contactInfo: 'معلومات الاتصال',
+    workingSchedule: 'جدول العمل',
+    customerReviews: 'آراء العملاء',
+    noReviewsYet: 'لا توجد تقييمات بعد. كن أول من يترك تقييماً!',
+    specialties: 'التخصصات',
+    viewProfile: 'عرض الملف',
+    backToList: 'العودة للقائمة',
+    providerNotFound: 'مقدم الخدمة غير موجود',
+    dayNames: ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'],
 
     // NotificationDropdown
     notifications: 'الإشعارات',

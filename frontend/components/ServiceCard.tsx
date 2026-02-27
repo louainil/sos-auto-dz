@@ -1,5 +1,6 @@
 import React from 'react';
-import { Star, Phone, MapPin, Wrench, Truck, Clock, MessageCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Star, Phone, MapPin, Wrench, Truck, Clock, MessageCircle, ExternalLink } from 'lucide-react';
 import { ServiceProvider, UserRole } from '../types';
 import { Language, translations } from '../translations';
 import DistanceIndicator from './DistanceIndicator';
@@ -98,7 +99,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBoo
             }`}>
               {provider.role.replace('_', ' ')}
             </span>
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white leading-tight">{provider.name}</h3>
+            <Link to={`/provider/${provider.id}`} className="text-lg font-bold text-slate-800 dark:text-white leading-tight hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{provider.name}</Link>
           </div>
         </div>
 
@@ -149,6 +150,9 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBoo
         </div>
 
         <div className="flex gap-2 mt-auto">
+          <Link to={`/provider/${provider.id}`} className="w-10 flex items-center justify-center border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors" title={t.viewProfile}>
+            <ExternalLink size={16} />
+          </Link>
           {provider.role === UserRole.TOWING || provider.role === UserRole.PARTS_SHOP ? (
             // For towing and spare parts: only show call and WhatsApp buttons
             <>

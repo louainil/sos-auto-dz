@@ -125,6 +125,42 @@ describe('Providers Routes', () => {
       const res = await request(app).get('/api/providers?role=INVALID');
       expect(res.status).toBe(400);
     });
+
+    it('should filter by search query (name/description regex)', async () => {
+      ServiceProvider.find.mockReturnValue({
+        sort: vi.fn().mockResolvedValue([createMockProvider({ name: 'Quick Fix Garage' })])
+      });
+
+      const res = await request(app).get('/api/providers?search=Quick');
+
+      expect(res.status).toBe(200);
+      expect(ServiceProvider.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          $or: [
+            { name: { $regex: 'Quick', $options: 'i' } },
+            { description: { $regex: 'Quick', $options: 'i' } }
+          ]
+        })
+      );
+    });
+
+    it('should escape special regex characters in search query', async () => {
+      ServiceProvider.find.mockReturnValue({
+        sort: vi.fn().mockResolvedValue([])
+      });
+
+      const res = await request(app).get('/api/providers?search=test%2Bvalue');
+
+      expect(res.status).toBe(200);
+      expect(ServiceProvider.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          $or: [
+            { name: { $regex: 'test\\+value', $options: 'i' } },
+            { description: { $regex: 'test\\+value', $options: 'i' } }
+          ]
+        })
+      );
+    });
   });
 
   // ────────────────────────────────────────

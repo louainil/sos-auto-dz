@@ -4,6 +4,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import React from 'react';
 import ServiceCard from '../components/ServiceCard';
 import { ServiceProvider, UserRole } from '../types';
@@ -39,46 +40,49 @@ describe('ServiceCard', () => {
     language: 'en' as const
   };
 
+  const renderCard = (props: Partial<typeof defaultProps> = {}) =>
+    render(<MemoryRouter><ServiceCard {...defaultProps} {...props} /></MemoryRouter>);
+
   it('should render provider name', () => {
-    render(<ServiceCard {...defaultProps} />);
+    renderCard();
     expect(screen.getByText('Test Garage')).toBeInTheDocument();
   });
 
   it('should render provider description', () => {
-    render(<ServiceCard {...defaultProps} />);
+    renderCard();
     expect(screen.getByText(/professional mechanic service/i)).toBeInTheDocument();
   });
 
   it('should render the provider role badge', () => {
-    render(<ServiceCard {...defaultProps} />);
+    renderCard();
     expect(screen.getByText('MECHANIC')).toBeInTheDocument();
   });
 
   it('should render specialties', () => {
-    render(<ServiceCard {...defaultProps} />);
+    renderCard();
     expect(screen.getByText('Toyota')).toBeInTheDocument();
     expect(screen.getByText('Peugeot')).toBeInTheDocument();
   });
 
   it('should render working hours', () => {
-    render(<ServiceCard {...defaultProps} />);
+    renderCard();
     expect(screen.getByText(/08:00 - 17:00/)).toBeInTheDocument();
   });
 
   it('should render commune and wilaya location', () => {
-    render(<ServiceCard {...defaultProps} />);
+    renderCard();
     expect(screen.getByText(/alger centre/i)).toBeInTheDocument();
   });
 
   it('should show "Book Now" button for MECHANIC providers', () => {
-    render(<ServiceCard {...defaultProps} />);
+    renderCard();
     const bookBtn = screen.getByRole('button', { name: /book now/i });
     expect(bookBtn).toBeInTheDocument();
   });
 
   it('should call onBook when Book Now button is clicked', () => {
     const onBook = vi.fn();
-    render(<ServiceCard {...defaultProps} onBook={onBook} />);
+    renderCard({ onBook });
     
     const bookBtn = screen.getByRole('button', { name: /book now/i });
     fireEvent.click(bookBtn);
@@ -88,7 +92,7 @@ describe('ServiceCard', () => {
 
   it('should show "Call Now" for TOWING providers instead of Book Now', () => {
     const provider = createProvider({ role: UserRole.TOWING });
-    render(<ServiceCard {...defaultProps} provider={provider} />);
+    renderCard({ provider });
     
     expect(screen.getByText(/call now/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /book now/i })).toBeNull();
@@ -96,7 +100,7 @@ describe('ServiceCard', () => {
 
   it('should show "Call Now" for PARTS_SHOP providers instead of Book Now', () => {
     const provider = createProvider({ role: UserRole.PARTS_SHOP });
-    render(<ServiceCard {...defaultProps} provider={provider} />);
+    renderCard({ provider });
     
     expect(screen.getByText(/call now/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /book now/i })).toBeNull();
@@ -104,11 +108,8 @@ describe('ServiceCard', () => {
 
   it('should show WhatsApp link with correct Algeria phone format for TOWING', () => {
     const provider = createProvider({ role: UserRole.TOWING, phone: '0555123456' });
-    render(<ServiceCard {...defaultProps} provider={provider} />);
+    renderCard({ provider });
     
-    // Should have a wa.me link with 213 prefix (leading 0 replaced)
-    const whatsappLink = screen.getByRole('link', { name: '' });
-    // Find the wa.me link among all links
     const links = screen.getAllByRole('link');
     const waLink = links.find(l => l.getAttribute('href')?.includes('wa.me'));
     expect(waLink).toBeDefined();
@@ -117,14 +118,14 @@ describe('ServiceCard', () => {
 
   it('should show unavailable overlay when provider is not available', () => {
     const provider = createProvider({ isAvailable: false });
-    render(<ServiceCard {...defaultProps} provider={provider} />);
+    renderCard({ provider });
     
     expect(screen.getByText(/currently unavailable/i)).toBeInTheDocument();
   });
 
   it('should disable book button when provider is unavailable', () => {
     const provider = createProvider({ isAvailable: false });
-    render(<ServiceCard {...defaultProps} provider={provider} />);
+    renderCard({ provider });
     
     const bookBtn = screen.getByRole('button', { name: /book now/i });
     expect(bookBtn).toBeDisabled();
@@ -132,7 +133,7 @@ describe('ServiceCard', () => {
 
   it('should render Towing card with truck icon placeholder (no image)', () => {
     const provider = createProvider({ role: UserRole.TOWING });
-    render(<ServiceCard {...defaultProps} provider={provider} />);
+    renderCard({ provider });
     
     // Towing has a gradient placeholder, no <img>
     expect(screen.queryByRole('img')).toBeNull();
@@ -140,13 +141,13 @@ describe('ServiceCard', () => {
 
   it('should show PARTS_SHOP role badge for parts providers', () => {
     const provider = createProvider({ role: UserRole.PARTS_SHOP });
-    render(<ServiceCard {...defaultProps} provider={provider} />);
+    renderCard({ provider });
     
     expect(screen.getByText('PARTS SHOP')).toBeInTheDocument();
   });
 
   it('should render in French when language is fr', () => {
-    render(<ServiceCard {...defaultProps} language="fr" />);
+    renderCard({ language: 'fr' });
     // Book Now in French
     expect(screen.getByRole('button', { name: /réserver/i })).toBeInTheDocument();
   });

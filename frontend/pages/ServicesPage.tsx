@@ -17,6 +17,7 @@ interface ServicesPageProps {
 
 const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, userLocation, onBook, language }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedWilaya, setSelectedWilaya] = useState<number | 'all'>('all');
   const [selectedCommune, setSelectedCommune] = useState<string>('all');
   const [selectedGarageType, setSelectedGarageType] = useState<GarageType | 'all'>('all');
@@ -30,6 +31,12 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
   const [brandSearchTerm, setBrandSearchTerm] = useState('');
   const [showBrandList, setShowBrandList] = useState(false);
 
+  // Debounce search input (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   // Fetch providers from API
   useEffect(() => {
     const fetchProviders = async () => {
@@ -42,6 +49,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
           filters.garageType = selectedGarageType;
         }
         if (selectedBrand !== 'all') filters.specialty = selectedBrand;
+        if (debouncedSearch.trim()) filters.search = debouncedSearch.trim();
         
         const data = await providersAPI.getAll(filters);
         // Map backend data to frontend format
@@ -69,7 +77,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
       }
     };
     fetchProviders();
-  }, [type, selectedWilaya, selectedCommune, selectedGarageType, selectedBrand]);
+  }, [type, selectedWilaya, selectedCommune, selectedGarageType, selectedBrand, debouncedSearch]);
 
   // Reset commune when wilaya changes
   useEffect(() => {
@@ -89,16 +97,10 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
   };
 
   const filteredProviders = useMemo(() => {
-    return providers.filter(p => {
-      // Filter by Search Term (Name or Description)
-      if (searchTerm && !p.name.toLowerCase().includes(searchTerm.toLowerCase()) && 
-          !p.description.toLowerCase().includes(searchTerm.toLowerCase())) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [providers, searchTerm]);
+    // Search filtering is now handled server-side via the search query param.
+    // Client-side filtering is kept as an empty passthrough for future local filters.
+    return providers;
+  }, [providers]);
 
   const availableCommunes = selectedWilaya !== 'all' ? COMMUNES[selectedWilaya] || [] : [];
 

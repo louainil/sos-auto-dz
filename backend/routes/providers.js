@@ -15,11 +15,12 @@ router.get('/', [
   query('commune').optional().trim(),
   query('garageType').optional().trim(),
   query('specialty').optional().trim(),
+  query('search').optional().trim().isLength({ max: 100 }).withMessage('Search query must be at most 100 characters'),
   query('isAvailable').optional().isIn(['true', 'false']).withMessage('isAvailable must be true or false'),
   validate
 ], async (req, res) => {
   try {
-    const { role, wilayaId, commune, garageType, specialty, isAvailable } = req.query;
+    const { role, wilayaId, commune, garageType, specialty, isAvailable, search } = req.query;
 
     // Build filter object
     const filter = {};
@@ -30,6 +31,15 @@ router.get('/', [
     if (garageType) filter.garageType = garageType;
     if (specialty) filter.specialty = { $in: [specialty] };
     if (isAvailable !== undefined) filter.isAvailable = isAvailable === 'true';
+
+    // Text search by name or description (case-insensitive regex)
+    if (search) {
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      filter.$or = [
+        { name: { $regex: escapedSearch, $options: 'i' } },
+        { description: { $regex: escapedSearch, $options: 'i' } }
+      ];
+    }
 
     const providers = await ServiceProvider.find(filter).sort({ rating: -1 });
     

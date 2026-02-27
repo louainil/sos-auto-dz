@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import ServicesPage from './pages/ServicesPage';
 import { Dashboard } from './pages/Dashboard';
 import VerifyEmail from './pages/VerifyEmail';
+import ProviderProfile from './pages/ProviderProfile';
 import BookingModal from './components/BookingModal';
 import AuthModal from './components/AuthModal';
 import { PageView, ServiceProvider, UserRole, User, Notification } from './types';
@@ -349,6 +350,9 @@ const App: React.FC = () => {
           } />
           <Route path="/dashboard" element={
             user ? <Dashboard user={user} onLogout={handleLogout} onUserUpdate={setUser} language={language} /> : <Navigate to="/" replace />
+          } />
+          <Route path="/provider/:id" element={
+            <ProviderProfile language={language} userLocation={userLocation} onBook={handleBook} />
           } />
           <Route path="/verify-email" element={
             <VerifyEmail language={language} onOpenLogin={() => { setAuthInitialMode('LOGIN'); setIsAuthModalOpen(true); }} />

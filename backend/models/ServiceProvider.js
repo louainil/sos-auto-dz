@@ -80,6 +80,9 @@ const serviceProviderSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Text index for search by name/description
+serviceProviderSchema.index({ name: 'text', description: 'text' });
+
 const ServiceProvider = mongoose.model('ServiceProvider', serviceProviderSchema);
 
 export default ServiceProvider;

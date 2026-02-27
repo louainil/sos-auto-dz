@@ -45,6 +45,21 @@ const generateToken = (id) => {
   });
 };
 
+// Create reusable email transporter
+const createTransporter = () => {
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+};
+
+const getFromAddress = () => process.env.SMTP_FROM || `"SOS Auto DZ" <${process.env.SMTP_USER}>`;
+
 // Allowed roles for registration (ADMIN is excluded)
 const ALLOWED_ROLES = ['CLIENT', 'MECHANIC', 'PARTS_SHOP', 'TOWING'];
 
@@ -112,6 +127,41 @@ router.post('/register', [
       });
     }
 
+    // Generate email verification token
+    const verifyToken = crypto.randomBytes(32).toString('hex');
+    const hashedVerifyToken = crypto.createHash('sha256').update(verifyToken).digest('hex');
+
+    user.emailVerificationToken = hashedVerifyToken;
+    user.emailVerificationExpire = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    await user.save({ validateBeforeSave: false });
+
+    // Send verification email
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const verifyUrl = `${frontendUrl}/verify-email?token=${verifyToken}&email=${encodeURIComponent(user.email)}`;
+
+    try {
+      const transporter = createTransporter();
+      await transporter.sendMail({
+        from: getFromAddress(),
+        to: user.email,
+        subject: 'SOS Auto DZ — Verify Your Email',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #2563eb;">SOS Auto DZ</h2>
+            <p>Hello <strong>${user.name}</strong>,</p>
+            <p>Thank you for registering! Please verify your email address by clicking the button below:</p>
+            <a href="${verifyUrl}" style="display: inline-block; background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 16px 0;">Verify Email</a>
+            <p style="color: #64748b; font-size: 13px;">This link expires in <strong>24 hours</strong>. If you did not create this account, ignore this email.</p>
+            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+            <p style="color: #94a3b8; font-size: 12px;">SOS Auto DZ — Roadside assistance across Algeria</p>
+          </div>
+        `,
+      });
+    } catch (emailErr) {
+      console.error('Verification email failed:', emailErr);
+      // Registration still succeeds even if email fails
+    }
+
     res.status(201).json({
       _id: user._id,
       name: user.name,
@@ -123,6 +173,7 @@ router.post('/register', [
       commune: user.commune,
       isAvailable: user.isAvailable,
       avatar: user.avatar,
+      isEmailVerified: false,
       token: generateToken(user._id)
     });
   } catch (error) {
@@ -165,11 +216,103 @@ router.post('/login', [
       commune: user.commune,
       isAvailable: user.isAvailable,
       avatar: user.avatar,
+      isEmailVerified: user.isEmailVerified,
       token: generateToken(user._id)
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// @route   GET /api/auth/verify-email
+// @desc    Verify user email with token
+// @access  Public
+router.get('/verify-email', async (req, res) => {
+  try {
+    const { token, email } = req.query;
+
+    if (!token || !email) {
+      return res.status(400).json({ message: 'Token and email are required' });
+    }
+
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await User.findOne({
+      email,
+      emailVerificationToken: hashedToken,
+      emailVerificationExpire: { $gt: Date.now() },
+    }).select('+emailVerificationToken +emailVerificationExpire');
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired verification link' });
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpire = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    res.json({ message: 'Email verified successfully. You can now log in.' });
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// @route   POST /api/auth/resend-verification
+// @desc    Resend email verification link
+// @access  Public
+router.post('/resend-verification', [
+  body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+  validate
+], async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Don't reveal if user exists
+      return res.json({ message: 'If an account with that email exists, a verification link has been sent.' });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ message: 'Email is already verified' });
+    }
+
+    // Generate new token
+    const verifyToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(verifyToken).digest('hex');
+
+    user.emailVerificationToken = hashedToken;
+    user.emailVerificationExpire = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await user.save({ validateBeforeSave: false });
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const verifyUrl = `${frontendUrl}/verify-email?token=${verifyToken}&email=${encodeURIComponent(user.email)}`;
+
+    const transporter = createTransporter();
+    await transporter.sendMail({
+      from: getFromAddress(),
+      to: user.email,
+      subject: 'SOS Auto DZ — Verify Your Email',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #2563eb;">SOS Auto DZ</h2>
+          <p>Hello <strong>${user.name}</strong>,</p>
+          <p>Please verify your email address by clicking the button below:</p>
+          <a href="${verifyUrl}" style="display: inline-block; background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 16px 0;">Verify Email</a>
+          <p style="color: #64748b; font-size: 13px;">This link expires in <strong>24 hours</strong>.</p>
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+          <p style="color: #94a3b8; font-size: 12px;">SOS Auto DZ — Roadside assistance across Algeria</p>
+        </div>
+      `,
+    });
+
+    res.json({ message: 'If an account with that email exists, a verification link has been sent.' });
+  } catch (error) {
+    console.error('Resend verification error:', error);
+    res.status(500).json({ message: 'Failed to send verification email. Please try again later.' });
   }
 });
 
@@ -187,7 +330,8 @@ router.get('/me', protect, async (req, res) => {
     wilayaId: req.user.wilayaId,
     commune: req.user.commune,
     isAvailable: req.user.isAvailable,
-    avatar: req.user.avatar
+    avatar: req.user.avatar,
+    isEmailVerified: req.user.isEmailVerified
   });
 });
 
@@ -335,20 +479,10 @@ router.post('/forgot-password', [
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const resetUrl = `${frontendUrl}?resetToken=${resetToken}&email=${encodeURIComponent(user.email)}`;
 
-    // Configure email transporter
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-
     // Send the email
+    const transporter = createTransporter();
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || `"SOS Auto DZ" <${process.env.SMTP_USER}>`,
+      from: getFromAddress(),
       to: user.email,
       subject: 'SOS Auto DZ — Password Reset',
       html: `

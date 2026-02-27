@@ -102,6 +102,7 @@ describe('Auth Routes', () => {
       expect(res.body).toHaveProperty('token');
       expect(res.body.name).toBe('Ali Bensalem');
       expect(res.body.role).toBe('CLIENT');
+      expect(res.body.isEmailVerified).toBe(false);
     });
 
     it('should register a MECHANIC and create a ServiceProvider profile', async () => {
@@ -399,6 +400,77 @@ describe('Auth Routes', () => {
 
       expect(res.status).toBe(400);
       expect(res.body.message).toMatch(/invalid|expired/i);
+    });
+  });
+
+  // ────────────────────────────────────────
+  // GET /api/auth/verify-email
+  // ────────────────────────────────────────
+  describe('GET /api/auth/verify-email', () => {
+    it('should return 400 when token or email is missing', async () => {
+      const res = await request(app).get('/api/auth/verify-email');
+      expect(res.status).toBe(400);
+      expect(res.body.message).toMatch(/token.*email/i);
+    });
+
+    it('should return 400 for invalid or expired token', async () => {
+      User.findOne.mockReturnValue({
+        select: vi.fn().mockResolvedValue(null)
+      });
+
+      const res = await request(app)
+        .get('/api/auth/verify-email?token=badtoken&email=test@example.com');
+      expect(res.status).toBe(400);
+      expect(res.body.message).toMatch(/invalid|expired/i);
+    });
+
+    it('should verify email successfully with valid token', async () => {
+      const user = createMockUser({ isEmailVerified: false });
+      User.findOne.mockReturnValue({
+        select: vi.fn().mockResolvedValue(user)
+      });
+
+      const res = await request(app)
+        .get('/api/auth/verify-email?token=validtoken&email=test@example.com');
+      expect(res.status).toBe(200);
+      expect(res.body.message).toMatch(/verified/i);
+      expect(user.isEmailVerified).toBe(true);
+    });
+  });
+
+  // ────────────────────────────────────────
+  // POST /api/auth/resend-verification
+  // ────────────────────────────────────────
+  describe('POST /api/auth/resend-verification', () => {
+    it('should return success message even when user not found (prevents enumeration)', async () => {
+      User.findOne.mockResolvedValue(null);
+
+      const res = await request(app)
+        .post('/api/auth/resend-verification')
+        .send({ email: 'unknown@example.com' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toMatch(/verification/i);
+    });
+
+    it('should return 400 if email is already verified', async () => {
+      const user = createMockUser({ isEmailVerified: true });
+      User.findOne.mockResolvedValue(user);
+
+      const res = await request(app)
+        .post('/api/auth/resend-verification')
+        .send({ email: 'test@example.com' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toMatch(/already verified/i);
+    });
+
+    it('should return 400 for invalid email format', async () => {
+      const res = await request(app)
+        .post('/api/auth/resend-verification')
+        .send({ email: 'not-valid' });
+
+      expect(res.status).toBe(400);
     });
   });
 

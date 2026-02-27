@@ -5,6 +5,7 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import ServicesPage from './pages/ServicesPage';
 import { Dashboard } from './pages/Dashboard';
+import VerifyEmail from './pages/VerifyEmail';
 import BookingModal from './components/BookingModal';
 import AuthModal from './components/AuthModal';
 import { PageView, ServiceProvider, UserRole, User, Notification } from './types';
@@ -104,7 +105,8 @@ const App: React.FC = () => {
             wilayaId: userData.wilayaId,
             commune: userData.commune,
             isAvailable: userData.isAvailable,
-            avatar: userData.avatar
+            avatar: userData.avatar,
+            isEmailVerified: userData.isEmailVerified
           };
           setUser(userObj);
           // Fetch notifications
@@ -257,6 +259,9 @@ const App: React.FC = () => {
           } />
           <Route path="/dashboard" element={
             user ? <Dashboard user={user} onLogout={handleLogout} onUserUpdate={setUser} language={language} /> : <Navigate to="/" replace />
+          } />
+          <Route path="/verify-email" element={
+            <VerifyEmail language={language} onOpenLogin={() => { setAuthInitialMode('LOGIN'); setIsAuthModalOpen(true); }} />
           } />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

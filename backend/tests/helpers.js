@@ -31,6 +31,7 @@ export const createMockUser = (overrides = {}) => {
     commune: 'Alger Centre',
     isAvailable: true,
     avatar: { url: '', publicId: '' },
+    isEmailVerified: false,
     matchPassword: async (pw) => pw === 'password123',
     save: async function () { return this; },
     toObject: function () { return { ...this }; },

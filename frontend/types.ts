@@ -21,6 +21,7 @@ export interface User {
   commune?: string;
   isAvailable?: boolean;
   avatar?: { url: string; publicId: string };
+  isEmailVerified?: boolean;
 }
 
 export interface Notification {

@@ -36,11 +36,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
   const [password, setPassword] = useState('');
 
   // Forgot / Reset password state
-  type ModalView = 'AUTH' | 'FORGOT_PASSWORD' | 'FORGOT_SUCCESS' | 'RESET_PASSWORD' | 'RESET_SUCCESS';
+  type ModalView = 'AUTH' | 'FORGOT_PASSWORD' | 'FORGOT_SUCCESS' | 'RESET_PASSWORD' | 'RESET_SUCCESS' | 'VERIFY_EMAIL_SENT';
   const [view, setView] = useState<ModalView>(resetToken ? 'RESET_PASSWORD' : 'AUTH');
   const [forgotEmail, setForgotEmail] = useState('');
   const [resetNewPassword, setResetNewPassword] = useState('');
   const [resetConfirmPassword, setResetConfirmPassword] = useState('');
+  const [registeredEmail, setRegisteredEmail] = useState('');
+  const [resendMsg, setResendMsg] = useState('');
 
   // Professional Registration State
   const [selectedWilaya, setSelectedWilaya] = useState<number | ''>('');
@@ -84,7 +86,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
           wilayaId: data.wilayaId,
           commune: data.commune,
           isAvailable: data.isAvailable,
-          avatar: data.avatar
+          avatar: data.avatar,
+          isEmailVerified: data.isEmailVerified
         };
         onLoginSuccess(user);
         onClose();
@@ -108,20 +111,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
         };
         
         const data = await authAPI.register(userData);
-        const user: User = {
-          id: data._id,
-          name: data.name,
-          email: data.email,
-          role: data.role,
-          phone: data.phone,
-          garageType: data.garageType,
-          wilayaId: data.wilayaId,
-          commune: data.commune,
-          isAvailable: data.isAvailable,
-          avatar: data.avatar
-        };
-        onLoginSuccess(user);
-        onClose();
+        // Show verify email view instead of auto-login
+        setRegisteredEmail(email);
+        setView('VERIFY_EMAIL_SENT');
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred. Please try again.');
@@ -145,6 +137,19 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
       setView('FORGOT_SUCCESS');
     } catch (err: any) {
       setError(err.message || 'An error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setIsLoading(true);
+    setResendMsg('');
+    try {
+      await authAPI.resendVerification(registeredEmail);
+      setResendMsg(t.verifyEmailResent);
+    } catch (err: any) {
+      setError(err.message || 'An error occurred.');
     } finally {
       setIsLoading(false);
     }
@@ -218,6 +223,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
                 {view === 'AUTH' ? (isLogin ? t.signInTitle : t.createAccountTitle) 
                  : view === 'FORGOT_PASSWORD' || view === 'FORGOT_SUCCESS' ? t.forgotPasswordTitle
                  : view === 'RESET_PASSWORD' || view === 'RESET_SUCCESS' ? t.resetPasswordTitle
+                 : view === 'VERIFY_EMAIL_SENT' ? t.verifyEmailTitle
                  : t.signInTitle}
              </h3>
             <button 
@@ -364,6 +370,45 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
               className="w-full py-3 rounded-lg font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
             >
               {t.backToLogin} <ChevronRight size={18} />
+            </button>
+          </div>
+        )}
+
+        {/* ── Email Verification: check your email ── */}
+        {view === 'VERIFY_EMAIL_SENT' && (
+          <div className="animate-fade-in text-center">
+            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Mail className="text-blue-600 dark:text-blue-400" size={28} />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{t.verifyEmailSentTitle}</h2>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-2">{t.verifyEmailSentDesc}</p>
+            {registeredEmail && (
+              <p className="text-blue-600 dark:text-blue-400 font-medium text-sm mb-6">{registeredEmail}</p>
+            )}
+            {resendMsg && (
+              <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-600 dark:text-green-400 text-sm">
+                {resendMsg}
+              </div>
+            )}
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+            <button
+              type="button"
+              disabled={isLoading}
+              onClick={handleResendVerification}
+              className="w-full py-3 rounded-lg font-bold text-white bg-slate-600 hover:bg-slate-700 dark:bg-slate-600 dark:hover:bg-slate-500 transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2 shadow-lg shadow-slate-600/20 disabled:opacity-70 disabled:cursor-not-allowed mb-3"
+            >
+              {isLoading ? t.verifyEmailResending : t.verifyEmailResend}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setError(''); setResendMsg(''); setView('AUTH'); setIsLogin(true); }}
+              className="w-full py-3 rounded-lg font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
+            >
+              {t.goToLogin} <ChevronRight size={18} />
             </button>
           </div>
         )}

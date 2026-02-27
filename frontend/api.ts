@@ -104,6 +104,20 @@ export const authAPI = {
       body: JSON.stringify({ token, email, newPassword })
     });
     return handleResponse(response);
+  },
+
+  verifyEmail: async (token: string, email: string) => {
+    const response = await fetch(`${API_URL}/auth/verify-email?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`);
+    return handleResponse(response);
+  },
+
+  resendVerification: async (email: string) => {
+    const response = await fetch(`${API_URL}/auth/resend-verification`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    return handleResponse(response);
   }
 };
 

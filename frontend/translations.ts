@@ -261,6 +261,20 @@ export interface Translations {
   passwordsDoNotMatch: string;
   passwordMinLength: string;
 
+  // Email Verification
+  verifyEmailTitle: string;
+  verifyEmailSentTitle: string;
+  verifyEmailSentDesc: string;
+  verifyEmailResend: string;
+  verifyEmailResending: string;
+  verifyEmailResent: string;
+  verifyEmailVerifying: string;
+  verifyEmailSuccess: string;
+  verifyEmailSuccessDesc: string;
+  verifyEmailFailed: string;
+  verifyEmailExpired: string;
+  goToLogin: string;
+
   // NotificationDropdown
   notifications: string;
   clearAll: string;
@@ -536,6 +550,20 @@ export const translations: Record<Language, Translations> = {
     passwordsDoNotMatch: 'Passwords do not match.',
     passwordMinLength: 'Password must be at least 6 characters.',
 
+    // Email Verification
+    verifyEmailTitle: 'Verify Your Email',
+    verifyEmailSentTitle: 'Check Your Email',
+    verifyEmailSentDesc: 'We sent a verification link to your email address. Please check your inbox and click the link to verify your account.',
+    verifyEmailResend: 'Resend verification email',
+    verifyEmailResending: 'Sending...',
+    verifyEmailResent: 'Verification email sent!',
+    verifyEmailVerifying: 'Verifying your email...',
+    verifyEmailSuccess: 'Email Verified!',
+    verifyEmailSuccessDesc: 'Your email has been verified successfully. You can now log in to your account.',
+    verifyEmailFailed: 'Verification Failed',
+    verifyEmailExpired: 'This verification link is invalid or has expired. Please request a new one.',
+    goToLogin: 'Go to Login',
+
     // NotificationDropdown
     notifications: 'Notifications',
     clearAll: 'Clear all',
@@ -808,6 +836,20 @@ export const translations: Record<Language, Translations> = {
     passwordResetSuccessDesc: 'Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.',
     passwordsDoNotMatch: 'Les mots de passe ne correspondent pas.',
     passwordMinLength: 'Le mot de passe doit contenir au moins 6 caractères.',
+
+    // Email Verification
+    verifyEmailTitle: 'Vérifiez votre email',
+    verifyEmailSentTitle: 'Consultez votre email',
+    verifyEmailSentDesc: 'Nous avons envoyé un lien de vérification à votre adresse email. Veuillez consulter votre boîte de réception et cliquer sur le lien pour vérifier votre compte.',
+    verifyEmailResend: 'Renvoyer l\'email de vérification',
+    verifyEmailResending: 'Envoi...',
+    verifyEmailResent: 'Email de vérification envoyé !',
+    verifyEmailVerifying: 'Vérification de votre email...',
+    verifyEmailSuccess: 'Email vérifié !',
+    verifyEmailSuccessDesc: 'Votre email a été vérifié avec succès. Vous pouvez maintenant vous connecter à votre compte.',
+    verifyEmailFailed: 'Échec de la vérification',
+    verifyEmailExpired: 'Ce lien de vérification est invalide ou a expiré. Veuillez en demander un nouveau.',
+    goToLogin: 'Aller à la connexion',
 
     // NotificationDropdown
     notifications: 'Notifications',
@@ -1082,6 +1124,20 @@ export const translations: Record<Language, Translations> = {
     passwordResetSuccessDesc: 'تم إعادة تعيين كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة.',
     passwordsDoNotMatch: 'كلمات المرور غير متطابقة.',
     passwordMinLength: 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.',
+
+    // Email Verification
+    verifyEmailTitle: 'تحقق من بريدك الإلكتروني',
+    verifyEmailSentTitle: 'تحقق من بريدك',
+    verifyEmailSentDesc: 'لقد أرسلنا رابط التحقق إلى بريدك الإلكتروني. يرجى التحقق من صندوق الوارد والنقر على الرابط لتأكيد حسابك.',
+    verifyEmailResend: 'إعادة إرسال بريد التحقق',
+    verifyEmailResending: 'جارٍ الإرسال...',
+    verifyEmailResent: 'تم إرسال بريد التحقق!',
+    verifyEmailVerifying: 'جارٍ التحقق من بريدك الإلكتروني...',
+    verifyEmailSuccess: 'تم التحقق من البريد!',
+    verifyEmailSuccessDesc: 'تم التحقق من بريدك الإلكتروني بنجاح. يمكنك الآن تسجيل الدخول إلى حسابك.',
+    verifyEmailFailed: 'فشل التحقق',
+    verifyEmailExpired: 'رابط التحقق هذا غير صالح أو منتهي الصلاحية. يرجى طلب رابط جديد.',
+    goToLogin: 'الذهاب لتسجيل الدخول',
 
     // NotificationDropdown
     notifications: 'الإشعارات',

@@ -52,6 +52,7 @@ export interface ServiceProvider {
   phone: string;
   specialty?: string[]; // Supported Car Brands
   image: string;
+  images?: { url: string; publicId: string }[];
   isAvailable: boolean; // Manual override for "Unavailable" (e.g. on vacation)
   workingDays: number[]; // 0=Sun, 1=Mon, ..., 6=Sat
   workingHours: {
@@ -71,6 +72,7 @@ export interface Booking {
   date: string;
   issue: string;
   status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+  cancellationReason?: string;
   price?: number;
 }
 

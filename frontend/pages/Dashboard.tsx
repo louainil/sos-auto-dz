@@ -40,10 +40,18 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const [shopImage, setShopImage] = useState<string | null>(null);
   const [shopImageUploading, setShopImageUploading] = useState(false);
   const shopImageInputRef = useRef<HTMLInputElement>(null);
+  const [galleryImages, setGalleryImages] = useState<{ url: string; publicId: string }[]>([]);
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const [galleryDeleting, setGalleryDeleting] = useState<string | null>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   // Review modal state
   const [reviewBooking, setReviewBooking] = useState<Booking | null>(null);
   const [reviewedBookingIds, setReviewedBookingIds] = useState<Set<string>>(new Set());
+
+  // Decline modal state
+  const [declineBooking, setDeclineBooking] = useState<Booking | null>(null);
+  const [declineReason, setDeclineReason] = useState('');
 
   // Sync local state when parent user prop updates (e.g. after avatar upload)
   useEffect(() => {
@@ -63,6 +71,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
         setProviderRating(data.rating ?? 0);
         setProviderTotalReviews(data.totalReviews ?? 0);
         if (data.image) setShopImage(data.image);
+        if (data.images) setGalleryImages(data.images);
       } catch (err) {
         console.error('Failed to fetch provider profile:', err);
       }
@@ -108,6 +117,34 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
       console.error('Shop image upload failed:', err);
     } finally {
       setShopImageUploading(false);
+    }
+  };
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !providerId) return;
+    setGalleryUploading(true);
+    try {
+      const data = await providersAPI.uploadGalleryImages(providerId, Array.from(files));
+      setGalleryImages(data.images);
+    } catch (err) {
+      console.error('Gallery upload failed:', err);
+    } finally {
+      setGalleryUploading(false);
+      if (galleryInputRef.current) galleryInputRef.current.value = '';
+    }
+  };
+
+  const handleGalleryDelete = async (publicId: string) => {
+    if (!providerId) return;
+    setGalleryDeleting(publicId);
+    try {
+      const data = await providersAPI.deleteGalleryImage(providerId, publicId);
+      setGalleryImages(data.images);
+    } catch (err) {
+      console.error('Gallery delete failed:', err);
+    } finally {
+      setGalleryDeleting(null);
     }
   };
 
@@ -253,13 +290,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
     fetchBookings();
   }, []);
 
-  const handleStatusChange = async (id: string, newStatus: 'CONFIRMED' | 'CANCELLED' | 'COMPLETED') => {
+  const handleStatusChange = async (id: string, newStatus: 'CONFIRMED' | 'CANCELLED' | 'COMPLETED', cancellationReason?: string) => {
     try {
-      await bookingsAPI.update(id, { status: newStatus });
-      setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus } : b));
+      const payload: any = { status: newStatus };
+      if (newStatus === 'CANCELLED' && cancellationReason) payload.cancellationReason = cancellationReason;
+      await bookingsAPI.update(id, payload);
+      setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus, cancellationReason: cancellationReason || b.cancellationReason } : b));
     } catch (error) {
       console.error('Failed to update booking status:', error);
     }
+  };
+
+  const handleDeclineConfirm = async () => {
+    if (!declineBooking) return;
+    await handleStatusChange(declineBooking.id, 'CANCELLED', declineReason.trim() || undefined);
+    setDeclineBooking(null);
+    setDeclineReason('');
   };
 
   const getStatusColor = (status: string) => {
@@ -315,6 +361,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                       {booking.status}
                     </span>
                   </div>
+                  {booking.status === 'CANCELLED' && booking.cancellationReason && (
+                    <p className="text-xs text-red-500 dark:text-red-400 mt-1">
+                      {t.cancelledReason}: {booking.cancellationReason}
+                    </p>
+                  )}
                 </div>
               </div>
               {booking.status === 'COMPLETED' && (
@@ -392,7 +443,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                 </div>
                 <div className="flex gap-3">
                   <button 
-                    onClick={() => handleStatusChange(booking.id, 'CANCELLED')}
+                    onClick={() => { setDeclineBooking(booking); setDeclineReason(''); }}
                     className="px-4 py-2 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
                   >
                     <XCircle size={18} /> {t.decline}
@@ -576,6 +627,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                                   <span>{b.date}</span>
                                   {b.price && <span>{b.price} DA</span>}
                                </div>
+                               {b.status === 'CANCELLED' && b.cancellationReason && (
+                                 <p className="text-xs text-red-500 dark:text-red-400 mt-1">
+                                   {t.cancelledReason}: {b.cancellationReason}
+                                 </p>
+                               )}
                              </div>
                              <div className="flex items-center gap-2 flex-shrink-0">
                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(b.status)}`}>{b.status}</span>
@@ -668,6 +724,47 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                        </button>
                        <input ref={shopImageInputRef} type="file" accept="image/*" className="hidden" onChange={handleShopImageChange} />
                      </div>
+                   </div>
+                 )}
+
+                 {/* Gallery (Professionals only) */}
+                 {providerId && (
+                   <div className="mb-6 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40">
+                     <p className="text-sm font-semibold text-slate-800 dark:text-white mb-1">{t.gallery}</p>
+                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{t.galleryDesc}</p>
+                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                       {galleryImages.map((img) => (
+                         <div key={img.publicId} className="relative group rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-700 aspect-[4/3]">
+                           <img src={img.url} alt="" className="w-full h-full object-cover" />
+                           <button
+                             type="button"
+                             onClick={() => handleGalleryDelete(img.publicId)}
+                             disabled={galleryDeleting === img.publicId}
+                             className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-700 text-white text-xs px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                           >
+                             {galleryDeleting === img.publicId
+                               ? <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin inline-block" />
+                               : t.deletePhoto}
+                           </button>
+                         </div>
+                       ))}
+                     </div>
+                     {galleryImages.length < 8 ? (
+                       <button
+                         type="button"
+                         onClick={() => galleryInputRef.current?.click()}
+                         disabled={galleryUploading}
+                         className="px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white transition-colors flex items-center gap-2"
+                       >
+                         {galleryUploading
+                           ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                           : <Camera size={14} />}
+                         {t.addPhotos}
+                       </button>
+                     ) : (
+                       <p className="text-xs text-slate-500 dark:text-slate-400">{t.galleryFull}</p>
+                     )}
+                     <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} />
                    </div>
                  )}
 
@@ -789,6 +886,45 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
             setReviewedBookingIds(prev => new Set(prev).add(bookingId));
           }}
         />
+      )}
+
+      {/* Decline Modal */}
+      {declineBooking && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setDeclineBooking(null)}>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
+              <XCircle size={20} className="text-red-500" /> {t.decline}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+              {declineBooking.clientName} — {declineBooking.date}
+            </p>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              {t.declineReason}
+            </label>
+            <textarea
+              value={declineReason}
+              onChange={e => setDeclineReason(e.target.value)}
+              placeholder={t.declineReasonPlaceholder}
+              maxLength={500}
+              rows={3}
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            />
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                onClick={() => setDeclineBooking(null)}
+                className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                {t.cancel}
+              </button>
+              <button
+                onClick={handleDeclineConfirm}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+              >
+                {t.declineConfirm}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

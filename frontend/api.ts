@@ -167,6 +167,27 @@ export const providersAPI = {
       body: formData
     });
     return handleResponse(response);
+  },
+
+  uploadGalleryImages: async (id: string, files: File[]) => {
+    const formData = new FormData();
+    files.forEach(f => formData.append('images', f));
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/providers/${id}/gallery`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData
+    });
+    return handleResponse(response);
+  },
+
+  deleteGalleryImage: async (id: string, publicId: string) => {
+    const encoded = publicId.replace(/\//g, '--');
+    const response = await fetch(`${API_URL}/providers/${id}/gallery/${encoded}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
   }
 };
 

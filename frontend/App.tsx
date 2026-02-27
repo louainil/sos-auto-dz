@@ -8,6 +8,8 @@ import ServicesPage from './pages/ServicesPage';
 import { Dashboard } from './pages/Dashboard';
 import VerifyEmail from './pages/VerifyEmail';
 import ProviderProfile from './pages/ProviderProfile';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 import BookingModal from './components/BookingModal';
 import AuthModal from './components/AuthModal';
 import { PageView, ServiceProvider, UserRole, User, Notification } from './types';
@@ -360,6 +362,8 @@ const App: React.FC = () => {
           <Route path="/verify-email" element={
             <VerifyEmail language={language} onOpenLogin={() => { setAuthInitialMode('LOGIN'); setIsAuthModalOpen(true); }} />
           } />
+          <Route path="/privacy" element={<PrivacyPolicy language={language} />} />
+          <Route path="/terms" element={<TermsOfService language={language} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

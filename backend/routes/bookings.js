@@ -154,6 +154,7 @@ router.put('/:id', protect, [
   param('id').isMongoId().withMessage('Valid booking ID is required'),
   body('status').optional().isIn(['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED']).withMessage('Status must be PENDING, CONFIRMED, COMPLETED, or CANCELLED'),
   body('price').optional().isFloat({ min: 0 }).withMessage('Price must be a non-negative number'),
+  body('cancellationReason').optional().trim().isLength({ max: 500 }).withMessage('Cancellation reason must be at most 500 characters'),
   validate
 ], async (req, res) => {
   try {
@@ -172,10 +173,11 @@ router.put('/:id', protect, [
       return res.status(403).json({ message: 'Not authorized to update this booking' });
     }
 
-    const { status, price } = req.body;
+    const { status, price, cancellationReason } = req.body;
 
     if (status) booking.status = status;
     if (price !== undefined) booking.price = price;
+    if (status === 'CANCELLED' && cancellationReason) booking.cancellationReason = cancellationReason;
 
     const updatedBooking = await booking.save();
 
@@ -184,7 +186,7 @@ router.put('/:id', protect, [
     const statusNotif = await Notification.create({
       userId: notificationUserId,
       title: 'Booking Updated',
-      message: `Booking status changed to ${status}`,
+      message: `Booking status changed to ${status}${status === 'CANCELLED' && cancellationReason ? ': ' + cancellationReason : ''}`,
       type: 'INFO'
     });
 

@@ -49,6 +49,10 @@ const serviceProviderSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  images: [{
+    url: { type: String, required: true },
+    publicId: { type: String, required: true }
+  }],
   isAvailable: {
     type: Boolean,
     default: true

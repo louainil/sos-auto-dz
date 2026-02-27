@@ -1,6 +1,6 @@
 import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Star, Phone, MapPin, Clock, MessageCircle, Wrench, Truck, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { Star, Phone, MapPin, Clock, MessageCircle, Wrench, Truck, ArrowLeft, ShieldCheck, Image, X } from 'lucide-react';
 import { ServiceProvider, UserRole } from '../types';
 import { Language, translations } from '../translations';
 import { providersAPI, reviewsAPI } from '../api';
@@ -32,6 +32,7 @@ const ProviderProfile: React.FC<ProviderProfileProps> = ({ language, userLocatio
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -237,6 +238,27 @@ const ProviderProfile: React.FC<ProviderProfileProps> = ({ language, userLocatio
             </div>
           )}
 
+          {/* Photo Gallery */}
+          {provider.images && provider.images.length > 0 && (
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
+                <Image size={18} className="text-indigo-500" />
+                {t.photoGallery}
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {provider.images.map((img, i) => (
+                  <button
+                    key={img.publicId || i}
+                    onClick={() => setLightboxImg(img.url)}
+                    className="aspect-[4/3] rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-700 hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <img src={img.url} alt={`${provider.name} photo ${i + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Action buttons */}
           <div className="flex flex-wrap gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
             {provider.role === UserRole.TOWING || provider.role === UserRole.PARTS_SHOP ? (
@@ -330,6 +352,27 @@ const ProviderProfile: React.FC<ProviderProfileProps> = ({ language, userLocatio
           )}
         </div>
       </div>
+
+      {/* Lightbox overlay */}
+      {lightboxImg && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setLightboxImg(null)}
+        >
+          <button
+            onClick={() => setLightboxImg(null)}
+            className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/70 rounded-full p-2 transition-colors"
+          >
+            <X size={24} />
+          </button>
+          <img
+            src={lightboxImg}
+            alt=""
+            className="max-w-full max-h-[90vh] rounded-lg object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 };

@@ -240,4 +240,97 @@ router.post('/:id/image', protect, isProfessional, [
   }
 });
 
+// @route   POST /api/providers/:id/gallery
+// @desc    Upload photos to provider gallery (max 8 total, up to 4 at a time)
+// @access  Private (Professional, owner only)
+router.post('/:id/gallery', protect, isProfessional, [
+  param('id').isMongoId().withMessage('Valid provider ID is required'),
+  validate
+], upload.array('images', 4), async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: 'No image files provided' });
+    }
+
+    const provider = await ServiceProvider.findById(req.params.id);
+    if (!provider) {
+      return res.status(404).json({ message: 'Provider not found' });
+    }
+
+    if (provider.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to update this provider' });
+    }
+
+    const currentCount = provider.images?.length || 0;
+    const maxImages = 8;
+    const available = maxImages - currentCount;
+
+    if (available <= 0) {
+      return res.status(400).json({ message: 'Gallery is full (max 8 images)' });
+    }
+
+    const filesToUpload = req.files.slice(0, available);
+    const uploadedImages = [];
+
+    for (let i = 0; i < filesToUpload.length; i++) {
+      const file = filesToUpload[i];
+      const publicId = `provider_${provider._id}_gallery_${Date.now()}_${i}`;
+      const result = await uploadToCloudinary(file.buffer, 'sos-auto-dz/gallery', publicId);
+      uploadedImages.push({ url: result.secure_url, publicId: result.public_id });
+    }
+
+    if (!provider.images) provider.images = [];
+    provider.images.push(...uploadedImages);
+    await provider.save();
+
+    res.json({ message: `${uploadedImages.length} photo(s) uploaded`, images: provider.images });
+  } catch (error) {
+    console.error('Gallery upload error:', error);
+    res.status(500).json({ message: 'Failed to upload images', error: error.message });
+  }
+});
+
+// @route   DELETE /api/providers/:id/gallery/:publicId
+// @desc    Delete a photo from provider gallery
+// @access  Private (Professional, owner only)
+router.delete('/:id/gallery/:publicId', protect, isProfessional, [
+  param('id').isMongoId().withMessage('Valid provider ID is required'),
+  param('publicId').notEmpty().withMessage('Public ID is required'),
+  validate
+], async (req, res) => {
+  try {
+    const provider = await ServiceProvider.findById(req.params.id);
+    if (!provider) {
+      return res.status(404).json({ message: 'Provider not found' });
+    }
+
+    if (provider.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to update this provider' });
+    }
+
+    // The publicId from the URL uses -- as separator (/ is not URL-safe)
+    const fullPublicId = req.params.publicId.replace(/--/g, '/');
+
+    const imgIndex = provider.images?.findIndex(img => img.publicId === fullPublicId);
+    if (imgIndex === undefined || imgIndex === -1) {
+      return res.status(404).json({ message: 'Image not found in gallery' });
+    }
+
+    // Delete from Cloudinary
+    try {
+      await cloudinary.uploader.destroy(fullPublicId);
+    } catch (e) {
+      console.error('Cloudinary delete warning:', e);
+    }
+
+    provider.images.splice(imgIndex, 1);
+    await provider.save();
+
+    res.json({ message: 'Photo deleted', images: provider.images });
+  } catch (error) {
+    console.error('Gallery delete error:', error);
+    res.status(500).json({ message: 'Failed to delete image', error: error.message });
+  }
+});
+
 export default router;

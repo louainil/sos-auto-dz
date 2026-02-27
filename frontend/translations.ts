@@ -85,6 +85,51 @@ export interface Translations {
   allRightsReserved: string;
   privacyPolicy: string;
   termsOfService: string;
+  backToHome: string;
+  lastUpdated: string;
+  privacyLastUpdated: string;
+  termsLastUpdated: string;
+  privacyIntroTitle: string;
+  privacyIntroText: string;
+  privacyCollectTitle: string;
+  privacyCollectText: string;
+  privacyCollectItem1: string;
+  privacyCollectItem2: string;
+  privacyCollectItem3: string;
+  privacyCollectItem4: string;
+  privacyUseTitle: string;
+  privacyUseItem1: string;
+  privacyUseItem2: string;
+  privacyUseItem3: string;
+  privacyUseItem4: string;
+  privacySharingTitle: string;
+  privacySharingText: string;
+  privacySecurityTitle: string;
+  privacySecurityText: string;
+  privacyContactTitle: string;
+  privacyContactText: string;
+  termsAcceptanceTitle: string;
+  termsAcceptanceText: string;
+  termsDescriptionTitle: string;
+  termsDescriptionText: string;
+  termsAccountsTitle: string;
+  termsAccountsItem1: string;
+  termsAccountsItem2: string;
+  termsAccountsItem3: string;
+  termsBookingsTitle: string;
+  termsBookingsItem1: string;
+  termsBookingsItem2: string;
+  termsBookingsItem3: string;
+  termsProvidersTitle: string;
+  termsProvidersItem1: string;
+  termsProvidersItem2: string;
+  termsProvidersItem3: string;
+  termsLiabilityTitle: string;
+  termsLiabilityText: string;
+  termsChangesTitle: string;
+  termsChangesText: string;
+  termsContactTitle: string;
+  termsContactText: string;
 
   // Language names
   english: string;
@@ -159,6 +204,10 @@ export interface Translations {
   noPendingRequests: string;
   issueLabel: string;
   decline: string;
+  declineReason: string;
+  declineReasonPlaceholder: string;
+  declineConfirm: string;
+  cancelledReason: string;
   acceptJob: string;
 
   // Dashboard – Admin overview
@@ -185,6 +234,13 @@ export interface Translations {
   changeProfilePicture: string;
   changeShopPhoto: string;
   shopPhotoDesc: string;
+  gallery: string;
+  galleryDesc: string;
+  addPhotos: string;
+  deletePhoto: string;
+  galleryFull: string;
+  photoGallery: string;
+  noPhotos: string;
   emailLabel: string;
   emailCannotChange: string;
   phoneLabel: string;
@@ -257,8 +313,6 @@ export interface Translations {
   backToLogin: string;
   resetPasswordTitle: string;
   resetPasswordSubtitle: string;
-  newPassword: string;
-  confirmNewPassword: string;
   resetPassword: string;
   resettingPassword: string;
   passwordResetSuccess: string;
@@ -396,6 +450,51 @@ export const translations: Record<Language, Translations> = {
     allRightsReserved: 'All rights reserved.',
     privacyPolicy: 'Privacy Policy',
     termsOfService: 'Terms of Service',
+    backToHome: 'Back to Home',
+    lastUpdated: 'Last updated',
+    privacyLastUpdated: 'January 1, 2025',
+    termsLastUpdated: 'January 1, 2025',
+    privacyIntroTitle: 'Introduction',
+    privacyIntroText: 'SOS Auto DZ ("we", "our", "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your personal information when you use our platform.',
+    privacyCollectTitle: 'Information We Collect',
+    privacyCollectText: 'We collect the following types of information:',
+    privacyCollectItem1: 'Account information: name, email address, phone number, and password.',
+    privacyCollectItem2: 'Location data: your wilaya, commune, and GPS coordinates (with your permission) to show nearby service providers.',
+    privacyCollectItem3: 'Booking data: service requests, dates, vehicle information, and communication with providers.',
+    privacyCollectItem4: 'Provider profiles: business name, description, photos, working hours, and service areas.',
+    privacyUseTitle: 'How We Use Your Information',
+    privacyUseItem1: 'To connect you with automotive service providers in your area.',
+    privacyUseItem2: 'To process and manage your service bookings.',
+    privacyUseItem3: 'To send you notifications about booking status updates and important account information.',
+    privacyUseItem4: 'To improve our platform and user experience.',
+    privacySharingTitle: 'Information Sharing',
+    privacySharingText: 'We do not sell your personal information. We share your contact details only with service providers you choose to book with, so they can fulfill your service request. We may share data with third-party services (such as Cloudinary for image hosting) as necessary to operate the platform.',
+    privacySecurityTitle: 'Data Security',
+    privacySecurityText: 'We use industry-standard security measures including encrypted passwords (bcrypt), secure HTTPS connections, and JWT authentication to protect your data. However, no method of electronic transmission is 100% secure.',
+    privacyContactTitle: 'Contact Us',
+    privacyContactText: 'If you have questions about this Privacy Policy, please contact us at',
+    termsAcceptanceTitle: '1. Acceptance of Terms',
+    termsAcceptanceText: 'By accessing or using the SOS Auto DZ platform, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.',
+    termsDescriptionTitle: '2. Service Description',
+    termsDescriptionText: 'SOS Auto DZ is an online platform that connects vehicle owners with automotive service providers (mechanics, spare parts shops, and towing services) across Algeria. We act as an intermediary and do not directly provide automotive services.',
+    termsAccountsTitle: '3. User Accounts',
+    termsAccountsItem1: 'You must provide accurate and complete information when creating an account.',
+    termsAccountsItem2: 'You are responsible for maintaining the confidentiality of your account credentials.',
+    termsAccountsItem3: 'You must be at least 18 years old to create an account and use our services.',
+    termsBookingsTitle: '4. Bookings & Services',
+    termsBookingsItem1: 'Bookings are agreements between you and the service provider. SOS Auto DZ facilitates the connection but is not a party to the service agreement.',
+    termsBookingsItem2: 'Service providers set their own prices and availability. We do not guarantee pricing or scheduling.',
+    termsBookingsItem3: 'Either party may cancel a booking. Cancellation reasons should be provided for transparency.',
+    termsProvidersTitle: '5. Service Provider Obligations',
+    termsProvidersItem1: 'Providers must maintain accurate and up-to-date profile information.',
+    termsProvidersItem2: 'Providers must respond to booking requests in a timely manner.',
+    termsProvidersItem3: 'Providers are solely responsible for the quality and safety of services they deliver.',
+    termsLiabilityTitle: '6. Limitation of Liability',
+    termsLiabilityText: 'SOS Auto DZ is not liable for any damages, injuries, or losses resulting from services provided by third-party service providers found through our platform. We do not guarantee the quality, safety, or legality of services offered by providers.',
+    termsChangesTitle: '7. Changes to Terms',
+    termsChangesText: 'We reserve the right to modify these Terms of Service at any time. Changes will be posted on this page with an updated date. Continued use of the platform after changes constitutes acceptance of the new terms.',
+    termsContactTitle: '8. Contact',
+    termsContactText: 'For questions about these Terms of Service, please contact us at',
 
     // Language names
     english: 'English',
@@ -470,6 +569,10 @@ export const translations: Record<Language, Translations> = {
     noPendingRequests: 'No pending requests at the moment.',
     issueLabel: 'Issue:',
     decline: 'Decline',
+    declineReason: 'Reason for declining (optional)',
+    declineReasonPlaceholder: 'e.g. Fully booked, out of service area...',
+    declineConfirm: 'Confirm Decline',
+    cancelledReason: 'Reason',
     acceptJob: 'Accept Job',
 
     // Dashboard – Admin overview
@@ -496,6 +599,13 @@ export const translations: Record<Language, Translations> = {
     changeProfilePicture: 'Change profile picture',
     changeShopPhoto: 'Change shop photo',
     shopPhotoDesc: 'This photo is shown on your public profile and service card.',
+    gallery: 'Photo Gallery',
+    galleryDesc: 'Upload up to 8 photos of your work, garage, or equipment.',
+    addPhotos: 'Add Photos',
+    deletePhoto: 'Delete',
+    galleryFull: 'Gallery is full (max 8 photos)',
+    photoGallery: 'Photo Gallery',
+    noPhotos: 'No photos yet',
     emailLabel: 'Email',
     emailCannotChange: 'Email address cannot be changed.',
     phoneLabel: 'Phone',
@@ -568,8 +678,6 @@ export const translations: Record<Language, Translations> = {
     backToLogin: 'Back to Login',
     resetPasswordTitle: 'Set new password',
     resetPasswordSubtitle: 'Enter your new password below.',
-    newPassword: 'New Password',
-    confirmNewPassword: 'Confirm New Password',
     resetPassword: 'Reset Password',
     resettingPassword: 'Resetting...',
     passwordResetSuccess: 'Password reset!',
@@ -637,6 +745,9 @@ export const translations: Record<Language, Translations> = {
     heroSubtitle: "Trouvez des mécaniciens de confiance, électriciens automobiles, carrossiers, pièces détachées et services de dépannage 24h/24 partout en Algérie.",
     findGarage: 'Trouver un Garage',
     emergencyTowing: "Dépannage d'Urgence",
+    searchAllProviders: 'Rechercher mécaniciens, pièces, dépannage...',
+    searchResults: 'Résultats de recherche',
+    allServices: 'Tous les prestataires de services en Algérie',
 
     // Services Grid - Home Page
     servicesTitle: 'Tout ce dont Votre Véhicule a Besoin',
@@ -702,6 +813,51 @@ export const translations: Record<Language, Translations> = {
     allRightsReserved: 'Tous droits réservés.',
     privacyPolicy: 'Politique de Confidentialité',
     termsOfService: "Conditions d'Utilisation",
+    backToHome: "Retour à l'Accueil",
+    lastUpdated: 'Dernière mise à jour',
+    privacyLastUpdated: '1er janvier 2025',
+    termsLastUpdated: '1er janvier 2025',
+    privacyIntroTitle: 'Introduction',
+    privacyIntroText: "SOS Auto DZ (« nous », « notre ») s'engage à protéger votre vie privée. Cette Politique de Confidentialité explique comment nous collectons, utilisons et protégeons vos informations personnelles lorsque vous utilisez notre plateforme.",
+    privacyCollectTitle: 'Informations que Nous Collectons',
+    privacyCollectText: 'Nous collectons les types d\'informations suivants :',
+    privacyCollectItem1: 'Informations de compte : nom, adresse e-mail, numéro de téléphone et mot de passe.',
+    privacyCollectItem2: 'Données de localisation : votre wilaya, commune et coordonnées GPS (avec votre autorisation) pour afficher les prestataires à proximité.',
+    privacyCollectItem3: 'Données de réservation : demandes de service, dates, informations sur le véhicule et communication avec les prestataires.',
+    privacyCollectItem4: 'Profils des prestataires : nom commercial, description, photos, horaires de travail et zones de service.',
+    privacyUseTitle: 'Comment Nous Utilisons Vos Informations',
+    privacyUseItem1: 'Pour vous connecter avec des prestataires de services automobiles dans votre région.',
+    privacyUseItem2: 'Pour traiter et gérer vos réservations de services.',
+    privacyUseItem3: 'Pour vous envoyer des notifications sur les mises à jour de statut de réservation et les informations importantes de compte.',
+    privacyUseItem4: 'Pour améliorer notre plateforme et l\'expérience utilisateur.',
+    privacySharingTitle: 'Partage des Informations',
+    privacySharingText: "Nous ne vendons pas vos informations personnelles. Nous partageons vos coordonnées uniquement avec les prestataires que vous choisissez de réserver, afin qu'ils puissent répondre à votre demande de service. Nous pouvons partager des données avec des services tiers (comme Cloudinary pour l'hébergement d'images) selon les besoins de fonctionnement de la plateforme.",
+    privacySecurityTitle: 'Sécurité des Données',
+    privacySecurityText: "Nous utilisons des mesures de sécurité conformes aux normes de l'industrie, notamment des mots de passe chiffrés (bcrypt), des connexions HTTPS sécurisées et une authentification JWT pour protéger vos données. Cependant, aucune méthode de transmission électronique n'est sécurisée à 100%.",
+    privacyContactTitle: 'Nous Contacter',
+    privacyContactText: 'Si vous avez des questions sur cette Politique de Confidentialité, veuillez nous contacter à',
+    termsAcceptanceTitle: "1. Acceptation des Conditions",
+    termsAcceptanceText: "En accédant ou en utilisant la plateforme SOS Auto DZ, vous acceptez d'être lié par ces Conditions d'Utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser nos services.",
+    termsDescriptionTitle: '2. Description du Service',
+    termsDescriptionText: "SOS Auto DZ est une plateforme en ligne qui met en relation les propriétaires de véhicules avec des prestataires de services automobiles (mécaniciens, magasins de pièces détachées et services de remorquage) à travers l'Algérie. Nous agissons en tant qu'intermédiaire et ne fournissons pas directement de services automobiles.",
+    termsAccountsTitle: '3. Comptes Utilisateurs',
+    termsAccountsItem1: 'Vous devez fournir des informations exactes et complètes lors de la création d\'un compte.',
+    termsAccountsItem2: 'Vous êtes responsable de la confidentialité de vos identifiants de compte.',
+    termsAccountsItem3: 'Vous devez avoir au moins 18 ans pour créer un compte et utiliser nos services.',
+    termsBookingsTitle: '4. Réservations et Services',
+    termsBookingsItem1: "Les réservations sont des accords entre vous et le prestataire. SOS Auto DZ facilite la connexion mais n'est pas partie à l'accord de service.",
+    termsBookingsItem2: 'Les prestataires fixent leurs propres prix et disponibilités. Nous ne garantissons pas les tarifs ou les horaires.',
+    termsBookingsItem3: "Chaque partie peut annuler une réservation. Les raisons d'annulation doivent être fournies par souci de transparence.",
+    termsProvidersTitle: '5. Obligations des Prestataires',
+    termsProvidersItem1: 'Les prestataires doivent maintenir des informations de profil exactes et à jour.',
+    termsProvidersItem2: 'Les prestataires doivent répondre aux demandes de réservation dans un délai raisonnable.',
+    termsProvidersItem3: 'Les prestataires sont seuls responsables de la qualité et de la sécurité des services qu\'ils fournissent.',
+    termsLiabilityTitle: '6. Limitation de Responsabilité',
+    termsLiabilityText: "SOS Auto DZ n'est pas responsable des dommages, blessures ou pertes résultant des services fournis par des prestataires tiers trouvés via notre plateforme. Nous ne garantissons pas la qualité, la sécurité ou la légalité des services proposés par les prestataires.",
+    termsChangesTitle: '7. Modifications des Conditions',
+    termsChangesText: "Nous nous réservons le droit de modifier ces Conditions d'Utilisation à tout moment. Les modifications seront publiées sur cette page avec une date mise à jour. L'utilisation continue de la plateforme après les modifications constitue l'acceptation des nouvelles conditions.",
+    termsContactTitle: '8. Contact',
+    termsContactText: "Pour toute question concernant ces Conditions d'Utilisation, veuillez nous contacter à",
 
     // Language names
     english: 'English',
@@ -776,6 +932,10 @@ export const translations: Record<Language, Translations> = {
     noPendingRequests: 'Aucune demande en attente pour le moment.',
     issueLabel: 'Problème :',
     decline: 'Refuser',
+    declineReason: 'Raison du refus (optionnel)',
+    declineReasonPlaceholder: 'ex. Complet, hors zone de service...',
+    declineConfirm: 'Confirmer le refus',
+    cancelledReason: 'Raison',
     acceptJob: 'Accepter',
 
     // Dashboard – Admin overview
@@ -802,6 +962,13 @@ export const translations: Record<Language, Translations> = {
     changeProfilePicture: 'Changer la photo de profil',
     changeShopPhoto: 'Changer la photo du commerce',
     shopPhotoDesc: 'Cette photo est affichée sur votre profil public et votre fiche de service.',
+    gallery: 'Galerie Photos',
+    galleryDesc: 'Ajoutez jusqu\'à 8 photos de votre travail, garage ou équipement.',
+    addPhotos: 'Ajouter des photos',
+    deletePhoto: 'Supprimer',
+    galleryFull: 'Galerie pleine (max 8 photos)',
+    photoGallery: 'Galerie Photos',
+    noPhotos: 'Aucune photo pour le moment',
     emailLabel: 'E-mail',
     emailCannotChange: "L'adresse e-mail ne peut pas être modifiée.",
     phoneLabel: 'Téléphone',
@@ -874,8 +1041,6 @@ export const translations: Record<Language, Translations> = {
     backToLogin: 'Retour à la connexion',
     resetPasswordTitle: 'Nouveau mot de passe',
     resetPasswordSubtitle: 'Entrez votre nouveau mot de passe ci-dessous.',
-    newPassword: 'Nouveau mot de passe',
-    confirmNewPassword: 'Confirmer le mot de passe',
     resetPassword: 'Réinitialiser',
     resettingPassword: 'Réinitialisation...',
     passwordResetSuccess: 'Mot de passe réinitialisé !',
@@ -1012,6 +1177,51 @@ export const translations: Record<Language, Translations> = {
     allRightsReserved: 'جميع الحقوق محفوظة.',
     privacyPolicy: 'سياسة الخصوصية',
     termsOfService: 'شروط الخدمة',
+    backToHome: 'العودة إلى الرئيسية',
+    lastUpdated: 'آخر تحديث',
+    privacyLastUpdated: '١ يناير ٢٠٢٥',
+    termsLastUpdated: '١ يناير ٢٠٢٥',
+    privacyIntroTitle: 'مقدمة',
+    privacyIntroText: 'تلتزم SOS Auto DZ ("نحن"، "خاصتنا") بحماية خصوصيتك. توضح سياسة الخصوصية هذه كيفية جمع معلوماتك الشخصية واستخدامها وحمايتها عند استخدامك لمنصتنا.',
+    privacyCollectTitle: 'المعلومات التي نجمعها',
+    privacyCollectText: 'نجمع الأنواع التالية من المعلومات:',
+    privacyCollectItem1: 'معلومات الحساب: الاسم، عنوان البريد الإلكتروني، رقم الهاتف وكلمة المرور.',
+    privacyCollectItem2: 'بيانات الموقع: ولايتك، بلديتك وإحداثيات GPS (بإذنك) لعرض مقدمي الخدمات القريبين.',
+    privacyCollectItem3: 'بيانات الحجز: طلبات الخدمة، التواريخ، معلومات السيارة والتواصل مع مقدمي الخدمات.',
+    privacyCollectItem4: 'ملفات مقدمي الخدمات: اسم المؤسسة، الوصف، الصور، ساعات العمل ومناطق الخدمة.',
+    privacyUseTitle: 'كيف نستخدم معلوماتك',
+    privacyUseItem1: 'لربطك بمقدمي خدمات السيارات في منطقتك.',
+    privacyUseItem2: 'لمعالجة وإدارة حجوزات الخدمات الخاصة بك.',
+    privacyUseItem3: 'لإرسال إشعارات حول تحديثات حالة الحجز ومعلومات الحساب المهمة.',
+    privacyUseItem4: 'لتحسين منصتنا وتجربة المستخدم.',
+    privacySharingTitle: 'مشاركة المعلومات',
+    privacySharingText: 'نحن لا نبيع معلوماتك الشخصية. نشارك بيانات الاتصال الخاصة بك فقط مع مقدمي الخدمات الذين تختار الحجز معهم، حتى يتمكنوا من تلبية طلب الخدمة الخاص بك. قد نشارك البيانات مع خدمات طرف ثالث (مثل Cloudinary لاستضافة الصور) حسب الحاجة لتشغيل المنصة.',
+    privacySecurityTitle: 'أمان البيانات',
+    privacySecurityText: 'نستخدم تدابير أمنية متوافقة مع معايير الصناعة بما في ذلك كلمات المرور المشفرة (bcrypt)، واتصالات HTTPS الآمنة، ومصادقة JWT لحماية بياناتك. ومع ذلك، لا توجد طريقة نقل إلكتروني آمنة بنسبة 100%.',
+    privacyContactTitle: 'اتصل بنا',
+    privacyContactText: 'إذا كانت لديك أسئلة حول سياسة الخصوصية هذه، يرجى الاتصال بنا على',
+    termsAcceptanceTitle: '١. قبول الشروط',
+    termsAcceptanceText: 'من خلال الوصول إلى منصة SOS Auto DZ أو استخدامها، فإنك توافق على الالتزام بشروط الخدمة هذه. إذا كنت لا توافق على هذه الشروط، يرجى عدم استخدام خدماتنا.',
+    termsDescriptionTitle: '٢. وصف الخدمة',
+    termsDescriptionText: 'SOS Auto DZ هي منصة إلكترونية تربط أصحاب المركبات بمقدمي خدمات السيارات (الميكانيكيين، محلات قطع الغيار، وخدمات السحب) عبر الجزائر. نحن نعمل كوسيط ولا نقدم خدمات السيارات مباشرة.',
+    termsAccountsTitle: '٣. حسابات المستخدمين',
+    termsAccountsItem1: 'يجب عليك تقديم معلومات دقيقة وكاملة عند إنشاء حساب.',
+    termsAccountsItem2: 'أنت مسؤول عن الحفاظ على سرية بيانات اعتماد حسابك.',
+    termsAccountsItem3: 'يجب أن يكون عمرك 18 عامًا على الأقل لإنشاء حساب واستخدام خدماتنا.',
+    termsBookingsTitle: '٤. الحجوزات والخدمات',
+    termsBookingsItem1: 'الحجوزات هي اتفاقيات بينك وبين مقدم الخدمة. SOS Auto DZ تسهل الاتصال ولكنها ليست طرفًا في اتفاقية الخدمة.',
+    termsBookingsItem2: 'يحدد مقدمو الخدمات أسعارهم ومواعيد توفرهم. نحن لا نضمن الأسعار أو الجداول الزمنية.',
+    termsBookingsItem3: 'يمكن لأي طرف إلغاء الحجز. يجب تقديم أسباب الإلغاء من أجل الشفافية.',
+    termsProvidersTitle: '٥. التزامات مقدمي الخدمات',
+    termsProvidersItem1: 'يجب على مقدمي الخدمات الحفاظ على معلومات ملف شخصي دقيقة ومحدثة.',
+    termsProvidersItem2: 'يجب على مقدمي الخدمات الرد على طلبات الحجز في الوقت المناسب.',
+    termsProvidersItem3: 'مقدمو الخدمات هم المسؤولون الوحيدون عن جودة وسلامة الخدمات التي يقدمونها.',
+    termsLiabilityTitle: '٦. تحديد المسؤولية',
+    termsLiabilityText: 'SOS Auto DZ ليست مسؤولة عن أي أضرار أو إصابات أو خسائر ناتجة عن الخدمات المقدمة من مقدمي خدمات طرف ثالث تم العثور عليهم عبر منصتنا. نحن لا نضمن جودة أو سلامة أو قانونية الخدمات المقدمة من مقدمي الخدمات.',
+    termsChangesTitle: '٧. تعديل الشروط',
+    termsChangesText: 'نحتفظ بالحق في تعديل شروط الخدمة هذه في أي وقت. سيتم نشر التغييرات على هذه الصفحة بتاريخ محدث. يشكل الاستمرار في استخدام المنصة بعد التغييرات قبولاً للشروط الجديدة.',
+    termsContactTitle: '٨. الاتصال',
+    termsContactText: 'لأي أسئلة حول شروط الخدمة هذه، يرجى الاتصال بنا على',
 
     // Language names
     english: 'English',
@@ -1086,6 +1296,10 @@ export const translations: Record<Language, Translations> = {
     noPendingRequests: 'لا توجد طلبات معلقة في الوقت الحالي.',
     issueLabel: 'المشكلة:',
     decline: 'رفض',
+    declineReason: 'سبب الرفض (اختياري)',
+    declineReasonPlaceholder: 'مثلاً: محجوز بالكامل، خارج منطقة الخدمة...',
+    declineConfirm: 'تأكيد الرفض',
+    cancelledReason: 'السبب',
     acceptJob: 'قبول العمل',
 
     // Dashboard – Admin overview
@@ -1112,6 +1326,13 @@ export const translations: Record<Language, Translations> = {
     changeProfilePicture: 'تغيير صورة الملف الشخصي',
     changeShopPhoto: 'تغيير صورة المحل',
     shopPhotoDesc: 'تظهر هذه الصورة في ملفك العام وبطاقة الخدمة.',
+    gallery: 'معرض الصور',
+    galleryDesc: 'أضف حتى 8 صور لعملك أو ورشتك أو معداتك.',
+    addPhotos: 'إضافة صور',
+    deletePhoto: 'حذف',
+    galleryFull: 'المعرض ممتلئ (الحد الأقصى 8 صور)',
+    photoGallery: 'معرض الصور',
+    noPhotos: 'لا توجد صور بعد',
     emailLabel: 'البريد الإلكتروني',
     emailCannotChange: 'لا يمكن تغيير عنوان البريد الإلكتروني.',
     phoneLabel: 'الهاتف',
@@ -1184,8 +1405,6 @@ export const translations: Record<Language, Translations> = {
     backToLogin: 'العودة لتسجيل الدخول',
     resetPasswordTitle: 'كلمة مرور جديدة',
     resetPasswordSubtitle: 'أدخل كلمة المرور الجديدة أدناه.',
-    newPassword: 'كلمة المرور الجديدة',
-    confirmNewPassword: 'تأكيد كلمة المرور',
     resetPassword: 'إعادة التعيين',
     resettingPassword: 'جارٍ إعادة التعيين...',
     passwordResetSuccess: 'تم إعادة التعيين!',

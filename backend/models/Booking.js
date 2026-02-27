@@ -40,6 +40,11 @@ const bookingSchema = new mongoose.Schema({
     enum: ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'],
     default: 'PENDING'
   },
+  cancellationReason: {
+    type: String,
+    trim: true,
+    maxlength: 500
+  },
   price: {
     type: Number
   }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Car, Mail, Phone, MapPin, Instagram, Github } from 'lucide-react';
 import { Language, translations } from '../translations';
 import { PageView } from '../types';
@@ -75,8 +76,8 @@ const Footer: React.FC<FooterProps> = ({ language, onChangeView }) => {
         <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500">
           <p>&copy; {new Date().getFullYear()} SOS Auto DZ. {t.allRightsReserved}</p>
           <div className="flex gap-6 mt-4 md:mt-0">
-            <a href="#" className="hover:text-white">{t.privacyPolicy}</a>
-            <a href="#" className="hover:text-white">{t.termsOfService}</a>
+            <Link to="/privacy" className="hover:text-white">{t.privacyPolicy}</Link>
+            <Link to="/terms" className="hover:text-white">{t.termsOfService}</Link>
           </div>
         </div>
       </div>

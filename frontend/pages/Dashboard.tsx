@@ -37,6 +37,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const [pwSaving, setPwSaving] = useState(false);
   const [pwMsg, setPwMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const picInputRef = useRef<HTMLInputElement>(null);
+  const [shopImage, setShopImage] = useState<string | null>(null);
+  const [shopImageUploading, setShopImageUploading] = useState(false);
+  const shopImageInputRef = useRef<HTMLInputElement>(null);
 
   // Review modal state
   const [reviewBooking, setReviewBooking] = useState<Booking | null>(null);
@@ -59,6 +62,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
         setIsAvailable(data.isAvailable ?? true);
         setProviderRating(data.rating ?? 0);
         setProviderTotalReviews(data.totalReviews ?? 0);
+        if (data.image) setShopImage(data.image);
       } catch (err) {
         console.error('Failed to fetch provider profile:', err);
       }
@@ -85,6 +89,25 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
       console.error('Avatar upload failed:', err);
     } finally {
       setAvatarUploading(false);
+    }
+  };
+
+  const handleShopImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !providerId) return;
+    // Optimistic preview
+    const reader = new FileReader();
+    reader.onload = (ev) => setShopImage(ev.target?.result as string);
+    reader.readAsDataURL(file);
+    // Upload to Cloudinary via backend
+    setShopImageUploading(true);
+    try {
+      const data = await providersAPI.uploadImage(providerId, file);
+      setShopImage(data.image);
+    } catch (err) {
+      console.error('Shop image upload failed:', err);
+    } finally {
+      setShopImageUploading(false);
     }
   };
 
@@ -620,6 +643,33 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                      <button type="button" onClick={() => picInputRef.current?.click()} className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-0.5">{t.changeProfilePicture}</button>
                    </div>
                  </div>
+
+                 {/* Shop / Garage Image (Professionals only) */}
+                 {providerId && (
+                   <div className="mb-6 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40">
+                     <p className="text-sm font-semibold text-slate-800 dark:text-white mb-1">{t.changeShopPhoto}</p>
+                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{t.shopPhotoDesc}</p>
+                     <div className="flex items-center gap-4">
+                       <div className="relative w-28 h-20 rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 flex items-center justify-center flex-shrink-0">
+                         {shopImage
+                           ? <img src={shopImage} alt="Shop" className="w-full h-full object-cover" />
+                           : <Wrench size={28} className="text-slate-400" />}
+                       </div>
+                       <button
+                         type="button"
+                         onClick={() => shopImageInputRef.current?.click()}
+                         disabled={shopImageUploading}
+                         className="px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white transition-colors flex items-center gap-2"
+                       >
+                         {shopImageUploading
+                           ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                           : <Camera size={14} />}
+                         {t.changeShopPhoto}
+                       </button>
+                       <input ref={shopImageInputRef} type="file" accept="image/*" className="hidden" onChange={handleShopImageChange} />
+                     </div>
+                   </div>
+                 )}
 
                  <form className="space-y-4 max-w-lg" onSubmit={handleProfileSave}>
                     <div>

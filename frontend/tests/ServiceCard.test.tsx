@@ -36,8 +36,8 @@ describe('ServiceCard', () => {
   const defaultProps = {
     provider: createProvider(),
     userLocation: null,
-    onBook: vi.fn(),
-    language: 'en' as const
+    onBook: vi.fn() as (provider: ServiceProvider) => void,
+    language: 'en' as 'en' | 'fr',
   };
 
   const renderCard = (props: Partial<typeof defaultProps> = {}) =>

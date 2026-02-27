@@ -155,6 +155,18 @@ export const providersAPI = {
       headers: getAuthHeaders()
     });
     return handleResponse(response);
+  },
+
+  uploadImage: async (id: string, file: File) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/providers/${id}/image`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData
+    });
+    return handleResponse(response);
   }
 };
 

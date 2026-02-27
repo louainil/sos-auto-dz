@@ -180,6 +180,8 @@ export interface Translations {
   // Dashboard – Settings tab
   accountSettings: string;
   changeProfilePicture: string;
+  changeShopPhoto: string;
+  shopPhotoDesc: string;
   emailLabel: string;
   emailCannotChange: string;
   phoneLabel: string;
@@ -486,6 +488,8 @@ export const translations: Record<Language, Translations> = {
     // Dashboard – Settings tab
     accountSettings: 'Account Settings',
     changeProfilePicture: 'Change profile picture',
+    changeShopPhoto: 'Change shop photo',
+    shopPhotoDesc: 'This photo is shown on your public profile and service card.',
     emailLabel: 'Email',
     emailCannotChange: 'Email address cannot be changed.',
     phoneLabel: 'Phone',
@@ -790,6 +794,8 @@ export const translations: Record<Language, Translations> = {
     // Dashboard – Settings tab
     accountSettings: 'Paramètres du Compte',
     changeProfilePicture: 'Changer la photo de profil',
+    changeShopPhoto: 'Changer la photo du commerce',
+    shopPhotoDesc: 'Cette photo est affichée sur votre profil public et votre fiche de service.',
     emailLabel: 'E-mail',
     emailCannotChange: "L'adresse e-mail ne peut pas être modifiée.",
     phoneLabel: 'Téléphone',
@@ -1095,6 +1101,8 @@ export const translations: Record<Language, Translations> = {
     // Dashboard – Settings tab
     accountSettings: 'إعدادات الحساب',
     changeProfilePicture: 'تغيير صورة الملف الشخصي',
+    changeShopPhoto: 'تغيير صورة المحل',
+    shopPhotoDesc: 'تظهر هذه الصورة في ملفك العام وبطاقة الخدمة.',
     emailLabel: 'البريد الإلكتروني',
     emailCannotChange: 'لا يمكن تغيير عنوان البريد الإلكتروني.',
     phoneLabel: 'الهاتف',

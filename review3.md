@@ -353,7 +353,7 @@ Users cannot rate or review providers. The rating on ServiceProvider is static (
 - Frontend: Review modal on completed bookings
 - Recalculate provider `rating` and `totalReviews` on each new review
 
-### 7.3 — Search / Filter by provider name on homepage
+### 7.3 — Search / Filter by provider name on homepage//
 **Priority:** MEDIUM  
 Currently, finding a specific provider requires navigating to the right service type page and using the search there. A global search bar on the homepage would improve discoverability.
 

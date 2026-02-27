@@ -1,10 +1,37 @@
 import express from 'express';
 import { body, param, query } from 'express-validator';
+import { Readable } from 'stream';
+import multer from 'multer';
 import ServiceProvider from '../models/ServiceProvider.js';
 import { protect, isProfessional } from '../middleware/auth.js';
 import validate from '../middleware/validate.js';
+import cloudinary from '../config/cloudinary.js';
 
 const router = express.Router();
+
+// Multer memory storage (no disk writes)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Only image files are allowed'), false);
+  }
+});
+
+// Helper: upload buffer to Cloudinary
+const uploadToCloudinary = (buffer, folder, publicId) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder, public_id: publicId, overwrite: true, resource_type: 'image' },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    );
+    Readable.from(buffer).pipe(stream);
+  });
+};
 
 // @route   GET /api/providers
 // @desc    Get all service providers with filters
@@ -171,6 +198,45 @@ router.get('/user/:userId', protect, [
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// @route   POST /api/providers/:id/image
+// @desc    Upload / update provider shop/garage image (saved to Cloudinary)
+// @access  Private (Professional, owner only)
+router.post('/:id/image', protect, isProfessional, [
+  param('id').isMongoId().withMessage('Valid provider ID is required'),
+  validate
+], upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image file provided' });
+    }
+
+    const provider = await ServiceProvider.findById(req.params.id);
+    if (!provider) {
+      return res.status(404).json({ message: 'Provider not found' });
+    }
+
+    // Check ownership
+    if (provider.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to update this provider' });
+    }
+
+    // Upload to Cloudinary
+    const result = await uploadToCloudinary(
+      req.file.buffer,
+      'sos-auto-dz/providers',
+      `provider_${provider._id}`
+    );
+
+    provider.image = result.secure_url;
+    await provider.save();
+
+    res.json({ message: 'Provider image updated', image: result.secure_url });
+  } catch (error) {
+    console.error('Provider image upload error:', error);
+    res.status(500).json({ message: 'Failed to upload image', error: error.message });
   }
 });
 

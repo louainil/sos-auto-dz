@@ -19,6 +19,13 @@ vi.mock('../config/db.js', () => ({
   default: vi.fn().mockResolvedValue(true)
 }));
 
+// Mock Socket.io — emitNotification is a no-op in tests
+vi.mock('../config/socket.js', () => ({
+  initSocket: vi.fn(),
+  getIO: vi.fn().mockReturnValue(null),
+  emitNotification: vi.fn()
+}));
+
 // Mock cloudinary
 vi.mock('../config/cloudinary.js', () => ({
   default: {

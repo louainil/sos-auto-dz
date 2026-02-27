@@ -97,7 +97,7 @@ describe('Bookings Routes', () => {
       const provider = createMockProvider({ _id: providerId });
       ServiceProvider.findById.mockResolvedValue(provider);
       Booking.create.mockResolvedValue(createMockBooking({ clientId: user._id, providerId }));
-      Notification.create.mockResolvedValue({});
+      Notification.create.mockResolvedValue({ _id: objectId(), title: 'New Booking Request', message: 'test', type: 'INFO', isRead: false, createdAt: new Date() });
 
       const res = await request(app)
         .post('/api/bookings')
@@ -280,7 +280,7 @@ describe('Bookings Routes', () => {
       });
       Booking.findById.mockResolvedValue(booking);
       ServiceProvider.findById.mockResolvedValue(provider);
-      Notification.create.mockResolvedValue({});
+      Notification.create.mockResolvedValue({ _id: objectId(), title: 'Booking Updated', message: 'test', type: 'INFO', isRead: false, createdAt: new Date() });
 
       const res = await request(app)
         .put(`/api/bookings/${bookingId}`)

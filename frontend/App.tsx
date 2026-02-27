@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { io, Socket } from 'socket.io-client';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -42,6 +43,10 @@ const App: React.FC = () => {
   const [authInitialMode, setAuthInitialMode] = useState<'LOGIN' | 'SIGNUP'>('LOGIN');
   const [user, setUser] = useState<User | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  // Socket.io ref for real-time notifications
+  const socketRef = useRef<Socket | null>(null);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Password reset token from email link
   const [resetToken, setResetToken] = useState<string | undefined>(undefined);
@@ -128,6 +133,103 @@ const App: React.FC = () => {
     checkAuth();
   }, []);
 
+  // Helper to map raw notification data to typed Notification
+  const mapNotification = useCallback((n: any): Notification => ({
+    id: n._id,
+    title: n.title,
+    message: n.message,
+    type: n.type,
+    isRead: n.isRead,
+    createdAt: new Date(n.createdAt)
+  }), []);
+
+  // Fetch all notifications from the API
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const notifs = await notificationsAPI.getAll();
+      setNotifications(notifs.map(mapNotification));
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    }
+  }, [mapNotification]);
+
+  // Real-time notifications: Socket.io with polling fallback
+  useEffect(() => {
+    if (!user) {
+      // Disconnect socket and stop polling when logged out
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    // Determine socket URL: strip /api suffix from the backend base URL
+    const backendUrl = (import.meta.env.VITE_REACT_APP_BACKEND_BASEURL || '').replace(/\/api\/?$/, '');
+
+    let socketConnected = false;
+
+    if (backendUrl) {
+      const socket = io(backendUrl, {
+        auth: { token },
+        transports: ['websocket', 'polling'],
+        reconnectionAttempts: 5,
+        reconnectionDelay: 3000,
+      });
+
+      socket.on('connect', () => {
+        socketConnected = true;
+        // Stop polling — we have a live connection
+        if (pollIntervalRef.current) {
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+        }
+      });
+
+      socket.on('notification', (data: any) => {
+        setNotifications(prev => [mapNotification(data), ...prev]);
+      });
+
+      socket.on('disconnect', () => {
+        socketConnected = false;
+        // Start polling as fallback
+        if (!pollIntervalRef.current) {
+          pollIntervalRef.current = setInterval(fetchNotifications, 30000);
+        }
+      });
+
+      socket.on('connect_error', () => {
+        // Socket failed (e.g. serverless) — fall back to polling
+        if (!pollIntervalRef.current) {
+          pollIntervalRef.current = setInterval(fetchNotifications, 30000);
+        }
+      });
+
+      socketRef.current = socket;
+    } else {
+      // No backend URL for sockets — use polling only
+      pollIntervalRef.current = setInterval(fetchNotifications, 30000);
+    }
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    };
+  }, [user, mapNotification, fetchNotifications]);
+
   // Attempt to get user location on mount
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -182,19 +284,7 @@ const App: React.FC = () => {
     setUser(loggedInUser);
     
     // Fetch notifications from backend
-    try {
-      const notifs = await notificationsAPI.getAll();
-      setNotifications(notifs.map((n: any) => ({
-        id: n._id,
-        title: n.title,
-        message: n.message,
-        type: n.type,
-        isRead: n.isRead,
-        createdAt: new Date(n.createdAt)
-      })));
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
-    }
+    await fetchNotifications();
 
     // Redirect logic could be here, but sticking to current view or Dashboard if pro
     if (loggedInUser.role !== UserRole.CLIENT) {

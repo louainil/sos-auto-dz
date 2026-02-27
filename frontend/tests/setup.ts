@@ -36,3 +36,17 @@ Object.defineProperty(window, 'IntersectionObserver', {
 
 // Mock scrollTo
 window.scrollTo = vi.fn();
+
+// Mock socket.io-client so tests don't attempt real connections
+vi.mock('socket.io-client', () => {
+  const mockSocket = {
+    on: vi.fn().mockReturnThis(),
+    emit: vi.fn().mockReturnThis(),
+    disconnect: vi.fn(),
+    connect: vi.fn(),
+    connected: false,
+  };
+  return {
+    io: vi.fn(() => mockSocket),
+  };
+});

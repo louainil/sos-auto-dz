@@ -5,6 +5,7 @@ import ServiceProvider from '../models/ServiceProvider.js';
 import Notification from '../models/Notification.js';
 import { protect } from '../middleware/auth.js';
 import validate from '../middleware/validate.js';
+import { emitNotification } from '../config/socket.js';
 
 const router = express.Router();
 
@@ -47,11 +48,21 @@ router.post('/', protect, [
     });
 
     // Create notification for provider
-    await Notification.create({
+    const notif = await Notification.create({
       userId: provider.userId,
       title: 'New Booking Request',
       message: `${req.user.name} has requested a booking for ${date}`,
       type: 'INFO'
+    });
+
+    // Emit real-time notification via Socket.io
+    emitNotification(provider.userId, {
+      _id: notif._id,
+      title: notif.title,
+      message: notif.message,
+      type: notif.type,
+      isRead: notif.isRead,
+      createdAt: notif.createdAt
     });
 
     res.status(201).json(booking);
@@ -156,11 +167,21 @@ router.put('/:id', protect, [
 
     // Create notification for the other party
     const notificationUserId = isProvider ? booking.clientId : provider.userId;
-    await Notification.create({
+    const statusNotif = await Notification.create({
       userId: notificationUserId,
       title: 'Booking Updated',
       message: `Booking status changed to ${status}`,
       type: 'INFO'
+    });
+
+    // Emit real-time notification via Socket.io
+    emitNotification(notificationUserId, {
+      _id: statusNotif._id,
+      title: statusNotif.title,
+      message: statusNotif.message,
+      type: statusNotif.type,
+      isRead: statusNotif.isRead,
+      createdAt: statusNotif.createdAt
     });
 
     res.json(updatedBooking);

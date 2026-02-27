@@ -1,10 +1,12 @@
 import express from 'express';
+import { createServer } from 'http';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import connectDB from './config/db.js';
+import { initSocket } from './config/socket.js';
 
 // Import routes
 import authRoutes from './routes/auth.js';
@@ -117,7 +119,9 @@ const PORT = process.env.PORT || 5000;
 
 // Don't start the HTTP server when running as a Vercel serverless function
 if (!process.env.VERCEL) {
-  app.listen(PORT, () => {
+  const httpServer = createServer(app);
+  initSocket(httpServer);
+  httpServer.listen(PORT, () => {
     console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
   });
 }

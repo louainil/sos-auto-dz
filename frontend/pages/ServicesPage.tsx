@@ -1,10 +1,12 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Search, MapPin, Filter, AlertTriangle, Navigation, Wrench, Zap, PaintBucket, Car, X, ChevronDown } from 'lucide-react';
+import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
+import { Search, MapPin, Filter, AlertTriangle, Navigation, Wrench, Zap, PaintBucket, Car, X, ChevronDown, Map, List } from 'lucide-react';
 import { WILAYAS, COMMUNES, CAR_BRANDS } from '../constants';
 import { ServiceProvider, UserRole, GarageType } from '../types';
 import { Language, translations } from '../translations';
 import ServiceCard from '../components/ServiceCard';
 import { providersAPI } from '../api';
+
+const ProviderMap = lazy(() => import('../components/ProviderMap'));
 
 interface ServicesPageProps {
   type: UserRole;
@@ -23,6 +25,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
   const [selectedGarageType, setSelectedGarageType] = useState<GarageType | 'all'>('all');
   const [providers, setProviders] = useState<ServiceProvider[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   
   const t = translations[language];
   
@@ -259,25 +262,70 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
         </div>
       </div>
 
-      {/* Results Grid */}
+      {/* Results */}
       <div className="max-w-7xl mx-auto px-4 py-12">
+        {/* View Toggle */}
+        {!loading && filteredProviders.length > 0 && (
+          <div className="flex justify-end mb-6">
+            <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                  viewMode === 'list'
+                    ? 'bg-slate-900 text-white dark:bg-blue-600'
+                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                }`}
+              >
+                <List size={16} />
+                {t.listView}
+              </button>
+              <button
+                onClick={() => setViewMode('map')}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                  viewMode === 'map'
+                    ? 'bg-slate-900 text-white dark:bg-blue-600'
+                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                }`}
+              >
+                <Map size={16} />
+                {t.mapView}
+              </button>
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
             <p className="text-slate-500 dark:text-slate-400">{t.loadingProviders}</p>
           </div>
         ) : filteredProviders.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProviders.map(provider => (
-              <ServiceCard 
-                key={provider.id} 
-                provider={provider} 
+          viewMode === 'map' ? (
+            <Suspense fallback={
+              <div className="flex items-center justify-center py-20">
+                <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            }>
+              <ProviderMap
+                providers={filteredProviders}
                 userLocation={userLocation}
-                onBook={onBook}
                 language={language}
+                height="600px"
               />
-            ))}
-          </div>
+            </Suspense>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredProviders.map(provider => (
+                <ServiceCard 
+                  key={provider.id} 
+                  provider={provider} 
+                  userLocation={userLocation}
+                  onBook={onBook}
+                  language={language}
+                />
+              ))}
+            </div>
+          )
         ) : (
           <div className="text-center py-20">
              <div className="bg-slate-100 dark:bg-slate-800 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-400 dark:text-slate-500">

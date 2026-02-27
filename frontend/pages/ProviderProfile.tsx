@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Star, Phone, MapPin, Clock, MessageCircle, Wrench, Truck, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { ServiceProvider, UserRole } from '../types';
@@ -6,6 +6,8 @@ import { Language, translations } from '../translations';
 import { providersAPI, reviewsAPI } from '../api';
 import { WILAYAS } from '../constants';
 import DistanceIndicator from '../components/DistanceIndicator';
+
+const ProviderMap = lazy(() => import('../components/ProviderMap'));
 
 interface Review {
   _id: string;
@@ -265,6 +267,23 @@ const ProviderProfile: React.FC<ProviderProfileProps> = ({ language, userLocatio
               </>
             )}
           </div>
+        </div>
+
+        {/* Map */}
+        <div className="mt-6">
+          <Suspense fallback={
+            <div className="h-[300px] rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+              <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          }>
+            <ProviderMap
+              providers={[provider]}
+              userLocation={userLocation}
+              language={language}
+              singleMode
+              height="300px"
+            />
+          </Suspense>
         </div>
 
         {/* Reviews Section */}

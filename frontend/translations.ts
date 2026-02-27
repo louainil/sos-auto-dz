@@ -287,6 +287,11 @@ export interface Translations {
   providerNotFound: string;
   dayNames: string[];
 
+  // Map
+  mapView: string;
+  listView: string;
+  showOnMap: string;
+
   // NotificationDropdown
   notifications: string;
   clearAll: string;
@@ -588,6 +593,11 @@ export const translations: Record<Language, Translations> = {
     providerNotFound: 'Provider not found',
     dayNames: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
 
+    // Map
+    mapView: 'Map View',
+    listView: 'List View',
+    showOnMap: 'Show on map',
+
     // NotificationDropdown
     notifications: 'Notifications',
     clearAll: 'Clear all',
@@ -886,6 +896,11 @@ export const translations: Record<Language, Translations> = {
     backToList: 'Retour à la liste',
     providerNotFound: 'Prestataire introuvable',
     dayNames: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
+
+    // Map
+    mapView: 'Vue carte',
+    listView: 'Vue liste',
+    showOnMap: 'Voir sur la carte',
 
     // NotificationDropdown
     notifications: 'Notifications',
@@ -1186,6 +1201,11 @@ export const translations: Record<Language, Translations> = {
     backToList: 'العودة للقائمة',
     providerNotFound: 'مقدم الخدمة غير موجود',
     dayNames: ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'],
+
+    // Map
+    mapView: 'عرض الخريطة',
+    listView: 'عرض القائمة',
+    showOnMap: 'عرض على الخريطة',
 
     // NotificationDropdown
     notifications: 'الإشعارات',

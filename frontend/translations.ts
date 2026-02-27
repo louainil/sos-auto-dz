@@ -17,6 +17,9 @@ export interface Translations {
   heroSubtitle: string;
   findGarage: string;
   emergencyTowing: string;
+  searchAllProviders: string;
+  searchResults: string;
+  allServices: string;
 
   // Services Grid - Home Page
   servicesTitle: string;
@@ -325,6 +328,9 @@ export const translations: Record<Language, Translations> = {
     heroSubtitle: 'Find trusted mechanics, electricians, auto body shops, spare parts, and 24/7 towing services anywhere in Algeria.',
     findGarage: 'Find a Garage',
     emergencyTowing: 'Emergency Towing',
+    searchAllProviders: 'Search mechanics, parts shops, towing...',
+    searchResults: 'Search Results',
+    allServices: 'All service providers across Algeria',
 
     // Services Grid - Home Page
     servicesTitle: 'Everything Your Vehicle Needs',
@@ -938,6 +944,9 @@ export const translations: Record<Language, Translations> = {
     heroSubtitle: 'اعثر على ميكانيكيين موثوقين، كهربائيين، ورش تصليح، قطع غيار، وخدمات السحب على مدار 24/7 في أي مكان في الجزائر.',
     findGarage: 'ابحث عن كراج',
     emergencyTowing: 'سحب طارئ',
+    searchAllProviders: 'ابحث عن ميكانيكيين، قطع غيار، سحب...',
+    searchResults: 'نتائج البحث',
+    allServices: 'جميع مقدمي الخدمات عبر الجزائر',
 
     // Services Grid - Home Page
     servicesTitle: 'كل ما تحتاجه سيارتك',

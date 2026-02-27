@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Search, Map, Shield, Calendar, Wrench, Settings, Truck } from 'lucide-react';
 import { PageView } from '../types';
 import { Language, translations } from '../translations';
@@ -11,7 +12,15 @@ interface HomeProps {
 
 const Home: React.FC<HomeProps> = ({ onChangeView, language }) => {
   const t = translations[language];
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ totalProviders: 0, wilayasCovered: 0, avgRating: 0 });
+  const [heroSearch, setHeroSearch] = useState('');
+
+  const handleHeroSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = heroSearch.trim();
+    if (q) navigate(`/search?q=${encodeURIComponent(q)}`);
+  };
 
   useEffect(() => {
     publicStatsAPI.get()
@@ -44,6 +53,26 @@ const Home: React.FC<HomeProps> = ({ onChangeView, language }) => {
           <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-10 animate-fade-in delay-100">
             {t.heroSubtitle}
           </p>
+
+          {/* Global Search Bar */}
+          <form onSubmit={handleHeroSearch} className="max-w-xl mx-auto mb-10 animate-fade-in delay-150">
+            <div className="relative flex items-center">
+              <Search size={20} className="absolute left-4 text-slate-400 pointer-events-none" />
+              <input
+                type="text"
+                value={heroSearch}
+                onChange={(e) => setHeroSearch(e.target.value)}
+                placeholder={t.searchAllProviders}
+                className="w-full pl-12 pr-28 py-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-base"
+              />
+              <button
+                type="submit"
+                className="absolute right-2 px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-semibold transition-colors"
+              >
+                {t.search}
+              </button>
+            </div>
+          </form>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in delay-200">
             <button 

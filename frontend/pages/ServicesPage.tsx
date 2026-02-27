@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Search, MapPin, Filter, AlertTriangle, Navigation, Wrench, Zap, PaintBucket, Car, X, ChevronDown, Map, List } from 'lucide-react';
 import { WILAYAS, COMMUNES, CAR_BRANDS } from '../constants';
 import { ServiceProvider, UserRole, GarageType } from '../types';
@@ -9,7 +10,7 @@ import { providersAPI } from '../api';
 const ProviderMap = lazy(() => import('../components/ProviderMap'));
 
 interface ServicesPageProps {
-  type: UserRole;
+  type?: UserRole;
   title: string;
   subtitle: string;
   userLocation: { lat: number; lng: number } | null;
@@ -18,8 +19,10 @@ interface ServicesPageProps {
 }
 
 const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, userLocation, onBook, language }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [searchParams] = useSearchParams();
+  const initialSearch = searchParams.get('q') || '';
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
   const [selectedWilaya, setSelectedWilaya] = useState<number | 'all'>('all');
   const [selectedCommune, setSelectedCommune] = useState<string>('all');
   const [selectedGarageType, setSelectedGarageType] = useState<GarageType | 'all'>('all');
@@ -45,7 +48,8 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
     const fetchProviders = async () => {
       setLoading(true);
       try {
-        const filters: any = { role: type };
+        const filters: any = {};
+        if (type) filters.role = type;
         if (selectedWilaya !== 'all') filters.wilayaId = selectedWilaya;
         if (selectedCommune !== 'all') filters.commune = selectedCommune;
         if (type === UserRole.MECHANIC && selectedGarageType !== 'all') {

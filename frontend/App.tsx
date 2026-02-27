@@ -348,6 +348,9 @@ const App: React.FC = () => {
           <Route path="/towing" element={
             <ServicesPage key="towing" type={UserRole.TOWING} title={t.roadsideTitle} subtitle={t.roadsideDesc} userLocation={userLocation} onBook={handleBook} language={language} />
           } />
+          <Route path="/search" element={
+            <ServicesPage key="search" title={t.searchResults} subtitle={t.allServices} userLocation={userLocation} onBook={handleBook} language={language} />
+          } />
           <Route path="/dashboard" element={
             user ? <Dashboard user={user} onLogout={handleLogout} onUserUpdate={setUser} language={language} /> : <Navigate to="/" replace />
           } />

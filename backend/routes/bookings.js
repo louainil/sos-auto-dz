@@ -1,11 +1,13 @@
 import express from 'express';
 import { body, param } from 'express-validator';
 import Booking from '../models/Booking.js';
+import User from '../models/User.js';
 import ServiceProvider from '../models/ServiceProvider.js';
 import Notification from '../models/Notification.js';
 import { protect } from '../middleware/auth.js';
 import validate from '../middleware/validate.js';
 import { emitNotification } from '../config/socket.js';
+import { sendNewBookingEmail, sendBookingStatusEmail } from '../config/email.js';
 
 const router = express.Router();
 
@@ -64,6 +66,18 @@ router.post('/', protect, [
       isRead: notif.isRead,
       createdAt: notif.createdAt
     });
+
+    // Send email notification to provider (fire-and-forget)
+    const providerUser = await User.findById(provider.userId).select('email');
+    if (providerUser?.email) {
+      sendNewBookingEmail({
+        providerEmail: providerUser.email,
+        providerName: provider.name,
+        clientName: req.user.name,
+        date,
+        issue,
+      });
+    }
 
     res.status(201).json(booking);
   } catch (error) {
@@ -183,6 +197,20 @@ router.put('/:id', protect, [
       isRead: statusNotif.isRead,
       createdAt: statusNotif.createdAt
     });
+
+    // Send email notification for status change (fire-and-forget)
+    if (status && status !== 'PENDING') {
+      const recipientUser = await User.findById(notificationUserId).select('email name');
+      if (recipientUser?.email) {
+        sendBookingStatusEmail({
+          recipientEmail: recipientUser.email,
+          recipientName: recipientUser.name,
+          otherPartyName: isProvider ? booking.clientName : booking.providerName,
+          status,
+          date: booking.date,
+        });
+      }
+    }
 
     res.json(updatedBooking);
   } catch (error) {

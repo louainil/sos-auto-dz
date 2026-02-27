@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import multer from 'multer';
 import { Readable } from 'stream';
-import nodemailer from 'nodemailer';
+import { createTransporter, getFromAddress } from '../config/email.js';
 import { body } from 'express-validator';
 import User from '../models/User.js';
 import ServiceProvider from '../models/ServiceProvider.js';
@@ -45,20 +45,7 @@ const generateToken = (id) => {
   });
 };
 
-// Create reusable email transporter
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-};
-
-const getFromAddress = () => process.env.SMTP_FROM || `"SOS Auto DZ" <${process.env.SMTP_USER}>`;
+// Email transporter and from address imported from ../config/email.js
 
 // Allowed roles for registration (ADMIN is excluded)
 const ALLOWED_ROLES = ['CLIENT', 'MECHANIC', 'PARTS_SHOP', 'TOWING'];

@@ -357,7 +357,7 @@ const App: React.FC = () => {
             user ? <Dashboard user={user} onLogout={handleLogout} onUserUpdate={setUser} language={language} /> : <Navigate to="/" replace />
           } />
           <Route path="/provider/:id" element={
-            <ProviderProfile language={language} userLocation={userLocation} onBook={handleBook} />
+            <ProviderProfile language={language} userLocation={userLocation} onBook={handleBook} user={user} />
           } />
           <Route path="/verify-email" element={
             <VerifyEmail language={language} onOpenLogin={() => { setAuthInitialMode('LOGIN'); setIsAuthModalOpen(true); }} />

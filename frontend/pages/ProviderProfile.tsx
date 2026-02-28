@@ -1,11 +1,12 @@
 import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Star, Phone, MapPin, Clock, MessageCircle, Wrench, Truck, ArrowLeft, ShieldCheck, Image, X } from 'lucide-react';
-import { ServiceProvider, UserRole } from '../types';
+import { Star, Phone, MapPin, Clock, MessageCircle, Wrench, Truck, ArrowLeft, ShieldCheck, Image, X, Edit3 } from 'lucide-react';
+import { ServiceProvider, User, UserRole, Booking } from '../types';
 import { Language, translations } from '../translations';
-import { providersAPI, reviewsAPI } from '../api';
+import { providersAPI, reviewsAPI, bookingsAPI } from '../api';
 import { WILAYAS } from '../constants';
 import DistanceIndicator from '../components/DistanceIndicator';
+import ReviewModal from '../components/ReviewModal';
 
 const ProviderMap = lazy(() => import('../components/ProviderMap'));
 
@@ -21,9 +22,10 @@ interface ProviderProfileProps {
   language: Language;
   userLocation: { lat: number; lng: number } | null;
   onBook: (provider: ServiceProvider) => void;
+  user?: User | null;
 }
 
-const ProviderProfile: React.FC<ProviderProfileProps> = ({ language, userLocation, onBook }) => {
+const ProviderProfile: React.FC<ProviderProfileProps> = ({ language, userLocation, onBook, user }) => {
   const { id } = useParams<{ id: string }>();
   const t = translations[language];
   const isRTL = language === 'ar';
@@ -33,6 +35,8 @@ const ProviderProfile: React.FC<ProviderProfileProps> = ({ language, userLocatio
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
+  const [reviewableBooking, setReviewableBooking] = useState<Booking | null>(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -54,6 +58,55 @@ const ProviderProfile: React.FC<ProviderProfileProps> = ({ language, userLocatio
     };
     fetchData();
   }, [id]);
+
+  // Fetch user's completed bookings with this provider to enable reviewing
+  useEffect(() => {
+    if (!id || !user) return;
+    const findReviewableBooking = async () => {
+      try {
+        const allBookings = await bookingsAPI.getAll();
+        // Find a completed booking with this provider that hasn't been reviewed
+        const completed = allBookings.filter(
+          (b: any) => b.providerId === id && b.status === 'COMPLETED'
+        );
+        for (const b of completed) {
+          try {
+            const check = await reviewsAPI.checkBooking(b._id);
+            if (!check.reviewed) {
+              setReviewableBooking({
+                id: b._id,
+                providerId: b.providerId,
+                providerName: b.providerName,
+                providerPhone: b.providerPhone || '',
+                clientId: b.clientId,
+                clientName: b.clientName,
+                clientPhone: b.clientPhone,
+                date: b.date ? new Date(b.date).toISOString().slice(0, 10) : b.date,
+                issue: b.issue,
+                status: b.status,
+                price: b.price,
+              });
+              return;
+            }
+          } catch { /* ignore */ }
+        }
+        setReviewableBooking(null);
+      } catch { /* not logged in or no bookings */ }
+    };
+    findReviewableBooking();
+  }, [id, user, reviews.length]);
+
+  const handleReviewSubmitted = async () => {
+    setShowReviewModal(false);
+    setReviewableBooking(null);
+    // Refresh reviews list
+    if (id) {
+      try {
+        const reviewsRes = await reviewsAPI.getByProvider(id);
+        setReviews(Array.isArray(reviewsRes) ? reviewsRes : []);
+      } catch { /* ignore */ }
+    }
+  };
 
   if (loading) {
     return (
@@ -315,6 +368,17 @@ const ProviderProfile: React.FC<ProviderProfileProps> = ({ language, userLocatio
             {t.customerReviews} ({reviews.length})
           </h2>
 
+          {/* Leave a Review button */}
+          {reviewableBooking && (
+            <button
+              onClick={() => setShowReviewModal(true)}
+              className="mb-4 w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+            >
+              <Edit3 size={18} />
+              {t.leaveReview}
+            </button>
+          )}
+
           {reviews.length === 0 ? (
             <p className="text-slate-500 dark:text-slate-400 text-center py-8">{t.noReviewsYet}</p>
           ) : (
@@ -352,6 +416,17 @@ const ProviderProfile: React.FC<ProviderProfileProps> = ({ language, userLocatio
           )}
         </div>
       </div>
+
+      {/* Review Modal */}
+      {reviewableBooking && (
+        <ReviewModal
+          isOpen={showReviewModal}
+          onClose={() => setShowReviewModal(false)}
+          booking={reviewableBooking}
+          language={language}
+          onReviewSubmitted={handleReviewSubmitted}
+        />
+      )}
 
       {/* Lightbox overlay */}
       {lightboxImg && (

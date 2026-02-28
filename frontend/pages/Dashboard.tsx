@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { User, UserRole, Booking } from '../types';
 import { Calendar, Clock, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertCircle, TrendingUp, DollarSign, User as UserIcon, Shield, Wrench, Camera } from 'lucide-react';
 import { bookingsAPI, authAPI, providersAPI, adminAPI, reviewsAPI } from '../api';
@@ -353,7 +354,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                   <Wrench size={20} className="text-slate-500 dark:text-slate-400" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-900 dark:text-white">{booking.providerName}</h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-bold text-slate-900 dark:text-white">{booking.providerName}</h4>
+                    {(booking.status === 'CONFIRMED' || booking.status === 'COMPLETED') && (
+                      <Link to={`/providers/${booking.providerId}`} className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+                        <MapPin size={12} />
+                        {t.viewProfile}
+                      </Link>
+                    )}
+                  </div>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{booking.issue}</p>
                   <div className="flex items-center gap-3 text-xs text-slate-400">
                     <span className="flex items-center gap-1"><Calendar size={12} /> {booking.date}</span>
@@ -621,7 +630,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                        <div key={b.id} className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 hover:border-blue-300 dark:hover:border-blue-700 transition-colors">
                           <div className="flex justify-between items-start gap-3">
                              <div className="flex-1 min-w-0">
-                               <h4 className="font-bold text-slate-800 dark:text-white">{user.role === UserRole.CLIENT ? b.providerName : b.clientName}</h4>
+                               <div className="flex items-center gap-2">
+                                 <h4 className="font-bold text-slate-800 dark:text-white">{user.role === UserRole.CLIENT ? b.providerName : b.clientName}</h4>
+                                 {user.role === UserRole.CLIENT && (b.status === 'CONFIRMED' || b.status === 'COMPLETED') && (
+                                   <Link to={`/providers/${b.providerId}`} className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 flex-shrink-0">
+                                     <MapPin size={12} />
+                                     {t.viewProfile}
+                                   </Link>
+                                 )}
+                               </div>
                                <p className="text-sm text-slate-500">{b.issue}</p>
                                <div className="flex gap-4 mt-2 text-sm text-slate-400">
                                   <span>{b.date}</span>

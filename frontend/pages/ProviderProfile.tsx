@@ -13,7 +13,7 @@ interface Review {
   _id: string;
   rating: number;
   comment?: string;
-  userName: string;
+  clientName: string;
   createdAt: string;
 }
 
@@ -324,9 +324,9 @@ const ProviderProfile: React.FC<ProviderProfileProps> = ({ language, userLocatio
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 text-sm font-bold">
-                        {review.userName?.charAt(0)?.toUpperCase() || '?'}
-                      </div>
-                      <span className="font-medium text-slate-800 dark:text-white text-sm">{review.userName}</span>
+                      {review.clientName?.charAt(0)?.toUpperCase() || '?'}
+                    </div>
+                      <span className="font-medium text-slate-800 dark:text-white text-sm">{review.clientName}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       {Array.from({ length: 5 }).map((_, i) => (

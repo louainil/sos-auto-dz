@@ -357,7 +357,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                   <div className="flex items-center gap-2">
                     <h4 className="font-bold text-slate-900 dark:text-white">{booking.providerName}</h4>
                     {(booking.status === 'CONFIRMED' || booking.status === 'COMPLETED') && (
-                      <Link to={`/providers/${booking.providerId}`} className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+                      <Link to={`/provider/${booking.providerId}`} className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
                         <MapPin size={12} />
                         {t.viewProfile}
                       </Link>
@@ -633,7 +633,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                                <div className="flex items-center gap-2">
                                  <h4 className="font-bold text-slate-800 dark:text-white">{user.role === UserRole.CLIENT ? b.providerName : b.clientName}</h4>
                                  {user.role === UserRole.CLIENT && (b.status === 'CONFIRMED' || b.status === 'COMPLETED') && (
-                                   <Link to={`/providers/${b.providerId}`} className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 flex-shrink-0">
+                                   <Link to={`/provider/${b.providerId}`} className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 flex-shrink-0">
                                      <MapPin size={12} />
                                      {t.viewProfile}
                                    </Link>
@@ -651,6 +651,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                                )}
                              </div>
                              <div className="flex items-center gap-2 flex-shrink-0">
+                               {user.role === UserRole.CLIENT && b.status === 'COMPLETED' && (
+                                 reviewedBookingIds.has(b.id) ? (
+                                   <span className="px-3 py-1.5 text-xs font-medium text-green-600 dark:text-green-400 flex items-center gap-1">
+                                     <CheckCircle size={14} /> {t.reviewed}
+                                   </span>
+                                 ) : (
+                                   <button
+                                     onClick={() => setReviewBooking(b)}
+                                     className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                                   >
+                                     {t.leaveReview}
+                                   </button>
+                                 )
+                               )}
                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(b.status)}`}>{b.status}</span>
                                {user.role === UserRole.CLIENT && (b.providerPhone || b.clientPhone) && (() => {
                                  const phone = (b.providerPhone || b.clientPhone).replace(/\D/g, '');

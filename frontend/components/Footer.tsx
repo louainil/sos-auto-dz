@@ -47,10 +47,10 @@ const Footer: React.FC<FooterProps> = ({ language, onChangeView }) => {
           <div>
             <h3 className="text-white font-bold mb-4">{t.company}</h3>
             <ul className="space-y-3 text-sm">
-              <li><a href="#" className="hover:text-white transition-colors">{t.aboutUs}</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">{t.forProfessionals}</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">{t.pricing}</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">{t.contact}</a></li>
+              <li><Link to="/about" className="hover:text-white transition-colors">{t.aboutUs}</Link></li>
+              <li><Link to="/for-professionals" className="hover:text-white transition-colors">{t.forProfessionals}</Link></li>
+              <li><Link to="/pricing" className="hover:text-white transition-colors">{t.pricing}</Link></li>
+              <li><a href="mailto:nedjari088@gmail.com" className="hover:text-white transition-colors">{t.contact}</a></li>
             </ul>
           </div>
 

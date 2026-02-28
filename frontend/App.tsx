@@ -10,6 +10,9 @@ import VerifyEmail from './pages/VerifyEmail';
 import ProviderProfile from './pages/ProviderProfile';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
+import AboutUs from './pages/AboutUs';
+import ForProfessionals from './pages/ForProfessionals';
+import Pricing from './pages/Pricing';
 import BookingModal from './components/BookingModal';
 import AuthModal from './components/AuthModal';
 import { PageView, ServiceProvider, UserRole, User, Notification } from './types';
@@ -364,6 +367,9 @@ const App: React.FC = () => {
           } />
           <Route path="/privacy" element={<PrivacyPolicy language={language} />} />
           <Route path="/terms" element={<TermsOfService language={language} />} />
+          <Route path="/about" element={<AboutUs language={language} />} />
+          <Route path="/for-professionals" element={<ForProfessionals language={language} />} />
+          <Route path="/pricing" element={<Pricing language={language} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

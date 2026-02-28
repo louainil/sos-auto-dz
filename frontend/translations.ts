@@ -362,6 +362,87 @@ export interface Translations {
   nearYou: string;
   moderateDistance: string;
   farLocation: string;
+
+  // About Us page
+  aboutHeroTitle: string;
+  aboutHeroSubtitle: string;
+  aboutMissionTitle: string;
+  aboutMissionText: string;
+  aboutMissionQuote: string;
+  aboutValueSpeed: string;
+  aboutValueSpeedDesc: string;
+  aboutValueReliability: string;
+  aboutValueReliabilityDesc: string;
+  aboutValueTransparency: string;
+  aboutValueTransparencyDesc: string;
+  aboutOurValues: string;
+  aboutStoryTitle: string;
+  aboutStoryP1: string;
+  aboutStoryP2: string;
+  aboutStoryP3: string;
+
+  // For Professionals page
+  proBannerTitle: string;
+  proBannerSubtitle: string;
+  proBenefitsTitle: string;
+  proBenefit1Title: string;
+  proBenefit1Desc: string;
+  proBenefit2Title: string;
+  proBenefit2Desc: string;
+  proBenefit3Title: string;
+  proBenefit3Desc: string;
+  proBenefit4Title: string;
+  proBenefit4Desc: string;
+  proFormTitle: string;
+  proFormSubtitle: string;
+  proFieldBusinessName: string;
+  proFieldType: string;
+  proTypeGarage: string;
+  proTypePartsShop: string;
+  proTypeTowing: string;
+  proTypeMechanic: string;
+  proFieldWilaya: string;
+  proFieldPhone: string;
+  proFieldWhatsApp: string;
+  proSubmit: string;
+  proSubmitting: string;
+  proSuccess: string;
+  proSelectType: string;
+  proSelectWilaya: string;
+
+  // Pricing page
+  pricingTitle: string;
+  pricingSubtitle: string;
+  pricingFreeTitle: string;
+  pricingFreePrice: string;
+  pricingFreeDesc: string;
+  pricingFreeFeat1: string;
+  pricingFreeFeat2: string;
+  pricingFreeFeat3: string;
+  pricingFreeFeat4: string;
+  pricingFreeCta: string;
+  pricingProTitle: string;
+  pricingProPrice: string;
+  pricingProDesc: string;
+  pricingProFeat1: string;
+  pricingProFeat2: string;
+  pricingProFeat3: string;
+  pricingProFeat4: string;
+  pricingProFeat5: string;
+  pricingProCta: string;
+  pricingPremiumTitle: string;
+  pricingPremiumPrice: string;
+  pricingPremiumDesc: string;
+  pricingPremiumFeat1: string;
+  pricingPremiumFeat2: string;
+  pricingPremiumFeat3: string;
+  pricingPremiumFeat4: string;
+  pricingPremiumFeat5: string;
+  pricingPremiumFeat6: string;
+  pricingPremiumCta: string;
+  pricingDriversNote: string;
+  pricingPerMonth: string;
+  pricingMostPopular: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -727,6 +808,87 @@ export const translations: Record<Language, Translations> = {
     nearYou: 'Near you',
     moderateDistance: 'Moderate distance',
     farLocation: 'Far location',
+
+    // About Us page
+    aboutHeroTitle: 'About SOS Auto DZ',
+    aboutHeroSubtitle: 'Connecting every Algerian driver with trusted automotive professionals — anytime, anywhere.',
+    aboutMissionTitle: 'Our Mission',
+    aboutMissionText: 'We believe no driver in Algeria should ever feel stranded. Whether it\'s a flat tire on the highway or a mysterious engine light in the city, SOS Auto DZ exists to connect you with the right professional in minutes, not hours.',
+    aboutMissionQuote: 'Never leave a driver stranded.',
+    aboutValueSpeed: 'Speed',
+    aboutValueSpeedDesc: 'Find and connect with the nearest mechanic, towing service, or parts shop in seconds. Every minute counts when you\'re stuck on the road.',
+    aboutValueReliability: 'Reliability',
+    aboutValueReliabilityDesc: 'Every professional on our platform is verified. We ensure you receive quality service from real, accountable businesses.',
+    aboutValueTransparency: 'Transparency',
+    aboutValueTransparencyDesc: 'Clear pricing, honest reviews, and no hidden fees. You always know what to expect before you book.',
+    aboutOurValues: 'Our Values',
+    aboutStoryTitle: 'Our Story',
+    aboutStoryP1: 'It started with a breakdown on a remote highway outside Algiers. No mechanic in sight, no idea who to call, and no way to know who was trustworthy. That frustrating experience sparked an idea: what if every driver in Algeria could instantly find reliable help?',
+    aboutStoryP2: 'In 2024, SOS Auto DZ was born — a platform built by Algerians, for Algerians. We set out to map every garage, mechanic, parts shop, and towing service across all 58 wilayas, making them searchable, bookable, and reviewable from a single app.',
+    aboutStoryP3: 'Today, we\'re growing every day — adding more professionals, covering more roads, and building the future of automotive services in Algeria. Our journey is just beginning, and every driver who uses SOS Auto DZ becomes part of that story.',
+
+    // For Professionals page
+    proBannerTitle: 'Grow Your Business with SOS Auto DZ',
+    proBannerSubtitle: 'Join Algeria\'s fastest-growing automotive platform. Reach thousands of drivers looking for your services — garages, mechanics, parts shops, and towing companies.',
+    proBenefitsTitle: 'Why List Your Business?',
+    proBenefit1Title: 'Reach More Customers',
+    proBenefit1Desc: 'Get discovered by thousands of drivers searching for services in your wilaya every day.',
+    proBenefit2Title: 'Easy Booking Management',
+    proBenefit2Desc: 'Receive and manage service requests through our dashboard — no missed calls or forgotten appointments.',
+    proBenefit3Title: 'Build Your Reputation',
+    proBenefit3Desc: 'Collect verified reviews that build trust and attract new customers to your business.',
+    proBenefit4Title: 'Free to Get Started',
+    proBenefit4Desc: 'Create your business profile for free. Upgrade anytime to unlock premium features and priority placement.',
+    proFormTitle: 'Register Your Business',
+    proFormSubtitle: 'Fill out the form below and we\'ll get you set up in minutes.',
+    proFieldBusinessName: 'Business Name',
+    proFieldType: 'Business Type',
+    proTypeGarage: 'Garage',
+    proTypePartsShop: 'Parts Shop',
+    proTypeTowing: 'Towing',
+    proTypeMechanic: 'Mechanic',
+    proFieldWilaya: 'Wilaya',
+    proFieldPhone: 'Phone Number',
+    proFieldWhatsApp: 'WhatsApp Number',
+    proSubmit: 'Submit Registration',
+    proSubmitting: 'Submitting...',
+    proSuccess: 'Registration submitted successfully! We\'ll contact you shortly.',
+    proSelectType: 'Select business type...',
+    proSelectWilaya: 'Select wilaya...',
+
+    // Pricing page
+    pricingTitle: 'Simple, Transparent Pricing',
+    pricingSubtitle: 'Drivers use SOS Auto DZ for free — always. These plans are for businesses that want to grow their reach.',
+    pricingFreeTitle: 'Free',
+    pricingFreePrice: '0 DA',
+    pricingFreeDesc: 'Perfect for getting started',
+    pricingFreeFeat1: 'Basic business listing',
+    pricingFreeFeat2: 'Up to 3 photos',
+    pricingFreeFeat3: 'Receive booking requests',
+    pricingFreeFeat4: 'Customer reviews',
+    pricingFreeCta: 'Get Started',
+    pricingProTitle: 'Pro',
+    pricingProPrice: '2,900 DA',
+    pricingProDesc: 'For growing businesses',
+    pricingProFeat1: 'Everything in Free',
+    pricingProFeat2: 'Priority in search results',
+    pricingProFeat3: 'Up to 8 photos + gallery',
+    pricingProFeat4: 'WhatsApp direct link',
+    pricingProFeat5: 'Monthly performance report',
+    pricingProCta: 'Upgrade to Pro',
+    pricingPremiumTitle: 'Premium',
+    pricingPremiumPrice: '5,900 DA',
+    pricingPremiumDesc: 'Maximum visibility & growth',
+    pricingPremiumFeat1: 'Everything in Pro',
+    pricingPremiumFeat2: 'Featured badge on profile',
+    pricingPremiumFeat3: 'Top placement in your wilaya',
+    pricingPremiumFeat4: 'Dedicated account manager',
+    pricingPremiumFeat5: 'Social media promotion',
+    pricingPremiumFeat6: 'Custom business analytics',
+    pricingPremiumCta: 'Go Premium',
+    pricingDriversNote: 'Drivers always use SOS Auto DZ completely free. No hidden fees, no subscriptions.',
+    pricingPerMonth: '/month',
+    pricingMostPopular: 'Most Popular',
   },
   fr: {
     // Navbar
@@ -1090,6 +1252,87 @@ export const translations: Record<Language, Translations> = {
     nearYou: 'Près de vous',
     moderateDistance: 'Distance moyenne',
     farLocation: 'Emplacement éloigné',
+
+    // About Us page
+    aboutHeroTitle: 'À Propos de SOS Auto DZ',
+    aboutHeroSubtitle: 'Connecter chaque conducteur algérien avec des professionnels automobiles de confiance — à tout moment, partout.',
+    aboutMissionTitle: 'Notre Mission',
+    aboutMissionText: 'Nous croyons qu\'aucun conducteur en Algérie ne devrait jamais se sentir abandonné. Qu\'il s\'agisse d\'un pneu crevé sur l\'autoroute ou d\'un voyant moteur mystérieux en ville, SOS Auto DZ existe pour vous connecter au bon professionnel en quelques minutes, pas en heures.',
+    aboutMissionQuote: 'Ne jamais laisser un conducteur en panne.',
+    aboutValueSpeed: 'Rapidité',
+    aboutValueSpeedDesc: 'Trouvez et contactez le mécanicien, le service de dépannage ou le magasin de pièces le plus proche en quelques secondes. Chaque minute compte quand vous êtes en panne.',
+    aboutValueReliability: 'Fiabilité',
+    aboutValueReliabilityDesc: 'Chaque professionnel sur notre plateforme est vérifié. Nous garantissons un service de qualité de la part d\'entreprises réelles et responsables.',
+    aboutValueTransparency: 'Transparence',
+    aboutValueTransparencyDesc: 'Des prix clairs, des avis honnêtes et aucun frais caché. Vous savez toujours à quoi vous attendre avant de réserver.',
+    aboutOurValues: 'Nos Valeurs',
+    aboutStoryTitle: 'Notre Histoire',
+    aboutStoryP1: 'Tout a commencé par une panne sur une autoroute isolée près d\'Alger. Aucun mécanicien en vue, aucune idée de qui appeler, et aucun moyen de savoir qui était digne de confiance. Cette expérience frustrante a fait naître une idée : et si chaque conducteur en Algérie pouvait trouver instantanément de l\'aide fiable ?',
+    aboutStoryP2: 'En 2024, SOS Auto DZ est né — une plateforme créée par des Algériens, pour des Algériens. Nous nous sommes engagés à répertorier chaque garage, mécanicien, magasin de pièces et service de dépannage dans les 58 wilayas, les rendant consultables, réservables et évaluables depuis une seule application.',
+    aboutStoryP3: 'Aujourd\'hui, nous grandissons chaque jour — ajoutant plus de professionnels, couvrant plus de routes et construisant l\'avenir des services automobiles en Algérie. Notre voyage ne fait que commencer, et chaque conducteur qui utilise SOS Auto DZ fait partie de cette histoire.',
+
+    // For Professionals page
+    proBannerTitle: 'Développez Votre Activité avec SOS Auto DZ',
+    proBannerSubtitle: 'Rejoignez la plateforme automobile la plus dynamique d\'Algérie. Atteignez des milliers de conducteurs à la recherche de vos services.',
+    proBenefitsTitle: 'Pourquoi Référencer Votre Entreprise ?',
+    proBenefit1Title: 'Touchez Plus de Clients',
+    proBenefit1Desc: 'Soyez trouvé par des milliers de conducteurs cherchant des services dans votre wilaya chaque jour.',
+    proBenefit2Title: 'Gestion Facile des Réservations',
+    proBenefit2Desc: 'Recevez et gérez les demandes de service via notre tableau de bord — plus d\'appels manqués ni de rendez-vous oubliés.',
+    proBenefit3Title: 'Construisez Votre Réputation',
+    proBenefit3Desc: 'Collectez des avis vérifiés qui renforcent la confiance et attirent de nouveaux clients.',
+    proBenefit4Title: 'Gratuit pour Commencer',
+    proBenefit4Desc: 'Créez votre profil professionnel gratuitement. Passez à une offre supérieure quand vous le souhaitez.',
+    proFormTitle: 'Inscrivez Votre Entreprise',
+    proFormSubtitle: 'Remplissez le formulaire ci-dessous et nous vous configurerons en quelques minutes.',
+    proFieldBusinessName: 'Nom de l\'Entreprise',
+    proFieldType: 'Type d\'Activité',
+    proTypeGarage: 'Garage',
+    proTypePartsShop: 'Magasin de Pièces',
+    proTypeTowing: 'Dépannage',
+    proTypeMechanic: 'Mécanicien',
+    proFieldWilaya: 'Wilaya',
+    proFieldPhone: 'Numéro de Téléphone',
+    proFieldWhatsApp: 'Numéro WhatsApp',
+    proSubmit: 'Soumettre l\'Inscription',
+    proSubmitting: 'Envoi en cours...',
+    proSuccess: 'Inscription soumise avec succès ! Nous vous contacterons bientôt.',
+    proSelectType: 'Sélectionner le type...',
+    proSelectWilaya: 'Sélectionner la wilaya...',
+
+    // Pricing page
+    pricingTitle: 'Tarifs Simples et Transparents',
+    pricingSubtitle: 'Les conducteurs utilisent SOS Auto DZ gratuitement — toujours. Ces plans sont pour les entreprises qui veulent développer leur visibilité.',
+    pricingFreeTitle: 'Gratuit',
+    pricingFreePrice: '0 DA',
+    pricingFreeDesc: 'Parfait pour démarrer',
+    pricingFreeFeat1: 'Fiche entreprise de base',
+    pricingFreeFeat2: 'Jusqu\'à 3 photos',
+    pricingFreeFeat3: 'Recevoir des demandes de réservation',
+    pricingFreeFeat4: 'Avis clients',
+    pricingFreeCta: 'Commencer',
+    pricingProTitle: 'Pro',
+    pricingProPrice: '2 900 DA',
+    pricingProDesc: 'Pour les entreprises en croissance',
+    pricingProFeat1: 'Tout le plan Gratuit',
+    pricingProFeat2: 'Priorité dans les résultats de recherche',
+    pricingProFeat3: 'Jusqu\'à 8 photos + galerie',
+    pricingProFeat4: 'Lien WhatsApp direct',
+    pricingProFeat5: 'Rapport de performance mensuel',
+    pricingProCta: 'Passer au Pro',
+    pricingPremiumTitle: 'Premium',
+    pricingPremiumPrice: '5 900 DA',
+    pricingPremiumDesc: 'Visibilité et croissance maximales',
+    pricingPremiumFeat1: 'Tout le plan Pro',
+    pricingPremiumFeat2: 'Badge mis en avant sur le profil',
+    pricingPremiumFeat3: 'Placement prioritaire dans votre wilaya',
+    pricingPremiumFeat4: 'Gestionnaire de compte dédié',
+    pricingPremiumFeat5: 'Promotion sur les réseaux sociaux',
+    pricingPremiumFeat6: 'Analyses personnalisées',
+    pricingPremiumCta: 'Passer au Premium',
+    pricingDriversNote: 'Les conducteurs utilisent SOS Auto DZ entièrement gratuitement. Aucun frais caché, aucun abonnement.',
+    pricingPerMonth: '/mois',
+    pricingMostPopular: 'Le Plus Populaire',
   },
 
   ar: {
@@ -1454,5 +1697,86 @@ export const translations: Record<Language, Translations> = {
     nearYou: 'بالقرب منك',
     moderateDistance: 'مسافة متوسطة',
     farLocation: 'موقع بعيد',
+
+    // About Us page
+    aboutHeroTitle: 'عن SOS Auto DZ',
+    aboutHeroSubtitle: 'ربط كل سائق جزائري بمحترفين موثوقين في مجال السيارات — في أي وقت وأي مكان.',
+    aboutMissionTitle: 'مهمتنا',
+    aboutMissionText: 'نؤمن أنه لا يجب أن يشعر أي سائق في الجزائر بأنه عالق بدون مساعدة. سواء كان ذلك إطارًا مثقوبًا على الطريق السريع أو ضوء محرك غامض في المدينة، SOS Auto DZ موجود لربطك بالمحترف المناسب في دقائق وليس ساعات.',
+    aboutMissionQuote: 'لا تترك سائقًا عالقًا أبدًا.',
+    aboutValueSpeed: 'السرعة',
+    aboutValueSpeedDesc: 'اعثر على أقرب ميكانيكي أو خدمة سحب أو محل قطع غيار في ثوانٍ. كل دقيقة مهمة عندما تكون عالقًا على الطريق.',
+    aboutValueReliability: 'الموثوقية',
+    aboutValueReliabilityDesc: 'كل محترف على منصتنا موثّق. نضمن لك خدمة عالية الجودة من شركات حقيقية ومسؤولة.',
+    aboutValueTransparency: 'الشفافية',
+    aboutValueTransparencyDesc: 'أسعار واضحة وتقييمات صادقة وبدون رسوم مخفية. تعرف دائمًا ما تتوقعه قبل الحجز.',
+    aboutOurValues: 'قيمنا',
+    aboutStoryTitle: 'قصتنا',
+    aboutStoryP1: 'بدأ الأمر بعطل على طريق سريع بعيد خارج الجزائر العاصمة. لا ميكانيكي في الأفق، لا فكرة عمن تتصل، ولا طريقة لمعرفة من هو الجدير بالثقة. تلك التجربة المحبطة أشعلت فكرة: ماذا لو استطاع كل سائق في الجزائر أن يجد مساعدة موثوقة فورًا؟',
+    aboutStoryP2: 'في عام 2024، وُلد SOS Auto DZ — منصة بناها جزائريون، للجزائريين. شرعنا في رسم خريطة لكل كراج وميكانيكي ومحل قطع غيار وخدمة سحب عبر الولايات الـ 58، مما يجعلها قابلة للبحث والحجز والتقييم من تطبيق واحد.',
+    aboutStoryP3: 'اليوم، ننمو كل يوم — نضيف المزيد من المحترفين، نغطي المزيد من الطرق، ونبني مستقبل خدمات السيارات في الجزائر. رحلتنا بدأت للتو، وكل سائق يستخدم SOS Auto DZ يصبح جزءًا من هذه القصة.',
+
+    // For Professionals page
+    proBannerTitle: 'طوّر نشاطك مع SOS Auto DZ',
+    proBannerSubtitle: 'انضم إلى أسرع منصة سيارات نموًا في الجزائر. تواصل مع آلاف السائقين الذين يبحثون عن خدماتك.',
+    proBenefitsTitle: 'لماذا تسجّل نشاطك؟',
+    proBenefit1Title: 'الوصول لمزيد من العملاء',
+    proBenefit1Desc: 'يكتشفك آلاف السائقين الذين يبحثون عن خدمات في ولايتك كل يوم.',
+    proBenefit2Title: 'إدارة سهلة للحجوزات',
+    proBenefit2Desc: 'استقبل وأدر طلبات الخدمة عبر لوحة التحكم الخاصة بنا — بدون مكالمات فائتة أو مواعيد منسية.',
+    proBenefit3Title: 'ابنِ سمعتك',
+    proBenefit3Desc: 'اجمع تقييمات موثقة تبني الثقة وتجذب عملاء جدد إلى نشاطك.',
+    proBenefit4Title: 'مجاني للبدء',
+    proBenefit4Desc: 'أنشئ ملف نشاطك التجاري مجانًا. قم بالترقية في أي وقت لفتح ميزات متميزة.',
+    proFormTitle: 'سجّل نشاطك التجاري',
+    proFormSubtitle: 'املأ النموذج أدناه وسنقوم بإعدادك في دقائق.',
+    proFieldBusinessName: 'اسم النشاط التجاري',
+    proFieldType: 'نوع النشاط',
+    proTypeGarage: 'كراج',
+    proTypePartsShop: 'محل قطع غيار',
+    proTypeTowing: 'خدمة سحب',
+    proTypeMechanic: 'ميكانيكي',
+    proFieldWilaya: 'الولاية',
+    proFieldPhone: 'رقم الهاتف',
+    proFieldWhatsApp: 'رقم واتساب',
+    proSubmit: 'إرسال التسجيل',
+    proSubmitting: 'جارٍ الإرسال...',
+    proSuccess: 'تم إرسال التسجيل بنجاح! سنتواصل معك قريبًا.',
+    proSelectType: 'اختر نوع النشاط...',
+    proSelectWilaya: 'اختر الولاية...',
+
+    // Pricing page
+    pricingTitle: 'تسعير بسيط وشفاف',
+    pricingSubtitle: 'السائقون يستخدمون SOS Auto DZ مجانًا — دائمًا. هذه الخطط مخصصة للأنشطة التجارية التي تريد توسيع نطاقها.',
+    pricingFreeTitle: 'مجاني',
+    pricingFreePrice: '0 د.ج',
+    pricingFreeDesc: 'مثالي للبدء',
+    pricingFreeFeat1: 'قائمة أعمال أساسية',
+    pricingFreeFeat2: 'حتى 3 صور',
+    pricingFreeFeat3: 'استقبال طلبات الحجز',
+    pricingFreeFeat4: 'تقييمات العملاء',
+    pricingFreeCta: 'ابدأ الآن',
+    pricingProTitle: 'احترافي',
+    pricingProPrice: '2,900 د.ج',
+    pricingProDesc: 'للأنشطة التجارية النامية',
+    pricingProFeat1: 'كل ميزات الخطة المجانية',
+    pricingProFeat2: 'أولوية في نتائج البحث',
+    pricingProFeat3: 'حتى 8 صور + معرض',
+    pricingProFeat4: 'رابط واتساب مباشر',
+    pricingProFeat5: 'تقرير أداء شهري',
+    pricingProCta: 'الترقية إلى احترافي',
+    pricingPremiumTitle: 'متميز',
+    pricingPremiumPrice: '5,900 د.ج',
+    pricingPremiumDesc: 'أقصى ظهور ونمو',
+    pricingPremiumFeat1: 'كل ميزات الخطة الاحترافية',
+    pricingPremiumFeat2: 'شارة مميزة على الملف الشخصي',
+    pricingPremiumFeat3: 'مكانة أولى في ولايتك',
+    pricingPremiumFeat4: 'مدير حساب مخصص',
+    pricingPremiumFeat5: 'ترويج على وسائل التواصل الاجتماعي',
+    pricingPremiumFeat6: 'تحليلات أعمال مخصصة',
+    pricingPremiumCta: 'الترقية إلى متميز',
+    pricingDriversNote: 'السائقون يستخدمون SOS Auto DZ مجانًا تمامًا. بدون رسوم مخفية، بدون اشتراكات.',
+    pricingPerMonth: '/شهر',
+    pricingMostPopular: 'الأكثر شعبية',
   },
 };

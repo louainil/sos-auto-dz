@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import multer from 'multer';
 import { Readable } from 'stream';
-import { createTransporter, getFromAddress } from '../config/email.js';
+import { transporter, getFromAddress } from '../config/email.js';
 import { body } from 'express-validator';
 import User from '../models/User.js';
 import ServiceProvider from '../models/ServiceProvider.js';
@@ -127,7 +127,6 @@ router.post('/register', [
     const verifyUrl = `${frontendUrl}/verify-email?token=${verifyToken}&email=${encodeURIComponent(user.email)}`;
 
     try {
-      const transporter = createTransporter();
       await transporter.sendMail({
         from: getFromAddress(),
         to: user.email,
@@ -278,7 +277,6 @@ router.post('/resend-verification', [
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const verifyUrl = `${frontendUrl}/verify-email?token=${verifyToken}&email=${encodeURIComponent(user.email)}`;
 
-    const transporter = createTransporter();
     await transporter.sendMail({
       from: getFromAddress(),
       to: user.email,
@@ -467,7 +465,6 @@ router.post('/forgot-password', [
     const resetUrl = `${frontendUrl}?resetToken=${resetToken}&email=${encodeURIComponent(user.email)}`;
 
     // Send the email
-    const transporter = createTransporter();
     await transporter.sendMail({
       from: getFromAddress(),
       to: user.email,

@@ -181,36 +181,38 @@ router.put('/:id', protect, [
 
     const updatedBooking = await booking.save();
 
-    // Create notification for the other party
-    const notificationUserId = isProvider ? booking.clientId : provider.userId;
-    const statusNotif = await Notification.create({
-      userId: notificationUserId,
-      title: 'Booking Updated',
-      message: `Booking status changed to ${status}${status === 'CANCELLED' && cancellationReason ? ': ' + cancellationReason : ''}`,
-      type: 'INFO'
-    });
+    // Only notify / email when status was actually changed
+    if (status) {
+      const notificationUserId = isProvider ? booking.clientId : provider.userId;
+      const statusNotif = await Notification.create({
+        userId: notificationUserId,
+        title: 'Booking Updated',
+        message: `Booking status changed to ${status}${status === 'CANCELLED' && cancellationReason ? ': ' + cancellationReason : ''}`,
+        type: 'INFO'
+      });
 
-    // Emit real-time notification via Socket.io
-    emitNotification(notificationUserId, {
-      _id: statusNotif._id,
-      title: statusNotif.title,
-      message: statusNotif.message,
-      type: statusNotif.type,
-      isRead: statusNotif.isRead,
-      createdAt: statusNotif.createdAt
-    });
+      // Emit real-time notification via Socket.io
+      emitNotification(notificationUserId, {
+        _id: statusNotif._id,
+        title: statusNotif.title,
+        message: statusNotif.message,
+        type: statusNotif.type,
+        isRead: statusNotif.isRead,
+        createdAt: statusNotif.createdAt
+      });
 
-    // Send email notification for status change (fire-and-forget)
-    if (status && status !== 'PENDING') {
-      const recipientUser = await User.findById(notificationUserId).select('email name');
-      if (recipientUser?.email) {
-        sendBookingStatusEmail({
-          recipientEmail: recipientUser.email,
-          recipientName: recipientUser.name,
-          otherPartyName: isProvider ? booking.clientName : booking.providerName,
-          status,
-          date: booking.date,
-        });
+      // Send email notification for status change (fire-and-forget)
+      if (status !== 'PENDING') {
+        const recipientUser = await User.findById(notificationUserId).select('email name');
+        if (recipientUser?.email) {
+          sendBookingStatusEmail({
+            recipientEmail: recipientUser.email,
+            recipientName: recipientUser.name,
+            otherPartyName: isProvider ? booking.clientName : booking.providerName,
+            status,
+            date: booking.date,
+          });
+        }
       }
     }
 

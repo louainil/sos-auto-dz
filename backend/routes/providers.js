@@ -49,8 +49,8 @@ router.get('/', [
   try {
     const { role, wilayaId, commune, garageType, specialty, isAvailable, search } = req.query;
 
-    // Build filter object
-    const filter = {};
+    // Build filter object — only show verified providers in public results
+    const filter = { isVerified: true };
     
     if (role) filter.role = role;
     if (wilayaId) filter.wilayaId = parseInt(wilayaId);

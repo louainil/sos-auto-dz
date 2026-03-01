@@ -1,5 +1,5 @@
 import React, { useEffect, useState, lazy, Suspense } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Star, Phone, MapPin, Clock, MessageCircle, Wrench, Truck, ArrowLeft, ShieldCheck, Image, X, Edit3 } from 'lucide-react';
 import { ServiceProvider, User, UserRole, Booking } from '../types';
 import { Language, translations } from '../translations';
@@ -27,6 +27,7 @@ interface ProviderProfileProps {
 
 const ProviderProfile: React.FC<ProviderProfileProps> = ({ language, userLocation, onBook, user }) => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const t = translations[language];
   const isRTL = language === 'ar';
 
@@ -180,10 +181,10 @@ const ProviderProfile: React.FC<ProviderProfileProps> = ({ language, userLocatio
 
       <div className="max-w-4xl mx-auto px-4 md:px-8 pb-12 -mt-8 relative z-10">
         {/* Back link */}
-        <Link to={-1 as any} onClick={(e) => { e.preventDefault(); window.history.back(); }} className="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:underline mb-4 mt-2">
+        <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:underline mb-4 mt-2">
           <ArrowLeft size={14} />
           {t.backToList}
-        </Link>
+        </button>
 
         {/* Main card */}
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 p-6 md:p-8">

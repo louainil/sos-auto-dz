@@ -1,17 +1,24 @@
 import nodemailer from 'nodemailer';
 
-// Create reusable email transporter
-export const createTransporter = () => {
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-};
+// Escape user-supplied strings before interpolating into HTML
+const escapeHtml = (str) => String(str)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#039;');
+
+// Create transporter once at module load — reused for all sends
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: process.env.SMTP_SECURE === 'true',
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+export { transporter };
 
 export const getFromAddress = () =>
   process.env.SMTP_FROM || `"SOS Auto DZ" <${process.env.SMTP_USER}>`;
@@ -34,7 +41,6 @@ const wrapTemplate = (bodyHtml) => `
  */
 export const sendEmail = async ({ to, subject, html }) => {
   try {
-    const transporter = createTransporter();
     await transporter.sendMail({
       from: getFromAddress(),
       to,
@@ -61,12 +67,12 @@ export const sendNewBookingEmail = async ({ providerEmail, providerName, clientN
     to: providerEmail,
     subject: 'SOS Auto DZ — New Booking Request',
     html: wrapTemplate(`
-      <p>Hello <strong>${providerName}</strong>,</p>
+      <p>Hello <strong>${escapeHtml(providerName)}</strong>,</p>
       <p>You have a new booking request:</p>
       <table style="width:100%; border-collapse:collapse; margin:12px 0;">
-        <tr><td style="padding:6px 0; color:#64748b;">Client</td><td style="padding:6px 0; font-weight:600;">${clientName}</td></tr>
+        <tr><td style="padding:6px 0; color:#64748b;">Client</td><td style="padding:6px 0; font-weight:600;">${escapeHtml(clientName)}</td></tr>
         <tr><td style="padding:6px 0; color:#64748b;">Date</td><td style="padding:6px 0; font-weight:600;">${formattedDate}</td></tr>
-        <tr><td style="padding:6px 0; color:#64748b;">Issue</td><td style="padding:6px 0;">${issue}</td></tr>
+        <tr><td style="padding:6px 0; color:#64748b;">Issue</td><td style="padding:6px 0;">${escapeHtml(issue)}</td></tr>
       </table>
       <p>Log in to your dashboard to accept or decline this request.</p>
     `),
@@ -92,8 +98,8 @@ export const sendBookingStatusEmail = async ({ recipientEmail, recipientName, ot
     to: recipientEmail,
     subject: `SOS Auto DZ — Booking ${status.charAt(0) + status.slice(1).toLowerCase()}`,
     html: wrapTemplate(`
-      <p>Hello <strong>${recipientName}</strong>,</p>
-      <p>Your booking with <strong>${otherPartyName}</strong> on <strong>${formattedDate}</strong> has been updated:</p>
+      <p>Hello <strong>${escapeHtml(recipientName)}</strong>,</p>
+      <p>Your booking with <strong>${escapeHtml(otherPartyName)}</strong> on <strong>${formattedDate}</strong> has been updated:</p>
       <p style="display:inline-block; background:${color}; color:#fff; padding:8px 20px; border-radius:6px; font-weight:bold; margin:12px 0;">
         ${status}
       </p>

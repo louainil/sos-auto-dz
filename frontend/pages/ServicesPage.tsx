@@ -211,8 +211,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
                       onChange={(e) => {
                           setBrandSearchTerm(e.target.value);
                           setShowBrandList(true);
-                          if(e.target.value === '') setSelectedBrand('all');
-                          else setSelectedBrand('all'); 
+                          if (e.target.value === '') setSelectedBrand('all');
                       }}
                       onFocus={() => setShowBrandList(true)}
                   />

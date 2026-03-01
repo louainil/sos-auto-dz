@@ -12,7 +12,13 @@ const getAuthHeaders = () => {
 
 // Helper function to handle API responses
 const handleResponse = async (response: Response) => {
-  const data = await response.json();
+  const text = await response.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error(response.ok ? 'Invalid server response' : `Server error (${response.status})`);
+  }
   if (!response.ok) {
     throw new Error(data.message || 'Something went wrong');
   }

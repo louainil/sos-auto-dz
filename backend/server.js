@@ -48,20 +48,41 @@ if (missingVars.length > 0) {
 
 const app = express();
 
-// Security headers
-app.use(helmet());
+// CORS must be first so that ALL responses — including CSRF/auth errors — carry
+// the correct Access-Control-* headers. Without this, the browser sees a CORS
+// error instead of the real HTTP error, making debugging impossible.
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],
+}));
+
+// Security headers.
+// crossOriginResourcePolicy must be 'cross-origin' so that browsers on a
+// different subdomain (e.g. Vercel preview URLs) can fetch API responses;
+// the default 'same-origin' silently blocks all cross-origin fetches.
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
 app.use(cookieParser());
 
 // CSRF protection — double-submit cookie pattern.
 // GET/HEAD/OPTIONS are automatically exempt; all state-mutating requests
 // must include the token (from GET /api/csrf-token) as 'x-csrf-token' header.
+//
+// sameSite: 'none' is required in production because Vercel deploys the
+// frontend and backend on different subdomains of vercel.app, which is in
+// the Public Suffix List — making them different "sites" from a cookie
+// perspective. 'strict' would silently drop all cookies on cross-site requests.
+const isProduction = process.env.NODE_ENV === 'production';
 const { doubleCsrfProtection, generateToken } = doubleCsrf({
   getSecret: () => process.env.CSRF_SECRET ?? process.env.JWT_SECRET,
-  cookieName: process.env.NODE_ENV === 'production' ? '__Host-csrf' : 'csrf',
+  cookieName: isProduction ? '__Host-csrf' : 'csrf',
   cookieOptions: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
     path: '/',
   },
   size: 64,
@@ -69,13 +90,6 @@ const { doubleCsrfProtection, generateToken } = doubleCsrf({
 });
 app.use(doubleCsrfProtection);
 
-// Middleware
-app.use(cors({
-  origin: process.env.FRONTEND_URL,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],
-}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

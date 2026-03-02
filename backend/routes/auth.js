@@ -51,26 +51,36 @@ const generateRefreshTokenValue = () => crypto.randomBytes(40).toString('hex');
 
 const REFRESH_TOKEN_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
+// Shared cookie options factory — sameSite must be 'none' in production so
+// that cookies cross Vercel's subdomain boundary (vercel.app is in the PSL).
+const cookieOptions = (extraOptions = {}) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+    path: '/',
+    ...extraOptions,
+  };
+};
+
+// clearCookie must mirror the original options (especially path/secure/sameSite)
+// or some browsers won't remove the cookie.
+const clearAuthCookies = (res) => {
+  res.clearCookie('accessToken', cookieOptions());
+  res.clearCookie('refreshToken', cookieOptions());
+};
+
 // Set refresh token as HttpOnly cookie
 const setRefreshCookie = (res, tokenValue) => {
-  res.cookie('refreshToken', tokenValue, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: REFRESH_TOKEN_EXPIRY_MS,
-  });
+  res.cookie('refreshToken', tokenValue, cookieOptions({ maxAge: REFRESH_TOKEN_EXPIRY_MS }));
 };
 
 const ACCESS_TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
 
 // Set access token as HttpOnly cookie
 const setAccessCookie = (res, tokenValue) => {
-  res.cookie('accessToken', tokenValue, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: ACCESS_TOKEN_EXPIRY_MS,
-  });
+  res.cookie('accessToken', tokenValue, cookieOptions({ maxAge: ACCESS_TOKEN_EXPIRY_MS }));
 };
 
 // Email transporter and from address imported from ../config/email.js
@@ -467,7 +477,7 @@ router.put('/password', protect, [
     user.refreshToken = undefined;
     user.refreshTokenExpire = undefined;
     await user.save();
-    res.clearCookie('refreshToken');
+    clearAuthCookies(res);
     res.json({ message: 'Password updated successfully' });
   } catch (error) {
     console.error('Password change error:', error);
@@ -564,7 +574,7 @@ router.post('/reset-password', [
     user.refreshToken = undefined;
     user.refreshTokenExpire = undefined;
     await user.save();
-    res.clearCookie('refreshToken');
+    clearAuthCookies(res);
     res.json({ message: 'Password has been reset successfully. You can now log in.' });
   } catch (error) {
     console.error('Reset password error:', error);
@@ -583,8 +593,7 @@ router.post('/logout', protect, async (req, res) => {
       user.refreshTokenExpire = undefined;
       await user.save({ validateBeforeSave: false });
     }
-    res.clearCookie('refreshToken');
-    res.clearCookie('accessToken');
+    clearAuthCookies(res);
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
     console.error('Logout error:', error);
@@ -607,7 +616,7 @@ router.post('/refresh', async (req, res) => {
       refreshTokenExpire: { $gt: Date.now() },
     }).select('+refreshToken +refreshTokenExpire');
     if (!user) {
-      res.clearCookie('refreshToken');
+      res.clearCookie('refreshToken', cookieOptions());
       return res.status(401).json({ message: 'Invalid or expired refresh token' });
     }
     // Rotate: issue a new refresh token

@@ -35,7 +35,7 @@ const uploadToCloudinary = (buffer, folder, publicId) => {
 };
 
 // @route   GET /api/providers
-// @desc    Get all service providers with filters
+// @desc    Get all service providers with filters (paginated)
 // @access  Public
 router.get('/', [
   query('role').optional().isIn(['MECHANIC', 'PARTS_SHOP', 'TOWING']).withMessage('Invalid role'),
@@ -45,6 +45,8 @@ router.get('/', [
   query('specialty').optional().trim(),
   query('search').optional().trim().isLength({ max: 100 }).withMessage('Search query must be at most 100 characters'),
   query('isAvailable').optional().isIn(['true', 'false']).withMessage('isAvailable must be true or false'),
+  query('page').optional().isInt({ min: 1 }).withMessage('page must be a positive integer'),
+  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('limit must be between 1 and 100'),
   validate
 ], async (req, res) => {
   try {
@@ -69,9 +71,16 @@ router.get('/', [
       ];
     }
 
-    const providers = await ServiceProvider.find(filter).sort({ rating: -1 });
-    
-    res.json(providers);
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+    const skip = (page - 1) * limit;
+
+    const [total, providers] = await Promise.all([
+      ServiceProvider.countDocuments(filter),
+      ServiceProvider.find(filter).sort({ rating: -1 }).skip(skip).limit(limit)
+    ]);
+
+    res.json({ data: providers, total, page, pages: Math.ceil(total / limit) });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error', ...devError(error) });

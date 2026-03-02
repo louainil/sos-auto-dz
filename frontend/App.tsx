@@ -120,9 +120,9 @@ const App: React.FC = () => {
           isEmailVerified: userData.isEmailVerified
         };
         setUser(userObj);
-        // Fetch notifications
+        // Fetch notifications (API returns { data, total, page, pages })
         const notifs = await notificationsAPI.getAll();
-        setNotifications(notifs.map((n: any) => ({
+        setNotifications((notifs.data ?? notifs).map((n: any) => ({
           id: n._id,
           title: n.title,
           message: n.message,
@@ -152,7 +152,7 @@ const App: React.FC = () => {
   const fetchNotifications = useCallback(async () => {
     try {
       const notifs = await notificationsAPI.getAll();
-      setNotifications(notifs.map(mapNotification));
+      setNotifications((notifs.data ?? notifs).map(mapNotification));
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
     }

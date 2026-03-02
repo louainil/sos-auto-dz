@@ -86,6 +86,12 @@ const serviceProviderSchema = new mongoose.Schema({
 
 // Text index for search by name/description
 serviceProviderSchema.index({ name: 'text', description: 'text' });
+// Compound index: common filter pattern (service type + location)
+serviceProviderSchema.index({ role: 1, wilayaId: 1 });
+// Unique index: one ServiceProvider document per user account
+serviceProviderSchema.index({ userId: 1 }, { unique: true });
+// Index to speed up admin/verified listing queries
+serviceProviderSchema.index({ isVerified: 1, rating: -1 });
 
 const ServiceProvider = mongoose.model('ServiceProvider', serviceProviderSchema);
 

@@ -52,6 +52,10 @@ const bookingSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Indexes for the two main booking history query patterns
+bookingSchema.index({ clientId: 1, createdAt: -1 });
+bookingSchema.index({ providerId: 1, createdAt: -1 });
+
 const Booking = mongoose.model('Booking', bookingSchema);
 
 export default Booking;

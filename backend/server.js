@@ -3,6 +3,7 @@ import { createServer } from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import { doubleCsrf } from 'csrf-csrf';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import { fileURLToPath } from 'url';
@@ -24,18 +25,56 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 dotenv.config({ path: join(__dirname, '.env') });
 
+// Fail fast if any required environment variable is missing.
+// This prevents the server from starting in a broken state where the first
+// request that touches a missing var causes a cryptic runtime crash.
+const REQUIRED_ENV_VARS = [
+  'JWT_SECRET',
+  'MONGODB_URI',
+  'CLOUDINARY_CLOUD_NAME',
+  'CLOUDINARY_API_KEY',
+  'CLOUDINARY_API_SECRET',
+  'FRONTEND_URL',
+  'EMAIL_HOST',
+  'EMAIL_USER',
+  'EMAIL_PASS',
+  'EMAIL_FROM',
+];
+const missingVars = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
+if (missingVars.length > 0) {
+  console.error(`Missing required environment variable(s): ${missingVars.join(', ')}`);
+  process.exit(1);
+}
+
 const app = express();
 
 // Security headers
 app.use(helmet());
 app.use(cookieParser());
 
+// CSRF protection — double-submit cookie pattern.
+// GET/HEAD/OPTIONS are automatically exempt; all state-mutating requests
+// must include the token (from GET /api/csrf-token) as 'x-csrf-token' header.
+const { doubleCsrfProtection, generateToken } = doubleCsrf({
+  getSecret: () => process.env.CSRF_SECRET ?? process.env.JWT_SECRET,
+  cookieName: process.env.NODE_ENV === 'production' ? '__Host-csrf' : 'csrf',
+  cookieOptions: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/',
+  },
+  size: 64,
+  getTokenFromRequest: (req) => req.headers['x-csrf-token'],
+});
+app.use(doubleCsrfProtection);
+
 // Middleware
 app.use(cors({
   origin: process.env.FRONTEND_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -89,6 +128,13 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/reviews', reviewRoutes);
+
+// CSRF token endpoint — GETs are safe; sets the csrf cookie and returns the token.
+// The frontend must call this once per session and pass the returned token as
+// 'x-csrf-token' on every state-mutating request (POST/PUT/DELETE/PATCH).
+app.get('/api/csrf-token', (req, res) => {
+  res.json({ csrfToken: generateToken(req, res) });
+});
 
 // Health check route
 app.get('/api/health', (req, res) => {

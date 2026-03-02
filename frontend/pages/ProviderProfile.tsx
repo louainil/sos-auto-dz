@@ -67,7 +67,8 @@ const ProviderProfile: React.FC<ProviderProfileProps> = ({ language, userLocatio
       try {
         const allBookings = await bookingsAPI.getAll();
         // Find a completed booking with this provider that hasn't been reviewed
-        const completed = allBookings.filter(
+        // API returns { data, total, page, pages } — extract the array
+        const completed = (allBookings.data ?? allBookings).filter(
           (b: any) => b.providerId === id && b.status === 'COMPLETED'
         );
         for (const b of completed) {

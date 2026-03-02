@@ -8,15 +8,23 @@ import { devError } from '../utils/errors.js';
 const router = express.Router();
 
 // @route   GET /api/notifications
-// @desc    Get all notifications for current user
+// @desc    Get notifications for current user (paginated)
 // @access  Private
 router.get('/', protect, async (req, res) => {
   try {
-    const notifications = await Notification.find({ userId: req.user._id })
-      .sort({ createdAt: -1 })
-      .limit(50);
-    
-    res.json(notifications);
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 20, 50);
+    const skip = (page - 1) * limit;
+
+    const [total, notifications] = await Promise.all([
+      Notification.countDocuments({ userId: req.user._id }),
+      Notification.find({ userId: req.user._id })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+    ]);
+
+    res.json({ data: notifications, total, page, pages: Math.ceil(total / limit) });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error', ...devError(error) });

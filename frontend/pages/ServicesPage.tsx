@@ -59,8 +59,8 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
         if (debouncedSearch.trim()) filters.search = debouncedSearch.trim();
         
         const data = await providersAPI.getAll(filters);
-        // Map backend data to frontend format
-        const mappedProviders = data.map((p: any) => ({
+        // Map backend data to frontend format (API returns { data, total, page, pages })
+        const mappedProviders = (data.data ?? data).map((p: any) => ({
           id: p._id,
           name: p.name,
           role: p.role,

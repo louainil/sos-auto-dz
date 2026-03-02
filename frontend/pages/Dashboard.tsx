@@ -250,8 +250,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
       setLoading(true);
       try {
         const data = await bookingsAPI.getAll();
-        // Map backend data to frontend format
-        const mappedBookings = data.map((b: any) => ({
+        // Map backend data to frontend format (API returns { data, total, page, pages })
+        const mappedBookings = (data.data ?? data).map((b: any) => ({
           id: b._id,
           providerId: b.providerId,
           providerName: b.providerName,

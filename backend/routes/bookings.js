@@ -88,29 +88,34 @@ router.post('/', protect, [
 });
 
 // @route   GET /api/bookings
-// @desc    Get bookings (filtered by user role)
+// @desc    Get bookings (filtered by user role, paginated)
 // @access  Private
 router.get('/', protect, async (req, res) => {
   try {
-    let bookings;
-    
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+    const skip = (page - 1) * limit;
+
+    let filter;
     if (req.user.role === 'CLIENT') {
-      // Get bookings made by this client
-      bookings = await Booking.find({ clientId: req.user._id }).sort({ createdAt: -1 });
+      filter = { clientId: req.user._id };
     } else if (['MECHANIC', 'PARTS_SHOP', 'TOWING'].includes(req.user.role)) {
-      // Get provider profile
       const provider = await ServiceProvider.findOne({ userId: req.user._id });
-      if (provider) {
-        bookings = await Booking.find({ providerId: provider._id }).sort({ createdAt: -1 });
-      } else {
-        bookings = [];
+      if (!provider) {
+        return res.json({ data: [], total: 0, page, pages: 0 });
       }
+      filter = { providerId: provider._id };
     } else {
       // Admin can see all bookings
-      bookings = await Booking.find().sort({ createdAt: -1 });
+      filter = {};
     }
 
-    res.json(bookings);
+    const [total, bookings] = await Promise.all([
+      Booking.countDocuments(filter),
+      Booking.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit)
+    ]);
+
+    res.json({ data: bookings, total, page, pages: Math.ceil(total / limit) });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error', ...devError(error) });

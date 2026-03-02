@@ -15,6 +15,7 @@ const Pricing: React.FC<PricingProps> = ({ language }) => {
     {
       title: t.pricingFreeTitle,
       price: t.pricingFreePrice,
+      period: null,
       desc: t.pricingFreeDesc,
       features: [t.pricingFreeFeat1, t.pricingFreeFeat2, t.pricingFreeFeat3, t.pricingFreeFeat4],
       cta: t.pricingFreeCta,
@@ -28,33 +29,19 @@ const Pricing: React.FC<PricingProps> = ({ language }) => {
       },
     },
     {
-      title: t.pricingProTitle,
-      price: t.pricingProPrice,
-      desc: t.pricingProDesc,
-      features: [t.pricingProFeat1, t.pricingProFeat2, t.pricingProFeat3, t.pricingProFeat4, t.pricingProFeat5],
-      cta: t.pricingProCta,
+      title: t.pricingPremiumTitle,
+      price: t.pricingPremiumPrice,
+      period: t.pricingPerTwoMonths,
+      desc: t.pricingPremiumDesc,
+      features: [t.pricingPremiumFeat1, t.pricingPremiumFeat2, t.pricingPremiumFeat3, t.pricingPremiumFeat4, t.pricingPremiumFeat5, t.pricingPremiumFeat6],
+      cta: t.pricingPremiumCta,
       popular: true,
       style: {
-        card: 'bg-red-600 text-white border-2 border-red-500 shadow-2xl shadow-red-600/20 scale-[1.03] md:scale-105',
+        card: 'bg-red-600 text-white border-2 border-red-500 shadow-2xl shadow-red-600/20',
         badge: 'bg-white text-red-600',
         price: 'text-white',
         button: 'bg-white hover:bg-red-50 text-red-600 font-bold',
         check: 'text-red-200',
-      },
-    },
-    {
-      title: t.pricingPremiumTitle,
-      price: t.pricingPremiumPrice,
-      desc: t.pricingPremiumDesc,
-      features: [t.pricingPremiumFeat1, t.pricingPremiumFeat2, t.pricingPremiumFeat3, t.pricingPremiumFeat4, t.pricingPremiumFeat5, t.pricingPremiumFeat6],
-      cta: t.pricingPremiumCta,
-      popular: false,
-      style: {
-        card: 'bg-slate-900 dark:bg-slate-800 text-white border border-slate-700',
-        badge: '',
-        price: 'text-white',
-        button: 'bg-red-600 hover:bg-red-700 text-white',
-        check: 'text-slate-400',
       },
     },
   ];
@@ -84,8 +71,8 @@ const Pricing: React.FC<PricingProps> = ({ language }) => {
       </section>
 
       {/* Pricing Cards */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 pb-20">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 pb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
           {plans.map((plan, i) => (
             <div
               key={i}
@@ -107,9 +94,9 @@ const Pricing: React.FC<PricingProps> = ({ language }) => {
 
               <div className={`mb-8 ${plan.style.price}`}>
                 <span className="text-4xl font-extrabold">{plan.price}</span>
-                {plan.price !== t.pricingFreePrice && (
+                {plan.period && (
                   <span className={`text-sm ml-1 ${plan.popular ? 'text-red-200' : 'text-slate-500 dark:text-slate-400'}`}>
-                    {t.pricingPerMonth}
+                    {plan.period}
                   </span>
                 )}
               </div>

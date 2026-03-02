@@ -450,6 +450,7 @@ export interface Translations {
   pricingPremiumCta: string;
   pricingDriversNote: string;
   pricingPerMonth: string;
+  pricingPerTwoMonths: string;
   pricingMostPopular: string;
 }
 
@@ -893,7 +894,7 @@ export const translations: Record<Language, Translations> = {
     pricingProFeat5: 'Monthly performance report',
     pricingProCta: 'Upgrade to Pro',
     pricingPremiumTitle: 'Premium',
-    pricingPremiumPrice: '5,900 DA',
+    pricingPremiumPrice: '3,000 DA',
     pricingPremiumDesc: 'Maximum visibility & growth',
     pricingPremiumFeat1: 'Everything in Pro',
     pricingPremiumFeat2: 'Featured badge on profile',
@@ -904,6 +905,7 @@ export const translations: Record<Language, Translations> = {
     pricingPremiumCta: 'Go Premium',
     pricingDriversNote: 'Drivers always use SOS Auto DZ completely free. No hidden fees, no subscriptions.',
     pricingPerMonth: '/month',
+    pricingPerTwoMonths: '/ 2 months',
     pricingMostPopular: 'Most Popular',
   },
   fr: {
@@ -1345,7 +1347,7 @@ export const translations: Record<Language, Translations> = {
     pricingProFeat5: 'Rapport de performance mensuel',
     pricingProCta: 'Passer au Pro',
     pricingPremiumTitle: 'Premium',
-    pricingPremiumPrice: '5 900 DA',
+    pricingPremiumPrice: '3 000 DA',
     pricingPremiumDesc: 'Visibilité et croissance maximales',
     pricingPremiumFeat1: 'Tout le plan Pro',
     pricingPremiumFeat2: 'Badge mis en avant sur le profil',
@@ -1356,6 +1358,7 @@ export const translations: Record<Language, Translations> = {
     pricingPremiumCta: 'Passer au Premium',
     pricingDriversNote: 'Les conducteurs utilisent SOS Auto DZ entièrement gratuitement. Aucun frais caché, aucun abonnement.',
     pricingPerMonth: '/mois',
+    pricingPerTwoMonths: '/ 2 mois',
     pricingMostPopular: 'Le Plus Populaire',
   },
 
@@ -1798,7 +1801,7 @@ export const translations: Record<Language, Translations> = {
     pricingProFeat5: 'تقرير أداء شهري',
     pricingProCta: 'الترقية إلى احترافي',
     pricingPremiumTitle: 'متميز',
-    pricingPremiumPrice: '5,900 د.ج',
+    pricingPremiumPrice: '3,000 د.ج',
     pricingPremiumDesc: 'أقصى ظهور ونمو',
     pricingPremiumFeat1: 'كل ميزات الخطة الاحترافية',
     pricingPremiumFeat2: 'شارة مميزة على الملف الشخصي',
@@ -1809,6 +1812,7 @@ export const translations: Record<Language, Translations> = {
     pricingPremiumCta: 'الترقية إلى متميز',
     pricingDriversNote: 'السائقون يستخدمون SOS Auto DZ مجانًا تمامًا. بدون رسوم مخفية، بدون اشتراكات.',
     pricingPerMonth: '/شهر',
+    pricingPerTwoMonths: '/ شهرين',
     pricingMostPopular: 'الأكثر شعبية',
   },
 };

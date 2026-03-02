@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { User, UserRole, Booking } from '../types';
-import { Calendar, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertCircle, TrendingUp, DollarSign, User as UserIcon, Shield, Wrench, Camera, Clock } from 'lucide-react';
+import { Calendar, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertCircle, TrendingUp, User as UserIcon, Shield, Wrench, Camera, Clock } from 'lucide-react';
 import { bookingsAPI, authAPI, providersAPI, adminAPI, reviewsAPI } from '../api';
 import { Language, translations } from '../translations';
 import ReviewModal from '../components/ReviewModal';
@@ -455,10 +455,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard title={t.pendingRequests} value={bookings.filter(b => b.status === 'PENDING').length} icon={AlertCircle} color="bg-yellow-500" />
         <StatCard title={t.todaysJobs} value={bookings.filter(b => b.date === new Date().toISOString().slice(0,10) && (b.status === 'CONFIRMED' || b.status === 'COMPLETED')).length} icon={Calendar} color="bg-blue-500" />
-        <StatCard title={t.totalRevenue} value={`${bookings.filter(b => b.status === 'COMPLETED' && b.price).reduce((sum, b) => sum + (b.price || 0), 0).toLocaleString()} DA`} icon={DollarSign} color="bg-green-500" />
         <StatCard title={t.ratingLabel} value={providerRating > 0 ? providerRating.toFixed(1) : '—'} icon={TrendingUp} color="bg-purple-500" />
       </div>
 

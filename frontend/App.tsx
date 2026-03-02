@@ -389,7 +389,7 @@ const App: React.FC = () => {
           <Route path="/privacy" element={<PrivacyPolicy language={language} />} />
           <Route path="/terms" element={<TermsOfService language={language} />} />
           <Route path="/about" element={<AboutUs language={language} />} />
-          <Route path="/for-professionals" element={<ForProfessionals language={language} />} />
+          <Route path="/for-professionals" element={<ForProfessionals language={language} onOpenSignUp={handleProClick} />} />
           <Route path="/pricing" element={<Pricing language={language} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

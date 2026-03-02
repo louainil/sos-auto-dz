@@ -223,9 +223,13 @@ router.post('/login', [
     user.refreshToken = crypto.createHash('sha256').update(rfTokenValue).digest('hex');
     user.refreshTokenExpire = new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS);
     await user.save({ validateBeforeSave: false });
-    setRefreshCookie(res, rfTokenValue);
-    setAccessCookie(res, generateToken(user._id));
 
+    const accessToken = generateToken(user._id);
+    setRefreshCookie(res, rfTokenValue);
+    setAccessCookie(res, accessToken);
+
+    // Return tokens in body too so the frontend can use Authorization headers
+    // when cross-origin cookies are blocked by the browser.
     res.json({
       _id: user._id,
       name: user.name,
@@ -237,7 +241,9 @@ router.post('/login', [
       commune: user.commune,
       isAvailable: user.isAvailable,
       avatar: user.avatar,
-      isEmailVerified: user.isEmailVerified
+      isEmailVerified: user.isEmailVerified,
+      accessToken,
+      refreshToken: rfTokenValue,
     });
   } catch (error) {
     console.error(error);
@@ -582,7 +588,8 @@ router.post('/logout', protect, async (req, res) => {
 // @desc    Issue a new access token using the HttpOnly refresh token cookie
 // @access  Public (requires refresh cookie)
 router.post('/refresh', async (req, res) => {
-  const tokenValue = req.cookies?.refreshToken;
+  // Accept refresh token from cookie OR request body (cross-origin fallback)
+  const tokenValue = req.cookies?.refreshToken || req.body?.refreshToken;
   if (!tokenValue) {
     return res.status(401).json({ message: 'No refresh token' });
   }
@@ -601,9 +608,12 @@ router.post('/refresh', async (req, res) => {
     user.refreshToken = crypto.createHash('sha256').update(newRfTokenValue).digest('hex');
     user.refreshTokenExpire = new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS);
     await user.save({ validateBeforeSave: false });
+
+    const newAccessToken = generateToken(user._id);
     setRefreshCookie(res, newRfTokenValue);
-    setAccessCookie(res, generateToken(user._id));
-    res.json({ success: true });
+    setAccessCookie(res, newAccessToken);
+    // Return tokens in body for cross-origin cookie fallback
+    res.json({ success: true, accessToken: newAccessToken, refreshToken: newRfTokenValue });
   } catch (error) {
     console.error('Refresh token error:', error);
     res.status(500).json({ message: 'Server error', ...devError(error) });

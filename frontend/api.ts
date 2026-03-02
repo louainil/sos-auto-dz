@@ -2,7 +2,28 @@
 const API_URL = `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}`;
 
 // ---------------------------------------------------------------------------
-// CSRF token management — double-submit cookie pattern.
+// Token storage — in-memory + sessionStorage fallback for page refresh.
+// Tokens are returned in the response body by the backend and sent via
+// Authorization header, bypassing cross-origin cookie restrictions.
+// ---------------------------------------------------------------------------
+let _accessToken: string | null = sessionStorage.getItem('_at');
+let _refreshToken: string | null = sessionStorage.getItem('_rt');
+
+const setTokens = (access: string | null, refresh?: string | null) => {
+  _accessToken = access;
+  if (refresh !== undefined) _refreshToken = refresh;
+
+  if (access) sessionStorage.setItem('_at', access);
+  else sessionStorage.removeItem('_at');
+
+  if (refresh) sessionStorage.setItem('_rt', refresh);
+  else if (refresh === null) sessionStorage.removeItem('_rt');
+};
+
+export const clearTokens = () => { setTokens(null, null); };
+
+// ---------------------------------------------------------------------------
+// CSRF token management — HMAC-signed token (cookieless).
 // The token is fetched once per page load and cached in memory (not persisted).
 // It is sent as the 'x-csrf-token' header on every state-mutating request.
 // ---------------------------------------------------------------------------
@@ -36,24 +57,35 @@ const handleResponse = async (response: Response) => {
   return data;
 };
 
-// Attempt to silently refresh the access token using the HttpOnly refresh cookie.
-// The new access token is set as a cookie by the server — no localStorage involved.
-// Includes the CSRF token because the refresh endpoint is a POST.
+// Attempt to silently refresh the access token.
+// Sends refresh token from memory/sessionStorage in the body AND via cookie.
+// Stores the new tokens returned by the backend.
 const attemptTokenRefresh = async (): Promise<boolean> => {
   try {
     const csrfToken = await getCsrfToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'x-csrf-token': csrfToken,
+    };
+    if (_accessToken) headers['Authorization'] = `Bearer ${_accessToken}`;
     const res = await fetch(`${API_URL}/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
-      headers: { 'x-csrf-token': csrfToken },
+      headers,
+      body: JSON.stringify({ refreshToken: _refreshToken }),
     });
-    return res.ok;
+    if (res.ok) {
+      const data = await res.json();
+      if (data.accessToken) setTokens(data.accessToken, data.refreshToken ?? _refreshToken);
+      return true;
+    }
+    return false;
   } catch {
     return false;
   }
 };
 
-// Authenticated fetch: sends credentials (HttpOnly cookies) automatically,
+// Authenticated fetch: sends credentials (HttpOnly cookies) + Authorization header,
 // retries once after a silent token refresh on 401.
 // Automatically adds the CSRF token header for state-mutating methods.
 // Also retries once on 403 with a fresh CSRF token (stale token recovery).
@@ -68,6 +100,7 @@ const authFetch = async (url: string, options: RequestInit = {}): Promise<Respon
       ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...(options.headers as Record<string, string> || {}),
       ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
+      ...(_accessToken ? { 'Authorization': `Bearer ${_accessToken}` } : {}),
     };
   };
 
@@ -77,6 +110,7 @@ const authFetch = async (url: string, options: RequestInit = {}): Promise<Respon
   if (response.status === 401) {
     const refreshed = await attemptTokenRefresh();
     if (refreshed) {
+      headers = await buildHeaders(); // rebuild to pick up new access token
       response = await fetch(url, { ...options, credentials: 'include', headers });
     }
   } else if (response.status === 403 && isMutating) {
@@ -130,7 +164,10 @@ export const authAPI = {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
-    return handleResponse(response);
+    const data = await handleResponse(response);
+    // Store tokens for cross-origin auth fallback
+    if (data.accessToken) setTokens(data.accessToken, data.refreshToken);
+    return data;
   },
 
   logout: async () => {
@@ -138,6 +175,7 @@ export const authAPI = {
       await csrfFetch(`${API_URL}/auth/logout`, { method: 'POST' });
       resetCsrfToken();
     } catch { /* ignore network errors on logout */ }
+    clearTokens();
   },
 
   getCurrentUser: async () => {

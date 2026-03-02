@@ -48,6 +48,7 @@ const App: React.FC = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authInitialMode, setAuthInitialMode] = useState<'LOGIN' | 'SIGNUP'>('LOGIN');
   const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true); // true until first auth check completes
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   // Socket.io ref for real-time notifications
@@ -147,6 +148,8 @@ const App: React.FC = () => {
       } catch (error) {
         console.error('Auth check failed:', error);
         // No valid session — user stays logged out
+      } finally {
+        setAuthLoading(false);
       }
     };
     checkAuth();
@@ -373,7 +376,9 @@ const App: React.FC = () => {
             <ServicesPage key="search" title={t.searchResults} subtitle={t.allServices} userLocation={userLocation} onBook={handleBook} language={language} />
           } />
           <Route path="/dashboard" element={
-            user ? <Dashboard user={user} onLogout={handleLogout} onUserUpdate={setUser} language={language} /> : <Navigate to="/" replace />
+            authLoading
+              ? <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950"><div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>
+              : user ? <Dashboard user={user} onLogout={handleLogout} onUserUpdate={setUser} language={language} /> : <Navigate to="/" replace />
           } />
           <Route path="/provider/:id" element={
             <ProviderProfile language={language} userLocation={userLocation} onBook={handleBook} user={user} />

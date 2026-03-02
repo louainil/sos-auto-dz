@@ -28,17 +28,21 @@ dotenv.config({ path: join(__dirname, '.env') });
 // Fail fast if any required environment variable is missing.
 // This prevents the server from starting in a broken state where the first
 // request that touches a missing var causes a cryptic runtime crash.
+// FRONTEND_URL is required in production but optional in development
+// (defaults to localhost so the dev server works without extra config).
+const isProduction = process.env.NODE_ENV === 'production';
+
 const REQUIRED_ENV_VARS = [
   'JWT_SECRET',
   'MONGODB_URI',
   'CLOUDINARY_CLOUD_NAME',
   'CLOUDINARY_API_KEY',
   'CLOUDINARY_API_SECRET',
-  'FRONTEND_URL',
   'EMAIL_HOST',
   'EMAIL_USER',
   'EMAIL_PASS',
   'EMAIL_FROM',
+  ...(isProduction ? ['FRONTEND_URL'] : []),
 ];
 const missingVars = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
 if (missingVars.length > 0) {
@@ -51,8 +55,25 @@ const app = express();
 // CORS must be first so that ALL responses — including CSRF/auth errors — carry
 // the correct Access-Control-* headers. Without this, the browser sees a CORS
 // error instead of the real HTTP error, making debugging impossible.
+//
+// In development we allow all localhost origins so the dev server works without
+// setting FRONTEND_URL. In production only the configured FRONTEND_URL is allowed.
+const DEV_ORIGINS = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5173',
+];
+const allowedOrigins = [
+  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+  ...(isProduction ? [] : DEV_ORIGINS),
+];
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
+  origin: (origin, callback) => {
+    // Allow requests with no Origin header (server-to-server, curl, mobile)
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS: origin '${origin}' not allowed`));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],
@@ -75,7 +96,6 @@ app.use(cookieParser());
 // frontend and backend on different subdomains of vercel.app, which is in
 // the Public Suffix List — making them different "sites" from a cookie
 // perspective. 'strict' would silently drop all cookies on cross-site requests.
-const isProduction = process.env.NODE_ENV === 'production';
 const { doubleCsrfProtection, generateToken } = doubleCsrf({
   getSecret: () => process.env.CSRF_SECRET ?? process.env.JWT_SECRET,
   cookieName: isProduction ? '__Host-csrf' : 'csrf',

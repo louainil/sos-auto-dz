@@ -193,7 +193,7 @@ app.use(async (req, res, next) => {
 // Rate limiters for auth endpoints
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5,                   // 5 attempts per window
+  max: 20,                  // 20 attempts per window (password change is legitimate repeated use)
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: 'Too many attempts. Please try again after 15 minutes.' },

@@ -344,6 +344,7 @@ export interface Translations {
   workHoursLabel: string;
   scheduleUpdated: string;
   scheduleUpdateFailed: string;
+  passwordUpdatedLogout: string;
   customerReviews: string;
   noReviewsYet: string;
   specialties: string;
@@ -745,6 +746,7 @@ export const translations: Record<Language, Translations> = {
     workHoursLabel: 'Working Hours',
     scheduleUpdated: 'Schedule updated successfully.',
     scheduleUpdateFailed: 'Failed to update schedule.',
+    passwordUpdatedLogout: 'Password updated. Signing out for security…',
     wilaya: 'Wilaya',
     commune: 'Commune',
     selectPlaceholder: 'Select...',
@@ -1196,6 +1198,7 @@ export const translations: Record<Language, Translations> = {
     workHoursLabel: 'Heures de Travail',
     scheduleUpdated: 'Horaires mis à jour avec succès.',
     scheduleUpdateFailed: 'Échec de la mise à jour des horaires.',
+    passwordUpdatedLogout: 'Mot de passe mis à jour. Déconnexion en cours…',
     wilaya: 'Wilaya',
     commune: 'Commune',
     selectPlaceholder: 'Sélectionner...',
@@ -1648,6 +1651,7 @@ export const translations: Record<Language, Translations> = {
     workHoursLabel: 'ساعات العمل',
     scheduleUpdated: 'تم تحديث الجدول بنجاح.',
     scheduleUpdateFailed: 'فشل تحديث الجدول.',
+    passwordUpdatedLogout: 'تم تحديث كلمة المرور. جارٍ تسجيل الخروج…',
     wilaya: 'الولاية',
     commune: 'البلدية',
     selectPlaceholder: 'اختر...',

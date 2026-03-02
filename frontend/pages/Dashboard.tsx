@@ -250,11 +250,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
     setPwSaving(true);
     try {
       await authAPI.changePassword({ currentPassword: currentPw, newPassword: newPw });
-      setPwMsg({ text: 'Password updated successfully.', ok: true });
+      setPwMsg({ text: t.passwordUpdatedLogout, ok: true });
       setCurrentPw('');
       setNewPw('');
       setConfirmPw('');
-      setTimeout(() => setPwMsg(null), 4000);
+      // Backend clears all auth cookies on password change — log out the frontend too.
+      setTimeout(() => onLogout(), 2000);
     } catch (err: any) {
       setPwMsg({ text: err.message || 'Failed to update password.', ok: false });
     } finally {
@@ -275,7 +276,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
       setTimeout(() => setProfileSaveMsg(null), 3000);
     } catch (err) {
       console.error('Profile save failed:', err);
-      setProfileSaveMsg({ text: t.saveFailed, ok: false });
+      setProfileSaveMsg({ text: (err instanceof Error ? err.message : null) || t.saveFailed, ok: false });
     } finally {
       setProfileSaving(false);
     }

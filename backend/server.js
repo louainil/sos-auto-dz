@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import { doubleCsrf } from 'csrf-csrf';
+import crypto from 'crypto';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import { fileURLToPath } from 'url';
@@ -104,37 +104,69 @@ if (missingVars.length > 0) {
   });
 }
 
-// CSRF protection — double-submit cookie pattern.
-// GET/HEAD/OPTIONS are automatically exempt; all state-mutating requests
-// must include the token (from GET /api/csrf-token) as 'x-csrf-token' header.
+// ---------------------------------------------------------------------------
+// CSRF protection — signed-token pattern (no cookies required).
 //
-// sameSite: 'none' is required in production because Vercel deploys the
-// frontend and backend on different subdomains of vercel.app, which is in
-// the Public Suffix List — making them different "sites" from a cookie
-// perspective. 'strict' would silently drop all cookies on cross-site requests.
-const { doubleCsrfProtection, generateToken } = doubleCsrf({
-  getSecret: () => process.env.CSRF_SECRET ?? process.env.JWT_SECRET,
-  cookieName: 'csrf',
-  cookieOptions: {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax',
-    path: '/',
-  },
-  size: 64,
-  getTokenFromRequest: (req) => req.headers['x-csrf-token'],
-});
+// Unlike the traditional double-submit cookie, this approach uses an
+// HMAC-signed token that embeds a nonce + timestamp.  The frontend receives
+// it from GET /api/csrf-token, stores it in memory, and sends it back as
+// the 'x-csrf-token' header on every state-mutating request.
+//
+// Why not double-submit cookies?  Modern browsers block third-party cookies
+// by default.  Since the Vercel frontend and backend live on different
+// subdomains (which are treated as different sites because vercel.app is in
+// the Public Suffix List), the CSRF cookie is silently dropped — making the
+// double-submit pattern unworkable without a same-origin proxy.
+//
+// This is still secure because:
+//   1. CORS restricts which origins can make credentialed requests.
+//   2. Custom headers (x-csrf-token) require a CORS preflight, which
+//      prevents simple cross-origin form posts.
+//   3. The HMAC signature prevents token forgery.
+//   4. The embedded timestamp limits token lifetime.
+// ---------------------------------------------------------------------------
+const CSRF_SECRET = process.env.CSRF_SECRET || process.env.JWT_SECRET;
+const CSRF_TOKEN_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
-// Wrap the CSRF middleware so rejections return 403 (not 500) with a clear
-// message. This lets the frontend detect CSRF failures and auto-retry.
+function generateCsrfToken() {
+  const nonce = crypto.randomBytes(32).toString('hex');
+  const timestamp = Date.now().toString();
+  const payload = `${nonce}.${timestamp}`;
+  const signature = crypto
+    .createHmac('sha256', CSRF_SECRET)
+    .update(payload)
+    .digest('hex');
+  return `${payload}.${signature}`;
+}
+
+function validateCsrfToken(token) {
+  if (!token || typeof token !== 'string') return false;
+  const parts = token.split('.');
+  if (parts.length !== 3) return false;
+
+  const [nonce, timestamp, signature] = parts;
+  if (!nonce || !timestamp || !signature) return false;
+
+  // Check expiry
+  const tokenTime = parseInt(timestamp, 10);
+  if (Number.isNaN(tokenTime) || Date.now() - tokenTime > CSRF_TOKEN_MAX_AGE_MS) return false;
+
+  // Verify HMAC (constant-time comparison)
+  const expected = crypto
+    .createHmac('sha256', CSRF_SECRET)
+    .update(`${nonce}.${timestamp}`)
+    .digest('hex');
+  if (expected.length !== signature.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+}
+
+// Middleware: reject state-mutating requests without a valid CSRF token.
 app.use((req, res, next) => {
-  doubleCsrfProtection(req, res, (err) => {
-    if (err) {
-      console.error('CSRF validation failed:', err.message);
-      return res.status(403).json({ message: 'Invalid CSRF token — please retry' });
-    }
-    next();
-  });
+  if (SAFE_METHODS.has(req.method)) return next();
+  const token = req.headers['x-csrf-token'];
+  if (validateCsrfToken(token)) return next();
+  return res.status(403).json({ message: 'Invalid or missing CSRF token' });
 });
 
 app.use(express.json());
@@ -190,11 +222,10 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/reviews', reviewRoutes);
 
-// CSRF token endpoint — GETs are safe; sets the csrf cookie and returns the token.
-// The frontend must call this once per session and pass the returned token as
-// 'x-csrf-token' on every state-mutating request (POST/PUT/DELETE/PATCH).
-app.get('/api/csrf-token', (req, res) => {
-  res.json({ csrfToken: generateToken(req, res) });
+// CSRF token endpoint — returns a signed token the frontend must store in
+// memory and send as 'x-csrf-token' on every POST/PUT/DELETE/PATCH request.
+app.get('/api/csrf-token', (_req, res) => {
+  res.json({ csrfToken: generateCsrfToken() });
 });
 
 // Health check route

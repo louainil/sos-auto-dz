@@ -25,32 +25,37 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 dotenv.config({ path: join(__dirname, '.env') });
 
-// Fail fast if any required environment variable is missing.
-// This prevents the server from starting in a broken state where the first
-// request that touches a missing var causes a cryptic runtime crash.
 // FRONTEND_URL is required in production but optional in development
 // (defaults to localhost so the dev server works without extra config).
 const isProduction = process.env.NODE_ENV === 'production';
 
+// Validate required environment variables.
+// Core vars (JWT, DB, Cloudinary) are always required — the app cannot
+// function without them.  Email and FRONTEND_URL are only required in
+// production; in development the app can start without them (emails will
+// fail at send-time with a clear error).
 const REQUIRED_ENV_VARS = [
   'JWT_SECRET',
   'MONGODB_URI',
   'CLOUDINARY_CLOUD_NAME',
   'CLOUDINARY_API_KEY',
   'CLOUDINARY_API_SECRET',
-  'EMAIL_HOST',
-  'EMAIL_USER',
-  'EMAIL_PASS',
-  'EMAIL_FROM',
-  ...(isProduction ? ['FRONTEND_URL'] : []),
+  ...(isProduction ? ['FRONTEND_URL', 'SMTP_USER', 'SMTP_PASS'] : []),
 ];
 const missingVars = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
 if (missingVars.length > 0) {
+  // In a Vercel serverless function, process.exit() crashes the runtime and
+  // produces a 500 FUNCTION_INVOCATION_FAILED with no useful message.
+  // Log the error and continue — the middleware below will return 503.
   console.error(`Missing required environment variable(s): ${missingVars.join(', ')}`);
-  process.exit(1);
+  if (!process.env.VERCEL) process.exit(1);
 }
 
 const app = express();
+
+// Trust the first proxy (Vercel's edge) so req.secure / req.protocol
+// correctly report HTTPS even though the function receives plain HTTP.
+app.set('trust proxy', 1);
 
 // CORS must be first so that ALL responses — including CSRF/auth errors — carry
 // the correct Access-Control-* headers. Without this, the browser sees a CORS
@@ -87,6 +92,17 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 app.use(cookieParser());
+
+// If any required env vars are missing, respond 503 instead of proceeding.
+// This only matters on Vercel where process.exit() was skipped above.
+if (missingVars.length > 0) {
+  app.use((_req, res) => {
+    res.status(503).json({
+      message: 'Server misconfigured — missing required environment variable(s)',
+      missing: missingVars,
+    });
+  });
+}
 
 // CSRF protection — double-submit cookie pattern.
 // GET/HEAD/OPTIONS are automatically exempt; all state-mutating requests

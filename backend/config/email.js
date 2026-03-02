@@ -53,6 +53,24 @@ export const sendEmail = async ({ to, subject, html }) => {
   }
 };
 
+// ─── Verification email helper ───────────────────────────────────────
+
+/**
+ * Send a verification email with an HMAC-signed link.
+ */
+export const sendVerificationEmail = async ({ to, name, verifyUrl }) => {
+  await sendEmail({
+    to,
+    subject: 'SOS Auto DZ — Verify Your Email',
+    html: wrapTemplate(`
+      <p>Hello <strong>${escapeHtml(name)}</strong>,</p>
+      <p>Thank you for registering! Please verify your email address by clicking the button below:</p>
+      <a href="${verifyUrl}" style="display: inline-block; background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 16px 0;">Verify Email</a>
+      <p style="color: #64748b; font-size: 13px;">This link expires in <strong>24 hours</strong>. If you did not create this account, ignore this email.</p>
+    `),
+  });
+};
+
 // ─── Booking email helpers ───────────────────────────────────────────
 
 /**
@@ -83,6 +101,7 @@ export const sendNewBookingEmail = async ({ providerEmail, providerName, clientN
  * Notify the client/provider when a booking status changes.
  */
 export const sendBookingStatusEmail = async ({ recipientEmail, recipientName, otherPartyName, status, date }) => {
+
   const formattedDate = new Date(date).toLocaleDateString('en-GB', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });

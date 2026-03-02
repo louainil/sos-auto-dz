@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import multer from 'multer';
 import { Readable } from 'stream';
-import { transporter, getFromAddress } from '../config/email.js';
+import { transporter, getFromAddress, sendVerificationEmail } from '../config/email.js';
 import { body } from 'express-validator';
 import User from '../models/User.js';
 import ServiceProvider from '../models/ServiceProvider.js';
@@ -164,46 +164,11 @@ router.post('/register', [
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const verifyUrl = `${frontendUrl}/verify-email?token=${verifyToken}&email=${encodeURIComponent(user.email)}`;
 
-    try {
-      await transporter.sendMail({
-        from: getFromAddress(),
-        to: user.email,
-        subject: 'SOS Auto DZ — Verify Your Email',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 20px;">
-            <h2 style="color: #2563eb;">SOS Auto DZ</h2>
-            <p>Hello <strong>${user.name}</strong>,</p>
-            <p>Thank you for registering! Please verify your email address by clicking the button below:</p>
-            <a href="${verifyUrl}" style="display: inline-block; background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 16px 0;">Verify Email</a>
-            <p style="color: #64748b; font-size: 13px;">This link expires in <strong>24 hours</strong>. If you did not create this account, ignore this email.</p>
-            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-            <p style="color: #94a3b8; font-size: 12px;">SOS Auto DZ — Roadside assistance across Algeria</p>
-          </div>
-        `,
-      });
-    } catch (emailErr) {
-      console.error('Verification email failed:', emailErr);
-      // Registration still succeeds even if email fails
-    }
+    await sendVerificationEmail({ to: user.email, name: user.name, verifyUrl });
 
-    const rfTokenValue = generateRefreshTokenValue();
-    user.refreshToken = crypto.createHash('sha256').update(rfTokenValue).digest('hex');
-    user.refreshTokenExpire = new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS);
-    await user.save({ validateBeforeSave: false });
-    setRefreshCookie(res, rfTokenValue);
-    setAccessCookie(res, generateToken(user._id));
-
+    // Do NOT issue auth tokens — the user must verify their email first.
     res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      phone: user.phone,
-      garageType: user.garageType,
-      wilayaId: user.wilayaId,
-      commune: user.commune,
-      isAvailable: user.isAvailable,
-      avatar: user.avatar,
+      message: 'Registration successful. Please check your email to verify your account.',
       isEmailVerified: false
     });
   } catch (error) {
@@ -233,6 +198,15 @@ router.post('/login', [
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Block unverified users
+    if (!user.isEmailVerified) {
+      return res.status(403).json({
+        message: 'Please verify your email before logging in. Check your inbox for the verification link.',
+        needsVerification: true,
+        email: user.email
+      });
     }
 
     const rfTokenValue = generateRefreshTokenValue();
@@ -335,22 +309,7 @@ router.post('/resend-verification', [
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const verifyUrl = `${frontendUrl}/verify-email?token=${verifyToken}&email=${encodeURIComponent(user.email)}`;
 
-    await transporter.sendMail({
-      from: getFromAddress(),
-      to: user.email,
-      subject: 'SOS Auto DZ — Verify Your Email',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #2563eb;">SOS Auto DZ</h2>
-          <p>Hello <strong>${user.name}</strong>,</p>
-          <p>Please verify your email address by clicking the button below:</p>
-          <a href="${verifyUrl}" style="display: inline-block; background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 16px 0;">Verify Email</a>
-          <p style="color: #64748b; font-size: 13px;">This link expires in <strong>24 hours</strong>.</p>
-          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-          <p style="color: #94a3b8; font-size: 12px;">SOS Auto DZ — Roadside assistance across Algeria</p>
-        </div>
-      `,
-    });
+    await sendVerificationEmail({ to: user.email, name: user.name, verifyUrl });
 
     res.json({ message: 'If an account with that email exists, a verification link has been sent.' });
   } catch (error) {

@@ -75,22 +75,32 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
     try {
       if (isLogin) {
         // Login
-        const data = await authAPI.login(email, password);
-        const user: User = {
-          id: data._id,
-          name: data.name,
-          email: data.email,
-          role: data.role,
-          phone: data.phone,
-          garageType: data.garageType,
-          wilayaId: data.wilayaId,
-          commune: data.commune,
-          isAvailable: data.isAvailable,
-          avatar: data.avatar,
-          isEmailVerified: data.isEmailVerified
-        };
-        onLoginSuccess(user);
-        onClose();
+        try {
+          const data = await authAPI.login(email, password);
+          const user: User = {
+            id: data._id,
+            name: data.name,
+            email: data.email,
+            role: data.role,
+            phone: data.phone,
+            garageType: data.garageType,
+            wilayaId: data.wilayaId,
+            commune: data.commune,
+            isAvailable: data.isAvailable,
+            avatar: data.avatar,
+            isEmailVerified: data.isEmailVerified
+          };
+          onLoginSuccess(user);
+          onClose();
+        } catch (loginErr: any) {
+          // If the user hasn't verified their email, show the verification view
+          if (loginErr.message?.includes('verify your email')) {
+            setRegisteredEmail(email);
+            setView('VERIFY_EMAIL_SENT');
+          } else {
+            throw loginErr;
+          }
+        }
       } else {
         // Register
         const isPro = selectedRole !== UserRole.CLIENT && selectedRole !== UserRole.ADMIN;

@@ -166,7 +166,7 @@ const ProviderProfile: React.FC<ProviderProfileProps> = ({ language, userLocatio
         ) : (
           <div className="h-56 md:h-72 overflow-hidden">
             <img
-              src={provider.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(provider.name)}&size=800&background=0f172a&color=f8fafc&bold=true`}
+              src={provider.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(provider.name)}&size=800&background=0f172a&color=f8fafc&bold=true`}
               alt={provider.name}
               className="w-full h-full object-cover"
             />

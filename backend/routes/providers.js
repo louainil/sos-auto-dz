@@ -3,6 +3,7 @@ import { body, param, query } from 'express-validator';
 import { Readable } from 'stream';
 import multer from 'multer';
 import ServiceProvider from '../models/ServiceProvider.js';
+import User from '../models/User.js';
 import { protect, isProfessional } from '../middleware/auth.js';
 import validate from '../middleware/validate.js';
 import cloudinary from '../config/cloudinary.js';
@@ -142,7 +143,7 @@ router.put('/:id', protect, isProfessional, [
   body('description').optional().trim().isLength({ max: 2000 }).withMessage('Description must be at most 2000 characters'),
   body('phone').optional().trim().isLength({ max: 20 }).withMessage('Phone must be at most 20 characters'),
   body('specialty').optional().isArray().withMessage('Specialty must be an array'),
-  body('image').optional().trim().isURL().withMessage('Image must be a valid URL'),
+  body('profileImage').optional().trim().isURL().withMessage('profileImage must be a valid URL'),
   body('isAvailable').optional().isBoolean().withMessage('isAvailable must be a boolean'),
   body('workingDays').optional().isArray().withMessage('Working days must be an array'),
   body('workingHours.start').optional().matches(/^\d{2}:\d{2}$/).withMessage('workingHours.start must be HH:MM'),
@@ -166,7 +167,7 @@ router.put('/:id', protect, isProfessional, [
       description,
       phone,
       specialty,
-      image,
+      profileImage,
       isAvailable,
       workingDays,
       workingHours
@@ -177,12 +178,21 @@ router.put('/:id', protect, isProfessional, [
     if (description) provider.description = description;
     if (phone) provider.phone = phone;
     if (specialty) provider.specialty = specialty;
-    if (image) provider.image = image;
+    if (profileImage) provider.profileImage = profileImage;
     if (isAvailable !== undefined) provider.isAvailable = isAvailable;
     if (workingDays) provider.workingDays = workingDays;
     if (workingHours) provider.workingHours = workingHours;
 
     const updatedProvider = await provider.save();
+
+    // Sync name/phone back to the User model to prevent mismatches
+    if (name || phone) {
+      const userUpdate = {};
+      if (name) userUpdate.name = name;
+      if (phone) userUpdate.phone = phone;
+      await User.findByIdAndUpdate(provider.userId, userUpdate);
+    }
+
     res.json(updatedProvider);
   } catch (error) {
     console.error(error);
@@ -240,10 +250,10 @@ router.post('/:id/image', protect, isProfessional, [
       `provider_${provider._id}`
     );
 
-    provider.image = result.secure_url;
+    provider.profileImage = result.secure_url;
     await provider.save();
 
-    res.json({ message: 'Provider image updated', image: result.secure_url });
+    res.json({ message: 'Provider image updated', profileImage: result.secure_url });
   } catch (error) {
     console.error('Provider image upload error:', error);
     res.status(500).json({ message: 'Failed to upload image', ...devError(error) });

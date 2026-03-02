@@ -51,7 +51,9 @@ export interface ServiceProvider {
   rating: number;
   phone: string;
   specialty?: string[]; // Supported Car Brands
-  image: string;
+  /** Main shop/garage photo uploaded via the provider image endpoint */
+  profileImage: string;
+  /** Cloudinary-managed gallery of up to 8 photos */
   images?: { url: string; publicId: string }[];
   isAvailable: boolean; // Manual override for "Unavailable" (e.g. on vacation)
   workingDays: number[]; // 0=Sun, 1=Mon, ..., 6=Sat

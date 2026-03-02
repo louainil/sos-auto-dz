@@ -71,7 +71,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
           rating: p.rating,
           phone: p.phone,
           specialty: p.specialty,
-          image: p.image,
+          profileImage: p.profileImage,
           isAvailable: p.isAvailable,
           workingDays: p.workingDays,
           workingHours: p.workingHours

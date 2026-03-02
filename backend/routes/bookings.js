@@ -230,8 +230,8 @@ router.put('/:id', protect, [
 });
 
 // @route   DELETE /api/bookings/:id
-// @desc    Delete/Cancel booking
-// @access  Private
+// @desc    Cancel booking (soft delete — sets status to CANCELLED, preserves history)
+// @access  Private (client who owns the booking)
 router.delete('/:id', protect, [
   param('id').isMongoId().withMessage('Valid booking ID is required'),
   validate
@@ -245,11 +245,20 @@ router.delete('/:id', protect, [
 
     // Check if user owns this booking
     if (booking.clientId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to delete this booking' });
+      return res.status(403).json({ message: 'Not authorized to cancel this booking' });
     }
 
-    await booking.deleteOne();
-    res.json({ message: 'Booking removed' });
+    // Cannot cancel a booking that is already completed or cancelled
+    if (booking.status === 'COMPLETED' || booking.status === 'CANCELLED') {
+      return res.status(400).json({ message: `Cannot cancel a booking with status: ${booking.status}` });
+    }
+
+    booking.status = 'CANCELLED';
+    const { cancellationReason } = req.body;
+    if (cancellationReason) booking.cancellationReason = cancellationReason;
+    await booking.save();
+
+    res.json({ message: 'Booking cancelled', booking });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error', ...devError(error) });

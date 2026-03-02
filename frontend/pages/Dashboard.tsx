@@ -71,7 +71,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
         setIsAvailable(data.isAvailable ?? true);
         setProviderRating(data.rating ?? 0);
         setProviderTotalReviews(data.totalReviews ?? 0);
-        if (data.image) setShopImage(data.image);
+        if (data.profileImage) setShopImage(data.profileImage);
         if (data.images) setGalleryImages(data.images);
       } catch (err) {
         console.error('Failed to fetch provider profile:', err);
@@ -113,7 +113,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
     setShopImageUploading(true);
     try {
       const data = await providersAPI.uploadImage(providerId, file);
-      setShopImage(data.image);
+      setShopImage(data.profileImage);
     } catch (err) {
       console.error('Shop image upload failed:', err);
     } finally {

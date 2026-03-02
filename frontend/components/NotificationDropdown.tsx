@@ -7,14 +7,16 @@ import { Language, translations } from '../translations';
 interface NotificationDropdownProps {
   notifications: Notification[];
   onMarkAsRead: (id: string) => void;
+  onMarkAllAsRead: () => void;
   onClearAll: () => void;
   onClose: () => void;
   language: Language;
 }
 
-const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ notifications, onMarkAsRead, onClearAll, onClose, language }) => {
+const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClearAll, onClose, language }) => {
   const t = translations[language];
-  
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
   const getIcon = (type: string) => {
     switch (type) {
       case 'SUCCESS': return <CheckCircle size={16} className="text-green-500" />;
@@ -31,12 +33,22 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ notificatio
         <div className="p-3 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
           <h3 className="font-bold text-slate-800 dark:text-white text-sm">{t.notifications}</h3>
           {notifications.length > 0 && (
-            <button 
-              onClick={onClearAll}
-              className="text-xs text-slate-500 hover:text-red-500 flex items-center gap-1 transition-colors"
-            >
-              <Trash2 size={12} /> {t.clearAll}
-            </button>
+            <div className="flex items-center gap-3">
+              {unreadCount > 0 && (
+                <button
+                  onClick={onMarkAllAsRead}
+                  className="text-xs text-blue-500 hover:text-blue-700 flex items-center gap-1 transition-colors"
+                >
+                  <Check size={12} /> {t.markAllAsRead}
+                </button>
+              )}
+              <button 
+                onClick={onClearAll}
+                className="text-xs text-slate-500 hover:text-red-500 flex items-center gap-1 transition-colors"
+              >
+                <Trash2 size={12} /> {t.clearAll}
+              </button>
+            </div>
           )}
         </div>
 

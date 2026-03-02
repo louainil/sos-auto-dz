@@ -45,7 +45,9 @@ const serviceProviderSchema = new mongoose.Schema({
   specialty: [{
     type: String
   }],
-  image: {
+  // profileImage: Cloudinary URL for the main shop/garage photo (set via POST /:id/image)
+  // images: Cloudinary-managed gallery (up to 8 photos, managed via POST /:id/gallery)
+  profileImage: {
     type: String,
     default: ''
   },

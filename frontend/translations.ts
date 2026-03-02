@@ -356,6 +356,7 @@ export interface Translations {
   clearAll: string;
   noNewNotifications: string;
   markAsRead: string;
+  markAllAsRead: string;
 
   // DistanceIndicator
   distanceUnknown: string;
@@ -802,6 +803,7 @@ export const translations: Record<Language, Translations> = {
     clearAll: 'Clear all',
     noNewNotifications: 'No new notifications',
     markAsRead: 'Mark as read',
+    markAllAsRead: 'Mark all as read',
 
     // DistanceIndicator
     distanceUnknown: 'Distance unknown',
@@ -1246,6 +1248,7 @@ export const translations: Record<Language, Translations> = {
     clearAll: 'Tout effacer',
     noNewNotifications: 'Aucune nouvelle notification',
     markAsRead: 'Marquer comme lu',
+    markAllAsRead: 'Tout marquer comme lu',
 
     // DistanceIndicator
     distanceUnknown: 'Distance inconnue',
@@ -1691,6 +1694,7 @@ export const translations: Record<Language, Translations> = {
     clearAll: 'مسح الكل',
     noNewNotifications: 'لا توجد إشعارات جديدة',
     markAsRead: 'وضع علامة كمقروء',
+    markAllAsRead: 'وضع علامة على الكل كمقروء',
 
     // DistanceIndicator
     distanceUnknown: 'المسافة غير معروفة',

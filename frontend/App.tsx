@@ -319,6 +319,15 @@ const App: React.FC = () => {
     }
   };
 
+  const handleMarkAllNotificationsRead = async () => {
+    try {
+      await notificationsAPI.markAllRead();
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    } catch (error) {
+      console.error('Failed to mark all notifications as read:', error);
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen font-sans bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300">
       <Navbar 
@@ -334,6 +343,7 @@ const App: React.FC = () => {
         onLogout={handleLogout}
         notifications={notifications}
         onMarkNotificationRead={handleMarkNotifRead}
+        onMarkAllNotificationsRead={handleMarkAllNotificationsRead}
         onClearNotifications={handleClearNotifications}
       />
       

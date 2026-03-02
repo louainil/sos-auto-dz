@@ -31,6 +31,22 @@ router.get('/', protect, async (req, res) => {
   }
 });
 
+// @route   PUT /api/notifications/read-all
+// @desc    Mark all notifications as read for current user
+// @access  Private
+router.put('/read-all', protect, async (req, res) => {
+  try {
+    await Notification.updateMany(
+      { userId: req.user._id, isRead: false },
+      { isRead: true }
+    );
+    res.json({ message: 'All notifications marked as read' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', ...devError(error) });
+  }
+});
+
 // @route   PUT /api/notifications/:id/read
 // @desc    Mark notification as read
 // @access  Private

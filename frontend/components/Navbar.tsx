@@ -18,6 +18,7 @@ interface NavbarProps {
   onLogout: () => void;
   notifications: Notification[];
   onMarkNotificationRead: (id: string) => void;
+  onMarkAllNotificationsRead: () => void;
   onClearNotifications: () => void;
 }
 
@@ -34,6 +35,7 @@ const Navbar: React.FC<NavbarProps> = ({
   onLogout,
   notifications,
   onMarkNotificationRead,
+  onMarkAllNotificationsRead,
   onClearNotifications
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -181,6 +183,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     <NotificationDropdown 
                       notifications={notifications} 
                       onMarkAsRead={onMarkNotificationRead}
+                      onMarkAllAsRead={onMarkAllNotificationsRead}
                       onClearAll={onClearNotifications}
                       onClose={() => setIsNotifOpen(false)}
                       language={language}
@@ -297,6 +300,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   <NotificationDropdown 
                     notifications={notifications} 
                     onMarkAsRead={onMarkNotificationRead}
+                    onMarkAllAsRead={onMarkAllNotificationsRead}
                     onClearAll={onClearNotifications}
                     onClose={() => setIsNotifOpen(false)}
                     language={language}

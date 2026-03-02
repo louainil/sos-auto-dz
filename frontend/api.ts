@@ -274,9 +274,11 @@ export const bookingsAPI = {
     return handleResponse(response);
   },
 
-  delete: async (id: string) => {
+  /** Soft-cancels a booking (sets status to CANCELLED). Preserves history. */
+  delete: async (id: string, cancellationReason?: string) => {
     const response = await authFetch(`${API_URL}/bookings/${id}`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      body: cancellationReason ? JSON.stringify({ cancellationReason }) : undefined
     });
     return handleResponse(response);
   }
@@ -306,6 +308,13 @@ export const notificationsAPI = {
   clearAll: async () => {
     const response = await authFetch(`${API_URL}/notifications`, {
       method: 'DELETE'
+    });
+    return handleResponse(response);
+  },
+
+  markAllRead: async () => {
+    const response = await authFetch(`${API_URL}/notifications/read-all`, {
+      method: 'PUT'
     });
     return handleResponse(response);
   }

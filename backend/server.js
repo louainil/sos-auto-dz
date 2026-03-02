@@ -114,7 +114,7 @@ if (missingVars.length > 0) {
 // perspective. 'strict' would silently drop all cookies on cross-site requests.
 const { doubleCsrfProtection, generateToken } = doubleCsrf({
   getSecret: () => process.env.CSRF_SECRET ?? process.env.JWT_SECRET,
-  cookieName: isProduction ? '__Host-csrf' : 'csrf',
+  cookieName: 'csrf',
   cookieOptions: {
     httpOnly: true,
     secure: isProduction,
@@ -124,7 +124,18 @@ const { doubleCsrfProtection, generateToken } = doubleCsrf({
   size: 64,
   getTokenFromRequest: (req) => req.headers['x-csrf-token'],
 });
-app.use(doubleCsrfProtection);
+
+// Wrap the CSRF middleware so rejections return 403 (not 500) with a clear
+// message. This lets the frontend detect CSRF failures and auto-retry.
+app.use((req, res, next) => {
+  doubleCsrfProtection(req, res, (err) => {
+    if (err) {
+      console.error('CSRF validation failed:', err.message);
+      return res.status(403).json({ message: 'Invalid CSRF token — please retry' });
+    }
+    next();
+  });
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

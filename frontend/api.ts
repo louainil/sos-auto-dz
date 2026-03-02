@@ -78,38 +78,53 @@ const authFetch = async (url: string, options: RequestInit = {}): Promise<Respon
   return response;
 };
 
+// Helper: perform a CSRF-protected mutation with one automatic retry.
+// If the server returns 403 (stale/invalid CSRF token) we reset the
+// cached token, fetch a fresh one, and replay the request once.
+const csrfFetch = async (
+  url: string,
+  options: RequestInit = {},
+): Promise<Response> => {
+  const attempt = async () => {
+    const csrfToken = await getCsrfToken();
+    const isFormData = options.body instanceof FormData;
+    const headers: Record<string, string> = {
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+      ...(options.headers as Record<string, string> || {}),
+      'x-csrf-token': csrfToken,
+    };
+    return fetch(url, { ...options, credentials: 'include', headers });
+  };
+  let response = await attempt();
+  if (response.status === 403) {
+    // Token may be stale — reset and retry once with a fresh token.
+    resetCsrfToken();
+    response = await attempt();
+  }
+  return response;
+};
+
 // Auth API
 export const authAPI = {
   register: async (userData: any) => {
-    const csrfToken = await getCsrfToken();
-    const response = await fetch(`${API_URL}/auth/register`, {
+    const response = await csrfFetch(`${API_URL}/auth/register`, {
       method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrfToken },
-      body: JSON.stringify(userData)
+      body: JSON.stringify(userData),
     });
     return handleResponse(response);
   },
 
   login: async (email: string, password: string) => {
-    const csrfToken = await getCsrfToken();
-    const response = await fetch(`${API_URL}/auth/login`, {
+    const response = await csrfFetch(`${API_URL}/auth/login`, {
       method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrfToken },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password }),
     });
     return handleResponse(response);
   },
 
   logout: async () => {
     try {
-      const csrfToken = await getCsrfToken();
-      await fetch(`${API_URL}/auth/logout`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'x-csrf-token': csrfToken },
-      });
+      await csrfFetch(`${API_URL}/auth/logout`, { method: 'POST' });
       resetCsrfToken();
     } catch { /* ignore network errors on logout */ }
   },
@@ -146,23 +161,17 @@ export const authAPI = {
   },
 
   forgotPassword: async (email: string) => {
-    const csrfToken = await getCsrfToken();
-    const response = await fetch(`${API_URL}/auth/forgot-password`, {
+    const response = await csrfFetch(`${API_URL}/auth/forgot-password`, {
       method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrfToken },
-      body: JSON.stringify({ email })
+      body: JSON.stringify({ email }),
     });
     return handleResponse(response);
   },
 
   resetPassword: async (token: string, email: string, newPassword: string) => {
-    const csrfToken = await getCsrfToken();
-    const response = await fetch(`${API_URL}/auth/reset-password`, {
+    const response = await csrfFetch(`${API_URL}/auth/reset-password`, {
       method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrfToken },
-      body: JSON.stringify({ token, email, newPassword })
+      body: JSON.stringify({ token, email, newPassword }),
     });
     return handleResponse(response);
   },
@@ -173,12 +182,9 @@ export const authAPI = {
   },
 
   resendVerification: async (email: string) => {
-    const csrfToken = await getCsrfToken();
-    const response = await fetch(`${API_URL}/auth/resend-verification`, {
+    const response = await csrfFetch(`${API_URL}/auth/resend-verification`, {
       method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrfToken },
-      body: JSON.stringify({ email })
+      body: JSON.stringify({ email }),
     });
     return handleResponse(response);
   }

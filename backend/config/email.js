@@ -57,9 +57,11 @@ export const sendEmail = async ({ to, subject, html }) => {
 
 /**
  * Send a verification email with an HMAC-signed link.
+ * Unlike sendEmail, this THROWS on failure so the caller can inform the user.
  */
 export const sendVerificationEmail = async ({ to, name, verifyUrl }) => {
-  await sendEmail({
+  await transporter.sendMail({
+    from: getFromAddress(),
     to,
     subject: 'SOS Auto DZ — Verify Your Email',
     html: wrapTemplate(`

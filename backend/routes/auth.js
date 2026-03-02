@@ -164,7 +164,17 @@ router.post('/register', [
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const verifyUrl = `${frontendUrl}/verify-email?token=${verifyToken}&email=${encodeURIComponent(user.email)}`;
 
-    await sendVerificationEmail({ to: user.email, name: user.name, verifyUrl });
+    try {
+      await sendVerificationEmail({ to: user.email, name: user.name, verifyUrl });
+    } catch (emailErr) {
+      console.error('Verification email failed:', emailErr);
+      // The user account was already created — tell them to retry via resend.
+      return res.status(201).json({
+        message: 'Account created but verification email could not be sent. Please use "Resend verification" to try again.',
+        isEmailVerified: false,
+        emailError: true
+      });
+    }
 
     // Do NOT issue auth tokens — the user must verify their email first.
     res.status(201).json({

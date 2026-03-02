@@ -1,6 +1,8 @@
-import express from 'express';
+﻿import express from 'express';
 import { createServer } from 'http';
 import cors from 'cors';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import { fileURLToPath } from 'url';
@@ -15,6 +17,7 @@ import bookingRoutes from './routes/bookings.js';
 import notificationRoutes from './routes/notifications.js';
 import adminRoutes from './routes/admin.js';
 import reviewRoutes from './routes/reviews.js';
+import { devError } from './utils/errors.js';
 
 // Load environment variables (use explicit path for serverless compatibility)
 const __filename = fileURLToPath(import.meta.url);
@@ -22,6 +25,10 @@ const __dirname = dirname(__filename);
 dotenv.config({ path: join(__dirname, '.env') });
 
 const app = express();
+
+// Security headers
+app.use(helmet());
+app.use(cookieParser());
 
 // Middleware
 app.use(cors({
@@ -47,7 +54,7 @@ app.use(async (req, res, next) => {
     await connectDB();
     next();
   } catch (error) {
-    res.status(503).json({ message: 'Database connection failed', error: error.message });
+    res.status(503).json({ message: 'Database connection failed', ...devError(error) });
   }
 });
 

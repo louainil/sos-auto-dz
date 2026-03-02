@@ -1,9 +1,10 @@
-import express from 'express';
+﻿import express from 'express';
 import { param } from 'express-validator';
 import User from '../models/User.js';
 import ServiceProvider from '../models/ServiceProvider.js';
 import { protect, isAdmin } from '../middleware/auth.js';
 import validate from '../middleware/validate.js';
+import { devError } from '../utils/errors.js';
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ router.get('/stats', protect, isAdmin, async (req, res) => {
     res.json({ totalUsers, totalProviders, pendingProviders });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -35,7 +36,7 @@ router.get('/providers/pending', protect, isAdmin, async (req, res) => {
     res.json(providers);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -58,7 +59,7 @@ router.put('/providers/:id/approve', protect, isAdmin, [
     res.json(provider);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 

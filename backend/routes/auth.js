@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import multer from 'multer';
@@ -11,6 +11,7 @@ import Notification from '../models/Notification.js';
 import { protect } from '../middleware/auth.js';
 import validate from '../middleware/validate.js';
 import cloudinary from '../config/cloudinary.js';
+import { devError } from '../utils/errors.js';
 
 // Multer memory storage (no disk writes)
 const upload = multer({
@@ -38,10 +39,37 @@ const uploadToCloudinary = (buffer, folder, publicId) => {
 
 const router = express.Router();
 
-// Generate JWT Token
+// Generate short-lived JWT access token (1 hour)
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '30d'
+    expiresIn: '1h'
+  });
+};
+
+// Generate opaque refresh token value (40 random bytes)
+const generateRefreshTokenValue = () => crypto.randomBytes(40).toString('hex');
+
+const REFRESH_TOKEN_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+// Set refresh token as HttpOnly cookie
+const setRefreshCookie = (res, tokenValue) => {
+  res.cookie('refreshToken', tokenValue, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: REFRESH_TOKEN_EXPIRY_MS,
+  });
+};
+
+const ACCESS_TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
+
+// Set access token as HttpOnly cookie
+const setAccessCookie = (res, tokenValue) => {
+  res.cookie('accessToken', tokenValue, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: ACCESS_TOKEN_EXPIRY_MS,
   });
 };
 
@@ -148,6 +176,13 @@ router.post('/register', [
       // Registration still succeeds even if email fails
     }
 
+    const rfTokenValue = generateRefreshTokenValue();
+    user.refreshToken = crypto.createHash('sha256').update(rfTokenValue).digest('hex');
+    user.refreshTokenExpire = new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS);
+    await user.save({ validateBeforeSave: false });
+    setRefreshCookie(res, rfTokenValue);
+    setAccessCookie(res, generateToken(user._id));
+
     res.status(201).json({
       _id: user._id,
       name: user.name,
@@ -159,12 +194,11 @@ router.post('/register', [
       commune: user.commune,
       isAvailable: user.isAvailable,
       avatar: user.avatar,
-      isEmailVerified: false,
-      token: generateToken(user._id)
+      isEmailVerified: false
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -191,6 +225,13 @@ router.post('/login', [
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
+    const rfTokenValue = generateRefreshTokenValue();
+    user.refreshToken = crypto.createHash('sha256').update(rfTokenValue).digest('hex');
+    user.refreshTokenExpire = new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS);
+    await user.save({ validateBeforeSave: false });
+    setRefreshCookie(res, rfTokenValue);
+    setAccessCookie(res, generateToken(user._id));
+
     res.json({
       _id: user._id,
       name: user.name,
@@ -202,12 +243,11 @@ router.post('/login', [
       commune: user.commune,
       isAvailable: user.isAvailable,
       avatar: user.avatar,
-      isEmailVerified: user.isEmailVerified,
-      token: generateToken(user._id)
+      isEmailVerified: user.isEmailVerified
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -242,7 +282,7 @@ router.get('/verify-email', async (req, res) => {
     res.json({ message: 'Email verified successfully. You can now log in.' });
   } catch (error) {
     console.error('Email verification error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -359,7 +399,7 @@ router.put('/profile', protect, [
     });
   } catch (error) {
     console.error('Profile update error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -399,7 +439,7 @@ router.post('/avatar', protect, upload.single('avatar'), async (req, res) => {
     });
   } catch (error) {
     console.error('Avatar upload error:', error);
-    res.status(500).json({ message: 'Failed to upload avatar', error: error.message });
+    res.status(500).json({ message: 'Failed to upload avatar', ...devError(error) });
   }
 });
 
@@ -424,12 +464,14 @@ router.put('/password', protect, [
     }
 
     user.password = newPassword;
+    user.refreshToken = undefined;
+    user.refreshTokenExpire = undefined;
     await user.save();
-
+    res.clearCookie('refreshToken');
     res.json({ message: 'Password updated successfully' });
   } catch (error) {
     console.error('Password change error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -519,12 +561,66 @@ router.post('/reset-password', [
     user.password = newPassword;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
+    user.refreshToken = undefined;
+    user.refreshTokenExpire = undefined;
     await user.save();
-
+    res.clearCookie('refreshToken');
     res.json({ message: 'Password has been reset successfully. You can now log in.' });
   } catch (error) {
     console.error('Reset password error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
+  }
+});
+
+// @route   POST /api/auth/logout
+// @desc    Logout: clear refresh token from DB and cookie
+// @access  Private
+router.post('/logout', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('+refreshToken +refreshTokenExpire');
+    if (user) {
+      user.refreshToken = undefined;
+      user.refreshTokenExpire = undefined;
+      await user.save({ validateBeforeSave: false });
+    }
+    res.clearCookie('refreshToken');
+    res.clearCookie('accessToken');
+    res.json({ message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ message: 'Server error', ...devError(error) });
+  }
+});
+
+// @route   POST /api/auth/refresh
+// @desc    Issue a new access token using the HttpOnly refresh token cookie
+// @access  Public (requires refresh cookie)
+router.post('/refresh', async (req, res) => {
+  const tokenValue = req.cookies?.refreshToken;
+  if (!tokenValue) {
+    return res.status(401).json({ message: 'No refresh token' });
+  }
+  try {
+    const hashed = crypto.createHash('sha256').update(tokenValue).digest('hex');
+    const user = await User.findOne({
+      refreshToken: hashed,
+      refreshTokenExpire: { $gt: Date.now() },
+    }).select('+refreshToken +refreshTokenExpire');
+    if (!user) {
+      res.clearCookie('refreshToken');
+      return res.status(401).json({ message: 'Invalid or expired refresh token' });
+    }
+    // Rotate: issue a new refresh token
+    const newRfTokenValue = generateRefreshTokenValue();
+    user.refreshToken = crypto.createHash('sha256').update(newRfTokenValue).digest('hex');
+    user.refreshTokenExpire = new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS);
+    await user.save({ validateBeforeSave: false });
+    setRefreshCookie(res, newRfTokenValue);
+    setAccessCookie(res, generateToken(user._id));
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Refresh token error:', error);
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 

@@ -3,6 +3,13 @@ import jwt from 'jsonwebtoken';
 
 let io = null;
 
+// Parse a single cookie value from the Cookie header string
+const parseCookie = (cookieStr, name) => {
+  if (!cookieStr) return null;
+  const match = cookieStr.split(';').find(c => c.trim().startsWith(`${name}=`));
+  return match ? decodeURIComponent(match.trim().slice(name.length + 1)) : null;
+};
+
 /**
  * Initialize Socket.io on the given HTTP server.
  * Authenticates connections via JWT token sent in auth.token handshake.
@@ -16,9 +23,13 @@ export function initSocket(httpServer) {
     },
   });
 
-  // Authenticate socket connections using JWT
+  // Authenticate socket connections via JWT.
+  // Accepts token from auth.token handshake field (API clients)
+  // or from the HttpOnly accessToken cookie (browser clients).
   io.use((socket, next) => {
-    const token = socket.handshake.auth?.token;
+    const token =
+      socket.handshake.auth?.token ||
+      parseCookie(socket.handshake.headers?.cookie, 'accessToken');
     if (!token) {
       return next(new Error('Authentication required'));
     }

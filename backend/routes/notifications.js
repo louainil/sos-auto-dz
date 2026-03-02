@@ -1,8 +1,9 @@
-import express from 'express';
+﻿import express from 'express';
 import { param } from 'express-validator';
 import Notification from '../models/Notification.js';
 import { protect } from '../middleware/auth.js';
 import validate from '../middleware/validate.js';
+import { devError } from '../utils/errors.js';
 
 const router = express.Router();
 
@@ -18,7 +19,7 @@ router.get('/', protect, async (req, res) => {
     res.json(notifications);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -47,7 +48,7 @@ router.put('/:id/read', protect, [
     res.json(notification);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -60,7 +61,7 @@ router.delete('/', protect, async (req, res) => {
     res.json({ message: 'All notifications cleared' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -87,7 +88,7 @@ router.delete('/:id', protect, [
     res.json({ message: 'Notification removed' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 

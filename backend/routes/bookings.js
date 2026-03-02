@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import { body, param } from 'express-validator';
 import Booking from '../models/Booking.js';
 import User from '../models/User.js';
@@ -8,6 +8,7 @@ import { protect } from '../middleware/auth.js';
 import validate from '../middleware/validate.js';
 import { emitNotification } from '../config/socket.js';
 import { sendNewBookingEmail, sendBookingStatusEmail } from '../config/email.js';
+import { devError } from '../utils/errors.js';
 
 const router = express.Router();
 
@@ -82,7 +83,7 @@ router.post('/', protect, [
     res.status(201).json(booking);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -112,7 +113,7 @@ router.get('/', protect, async (req, res) => {
     res.json(bookings);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -143,7 +144,7 @@ router.get('/:id', protect, [
     res.json(booking);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -219,7 +220,7 @@ router.put('/:id', protect, [
     res.json(updatedBooking);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -246,7 +247,7 @@ router.delete('/:id', protect, [
     res.json({ message: 'Booking removed' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 

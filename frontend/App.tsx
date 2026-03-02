@@ -99,41 +99,40 @@ const App: React.FC = () => {
     }
   }, [language]);
 
-  // Check for existing auth token and fetch user data
+  // Check for existing session by attempting to fetch the current user.
+  // With HttpOnly cookies, there is no localStorage token to check —
+  // the browser sends the accessToken cookie automatically.
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const userData = await authAPI.getCurrentUser();
-          const userObj: User = {
-            id: userData._id,
-            name: userData.name,
-            email: userData.email,
-            role: userData.role,
-            phone: userData.phone,
-            garageType: userData.garageType,
-            wilayaId: userData.wilayaId,
-            commune: userData.commune,
-            isAvailable: userData.isAvailable,
-            avatar: userData.avatar,
-            isEmailVerified: userData.isEmailVerified
-          };
-          setUser(userObj);
-          // Fetch notifications
-          const notifs = await notificationsAPI.getAll();
-          setNotifications(notifs.map((n: any) => ({
-            id: n._id,
-            title: n.title,
-            message: n.message,
-            type: n.type,
-            isRead: n.isRead,
-            createdAt: new Date(n.createdAt)
-          })));
-        } catch (error) {
-          console.error('Auth check failed:', error);
-          localStorage.removeItem('token');
-        }
+      try {
+        const userData = await authAPI.getCurrentUser();
+        const userObj: User = {
+          id: userData._id,
+          name: userData.name,
+          email: userData.email,
+          role: userData.role,
+          phone: userData.phone,
+          garageType: userData.garageType,
+          wilayaId: userData.wilayaId,
+          commune: userData.commune,
+          isAvailable: userData.isAvailable,
+          avatar: userData.avatar,
+          isEmailVerified: userData.isEmailVerified
+        };
+        setUser(userObj);
+        // Fetch notifications
+        const notifs = await notificationsAPI.getAll();
+        setNotifications(notifs.map((n: any) => ({
+          id: n._id,
+          title: n.title,
+          message: n.message,
+          type: n.type,
+          isRead: n.isRead,
+          createdAt: new Date(n.createdAt)
+        })));
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        // No valid session — user stays logged out
       }
     };
     checkAuth();
@@ -174,9 +173,6 @@ const App: React.FC = () => {
       return;
     }
 
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
     // Determine socket URL: strip /api suffix from the backend base URL
     const backendUrl = (import.meta.env.VITE_REACT_APP_BACKEND_BASEURL || '').replace(/\/api\/?$/, '');
 
@@ -184,7 +180,7 @@ const App: React.FC = () => {
 
     if (backendUrl) {
       const socket = io(backendUrl, {
-        auth: { token },
+        withCredentials: true,
         transports: ['websocket', 'polling'],
         reconnectionAttempts: 5,
         reconnectionDelay: 3000,

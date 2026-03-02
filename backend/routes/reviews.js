@@ -1,10 +1,11 @@
-import express from 'express';
+﻿import express from 'express';
 import { body, param } from 'express-validator';
 import Review from '../models/Review.js';
 import Booking from '../models/Booking.js';
 import ServiceProvider from '../models/ServiceProvider.js';
 import { protect } from '../middleware/auth.js';
 import validate from '../middleware/validate.js';
+import { devError } from '../utils/errors.js';
 
 const router = express.Router();
 
@@ -83,7 +84,7 @@ router.post('/', protect, [
     if (error.code === 11000) {
       return res.status(400).json({ message: 'You have already reviewed this booking' });
     }
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -102,7 +103,7 @@ router.get('/provider/:providerId', [
     res.json(reviews);
   } catch (error) {
     console.error('Fetch reviews error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -118,7 +119,7 @@ router.get('/booking/:bookingId', protect, [
     res.json({ reviewed: !!review, review: review || null });
   } catch (error) {
     console.error('Check review error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 

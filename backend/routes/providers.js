@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import { body, param, query } from 'express-validator';
 import { Readable } from 'stream';
 import multer from 'multer';
@@ -6,6 +6,7 @@ import ServiceProvider from '../models/ServiceProvider.js';
 import { protect, isProfessional } from '../middleware/auth.js';
 import validate from '../middleware/validate.js';
 import cloudinary from '../config/cloudinary.js';
+import { devError } from '../utils/errors.js';
 
 const router = express.Router();
 
@@ -73,7 +74,7 @@ router.get('/', [
     res.json(providers);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -98,7 +99,7 @@ router.get('/stats', async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -119,7 +120,7 @@ router.get('/:id', [
     res.json(provider);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -176,7 +177,7 @@ router.put('/:id', protect, isProfessional, [
     res.json(updatedProvider);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -197,7 +198,7 @@ router.get('/user/:userId', protect, [
     res.json(provider);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });
 
@@ -236,7 +237,7 @@ router.post('/:id/image', protect, isProfessional, [
     res.json({ message: 'Provider image updated', image: result.secure_url });
   } catch (error) {
     console.error('Provider image upload error:', error);
-    res.status(500).json({ message: 'Failed to upload image', error: error.message });
+    res.status(500).json({ message: 'Failed to upload image', ...devError(error) });
   }
 });
 
@@ -286,7 +287,7 @@ router.post('/:id/gallery', protect, isProfessional, [
     res.json({ message: `${uploadedImages.length} photo(s) uploaded`, images: provider.images });
   } catch (error) {
     console.error('Gallery upload error:', error);
-    res.status(500).json({ message: 'Failed to upload images', error: error.message });
+    res.status(500).json({ message: 'Failed to upload images', ...devError(error) });
   }
 });
 
@@ -329,7 +330,7 @@ router.delete('/:id/gallery/:publicId', protect, isProfessional, [
     res.json({ message: 'Photo deleted', images: provider.images });
   } catch (error) {
     console.error('Gallery delete error:', error);
-    res.status(500).json({ message: 'Failed to delete image', error: error.message });
+    res.status(500).json({ message: 'Failed to delete image', ...devError(error) });
   }
 });
 

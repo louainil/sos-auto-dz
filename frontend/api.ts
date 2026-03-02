@@ -1,15 +1,6 @@
 /// <reference types="vite/client" />
 const API_URL = `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}`;
 
-// Helper function to get auth headers
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
-  return {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` })
-  };
-};
-
 // Helper function to handle API responses
 const handleResponse = async (response: Response) => {
   const text = await response.text();
@@ -25,70 +16,95 @@ const handleResponse = async (response: Response) => {
   return data;
 };
 
+// Attempt to silently refresh the access token using the HttpOnly refresh cookie.
+// The new access token is set as a cookie by the server — no localStorage involved.
+const attemptTokenRefresh = async (): Promise<boolean> => {
+  try {
+    const res = await fetch(`${API_URL}/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+};
+
+// Authenticated fetch: sends credentials (HttpOnly cookies) automatically,
+// retries once after a silent token refresh on 401.
+const authFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
+  const isFormData = options.body instanceof FormData;
+  const headers = {
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+    ...(options.headers as Record<string, string> || {}),
+  };
+  let response = await fetch(url, { ...options, credentials: 'include', headers });
+  if (response.status === 401) {
+    const refreshed = await attemptTokenRefresh();
+    if (refreshed) {
+      response = await fetch(url, { ...options, credentials: 'include', headers });
+    }
+  }
+  return response;
+};
+
 // Auth API
 export const authAPI = {
   register: async (userData: any) => {
     const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData)
     });
-    const data = await handleResponse(response);
-    if (data.token) {
-      localStorage.setItem('token', data.token);
-    }
-    return data;
+    return handleResponse(response);
   },
 
   login: async (email: string, password: string) => {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
-    });
-    const data = await handleResponse(response);
-    if (data.token) {
-      localStorage.setItem('token', data.token);
-    }
-    return data;
-  },
-
-  logout: () => {
-    localStorage.removeItem('token');
-  },
-
-  getCurrentUser: async () => {
-    const response = await fetch(`${API_URL}/auth/me`, {
-      headers: getAuthHeaders()
     });
     return handleResponse(response);
   },
 
+  logout: async () => {
+    try {
+      await fetch(`${API_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch { /* ignore network errors on logout */ }
+  },
+
+  getCurrentUser: async () => {
+    const response = await authFetch(`${API_URL}/auth/me`);
+    return handleResponse(response);
+  },
+
   uploadAvatar: async (file: File) => {
-    const token = localStorage.getItem('token');
     const formData = new FormData();
     formData.append('avatar', file);
-    const response = await fetch(`${API_URL}/auth/avatar`, {
+    const response = await authFetch(`${API_URL}/auth/avatar`, {
       method: 'POST',
-      headers: { ...(token && { Authorization: `Bearer ${token}` }) },
       body: formData
     });
     return handleResponse(response);
   },
 
   updateProfile: async (data: { name?: string; phone?: string }) => {
-    const response = await fetch(`${API_URL}/auth/profile`, {
+    const response = await authFetch(`${API_URL}/auth/profile`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify(data)
     });
     return handleResponse(response);
   },
 
   changePassword: async (data: { currentPassword: string; newPassword: string }) => {
-    const response = await fetch(`${API_URL}/auth/password`, {
+    const response = await authFetch(`${API_URL}/auth/password`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify(data)
     });
     return handleResponse(response);
@@ -148,28 +164,23 @@ export const providersAPI = {
   },
 
   update: async (id: string, data: any) => {
-    const response = await fetch(`${API_URL}/providers/${id}`, {
+    const response = await authFetch(`${API_URL}/providers/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify(data)
     });
     return handleResponse(response);
   },
 
   getByUserId: async (userId: string) => {
-    const response = await fetch(`${API_URL}/providers/user/${userId}`, {
-      headers: getAuthHeaders()
-    });
+    const response = await authFetch(`${API_URL}/providers/user/${userId}`);
     return handleResponse(response);
   },
 
   uploadImage: async (id: string, file: File) => {
     const formData = new FormData();
     formData.append('image', file);
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/providers/${id}/image`, {
+    const response = await authFetch(`${API_URL}/providers/${id}/image`, {
       method: 'POST',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData
     });
     return handleResponse(response);
@@ -178,10 +189,8 @@ export const providersAPI = {
   uploadGalleryImages: async (id: string, files: File[]) => {
     const formData = new FormData();
     files.forEach(f => formData.append('images', f));
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/providers/${id}/gallery`, {
+    const response = await authFetch(`${API_URL}/providers/${id}/gallery`, {
       method: 'POST',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData
     });
     return handleResponse(response);
@@ -189,9 +198,8 @@ export const providersAPI = {
 
   deleteGalleryImage: async (id: string, publicId: string) => {
     const encoded = publicId.replace(/\//g, '--');
-    const response = await fetch(`${API_URL}/providers/${id}/gallery/${encoded}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders()
+    const response = await authFetch(`${API_URL}/providers/${id}/gallery/${encoded}`, {
+      method: 'DELETE'
     });
     return handleResponse(response);
   }
@@ -200,41 +208,34 @@ export const providersAPI = {
 // Bookings API
 export const bookingsAPI = {
   create: async (bookingData: any) => {
-    const response = await fetch(`${API_URL}/bookings`, {
+    const response = await authFetch(`${API_URL}/bookings`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify(bookingData)
     });
     return handleResponse(response);
   },
 
   getAll: async () => {
-    const response = await fetch(`${API_URL}/bookings`, {
-      headers: getAuthHeaders()
-    });
+    const response = await authFetch(`${API_URL}/bookings`);
     return handleResponse(response);
   },
 
   getById: async (id: string) => {
-    const response = await fetch(`${API_URL}/bookings/${id}`, {
-      headers: getAuthHeaders()
-    });
+    const response = await authFetch(`${API_URL}/bookings/${id}`);
     return handleResponse(response);
   },
 
   update: async (id: string, data: any) => {
-    const response = await fetch(`${API_URL}/bookings/${id}`, {
+    const response = await authFetch(`${API_URL}/bookings/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify(data)
     });
     return handleResponse(response);
   },
 
   delete: async (id: string) => {
-    const response = await fetch(`${API_URL}/bookings/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders()
+    const response = await authFetch(`${API_URL}/bookings/${id}`, {
+      method: 'DELETE'
     });
     return handleResponse(response);
   }
@@ -243,32 +244,27 @@ export const bookingsAPI = {
 // Notifications API
 export const notificationsAPI = {
   getAll: async () => {
-    const response = await fetch(`${API_URL}/notifications`, {
-      headers: getAuthHeaders()
-    });
+    const response = await authFetch(`${API_URL}/notifications`);
     return handleResponse(response);
   },
 
   markAsRead: async (id: string) => {
-    const response = await fetch(`${API_URL}/notifications/${id}/read`, {
-      method: 'PUT',
-      headers: getAuthHeaders()
+    const response = await authFetch(`${API_URL}/notifications/${id}/read`, {
+      method: 'PUT'
     });
     return handleResponse(response);
   },
 
   delete: async (id: string) => {
-    const response = await fetch(`${API_URL}/notifications/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders()
+    const response = await authFetch(`${API_URL}/notifications/${id}`, {
+      method: 'DELETE'
     });
     return handleResponse(response);
   },
 
   clearAll: async () => {
-    const response = await fetch(`${API_URL}/notifications`, {
-      method: 'DELETE',
-      headers: getAuthHeaders()
+    const response = await authFetch(`${API_URL}/notifications`, {
+      method: 'DELETE'
     });
     return handleResponse(response);
   }
@@ -285,9 +281,8 @@ export const publicStatsAPI = {
 // Reviews API
 export const reviewsAPI = {
   create: async (data: { bookingId: string; providerId: string; rating: number; comment?: string }) => {
-    const response = await fetch(`${API_URL}/reviews`, {
+    const response = await authFetch(`${API_URL}/reviews`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify(data)
     });
     return handleResponse(response);
@@ -299,9 +294,7 @@ export const reviewsAPI = {
   },
 
   checkBooking: async (bookingId: string) => {
-    const response = await fetch(`${API_URL}/reviews/booking/${bookingId}`, {
-      headers: getAuthHeaders()
-    });
+    const response = await authFetch(`${API_URL}/reviews/booking/${bookingId}`);
     return handleResponse(response);
   }
 };
@@ -309,23 +302,18 @@ export const reviewsAPI = {
 // Admin API
 export const adminAPI = {
   getStats: async () => {
-    const response = await fetch(`${API_URL}/admin/stats`, {
-      headers: getAuthHeaders()
-    });
+    const response = await authFetch(`${API_URL}/admin/stats`);
     return handleResponse(response);
   },
 
   getPendingProviders: async () => {
-    const response = await fetch(`${API_URL}/admin/providers/pending`, {
-      headers: getAuthHeaders()
-    });
+    const response = await authFetch(`${API_URL}/admin/providers/pending`);
     return handleResponse(response);
   },
 
   approveProvider: async (id: string) => {
-    const response = await fetch(`${API_URL}/admin/providers/${id}/approve`, {
-      method: 'PUT',
-      headers: getAuthHeaders()
+    const response = await authFetch(`${API_URL}/admin/providers/${id}/approve`, {
+      method: 'PUT'
     });
     return handleResponse(response);
   }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { User, UserRole, Booking } from '../types';
-import { Calendar, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertCircle, TrendingUp, DollarSign, User as UserIcon, Shield, Wrench, Camera } from 'lucide-react';
+import { Calendar, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertCircle, TrendingUp, DollarSign, User as UserIcon, Shield, Wrench, Camera, Clock } from 'lucide-react';
 import { bookingsAPI, authAPI, providersAPI, adminAPI, reviewsAPI } from '../api';
 import { Language, translations } from '../translations';
 import ReviewModal from '../components/ReviewModal';
@@ -46,6 +46,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const [galleryDeleting, setGalleryDeleting] = useState<string | null>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
+  // Working schedule state
+  const [workingDays, setWorkingDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
+  const [workingHoursStart, setWorkingHoursStart] = useState('08:00');
+  const [workingHoursEnd, setWorkingHoursEnd] = useState('17:00');
+  const [scheduleSaving, setScheduleSaving] = useState(false);
+  const [scheduleMsg, setScheduleMsg] = useState<{ text: string; ok: boolean } | null>(null);
+
   // Review modal state
   const [reviewBooking, setReviewBooking] = useState<Booking | null>(null);
   const [reviewedBookingIds, setReviewedBookingIds] = useState<Set<string>>(new Set());
@@ -73,6 +80,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
         setProviderTotalReviews(data.totalReviews ?? 0);
         if (data.profileImage) setShopImage(data.profileImage);
         if (data.images) setGalleryImages(data.images);
+        if (data.workingDays) setWorkingDays(data.workingDays);
+        if (data.workingHours) {
+          if (data.workingHours.start) setWorkingHoursStart(data.workingHours.start);
+          if (data.workingHours.end) setWorkingHoursEnd(data.workingHours.end);
+        }
       } catch (err) {
         console.error('Failed to fetch provider profile:', err);
       }
@@ -146,6 +158,31 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
       console.error('Gallery delete failed:', err);
     } finally {
       setGalleryDeleting(null);
+    }
+  };
+
+  const toggleWorkingDay = (day: number) => {
+    setWorkingDays(prev =>
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day].sort()
+    );
+  };
+
+  const handleScheduleSave = async () => {
+    if (!providerId) return;
+    setScheduleSaving(true);
+    setScheduleMsg(null);
+    try {
+      await providersAPI.update(providerId, {
+        workingDays,
+        workingHours: { start: workingHoursStart, end: workingHoursEnd },
+      });
+      setScheduleMsg({ text: t.scheduleUpdated, ok: true });
+      setTimeout(() => setScheduleMsg(null), 3000);
+    } catch (err) {
+      console.error('Schedule save failed:', err);
+      setScheduleMsg({ text: t.scheduleUpdateFailed, ok: false });
+    } finally {
+      setScheduleSaving(false);
     }
   };
 
@@ -796,6 +833,80 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                        <p className="text-xs text-slate-500 dark:text-slate-400">{t.galleryFull}</p>
                      )}
                      <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} />
+                   </div>
+                 )}
+
+                 {/* Working Schedule (Professionals only) */}
+                 {providerId && (
+                   <div className="mb-6 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40">
+                     <div className="flex items-center gap-2 mb-1">
+                       <Clock size={16} className="text-blue-600 dark:text-blue-400" />
+                       <p className="text-sm font-semibold text-slate-800 dark:text-white">{t.workSchedule}</p>
+                     </div>
+                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">{t.workDaysDesc}</p>
+
+                     {/* Working Days */}
+                     <div className="mb-4">
+                       <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">{t.workDaysLabel}</label>
+                       <div className="flex flex-wrap gap-2">
+                         {t.dayNames.map((name, idx) => (
+                           <button
+                             key={idx}
+                             type="button"
+                             onClick={() => toggleWorkingDay(idx)}
+                             className={`px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors ${
+                               workingDays.includes(idx)
+                                 ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                                 : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600 hover:border-blue-400 dark:hover:border-blue-500'
+                             }`}
+                           >
+                             {name}
+                           </button>
+                         ))}
+                       </div>
+                     </div>
+
+                     {/* Working Hours */}
+                     <div className="mb-4">
+                       <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">{t.workHoursLabel}</label>
+                       <div className="flex items-center gap-3 flex-wrap">
+                         <div className="flex items-center gap-2">
+                           <span className="text-xs text-slate-500 dark:text-slate-400">{t.startTime}</span>
+                           <input
+                             type="time"
+                             value={workingHoursStart}
+                             onChange={(e) => setWorkingHoursStart(e.target.value)}
+                             className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                           />
+                         </div>
+                         <span className="text-slate-400">—</span>
+                         <div className="flex items-center gap-2">
+                           <span className="text-xs text-slate-500 dark:text-slate-400">{t.endTime}</span>
+                           <input
+                             type="time"
+                             value={workingHoursEnd}
+                             onChange={(e) => setWorkingHoursEnd(e.target.value)}
+                             className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                           />
+                         </div>
+                       </div>
+                     </div>
+
+                     {/* Save Schedule */}
+                     <div className="flex items-center gap-4">
+                       <button
+                         type="button"
+                         onClick={handleScheduleSave}
+                         disabled={scheduleSaving}
+                         className="px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white transition-colors flex items-center gap-2"
+                       >
+                         {scheduleSaving && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                         {scheduleSaving ? t.saving : t.saveChanges}
+                       </button>
+                       {scheduleMsg && (
+                         <p className={`text-sm ${scheduleMsg.ok ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>{scheduleMsg.text}</p>
+                       )}
+                     </div>
                    </div>
                  )}
 

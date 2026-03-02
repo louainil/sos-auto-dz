@@ -56,25 +56,36 @@ const attemptTokenRefresh = async (): Promise<boolean> => {
 // Authenticated fetch: sends credentials (HttpOnly cookies) automatically,
 // retries once after a silent token refresh on 401.
 // Automatically adds the CSRF token header for state-mutating methods.
+// Also retries once on 403 with a fresh CSRF token (stale token recovery).
 const authFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
   const method = (options.method ?? 'GET').toUpperCase();
   const isMutating = MUTATING_METHODS.has(method);
-  const csrfToken = isMutating ? await getCsrfToken() : null;
   const isFormData = options.body instanceof FormData;
-  const headers: Record<string, string> = {
-    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-    ...(options.headers as Record<string, string> || {}),
-    ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
+
+  const buildHeaders = async (): Promise<Record<string, string>> => {
+    const csrfToken = isMutating ? await getCsrfToken() : null;
+    return {
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+      ...(options.headers as Record<string, string> || {}),
+      ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
+    };
   };
+
+  let headers = await buildHeaders();
   let response = await fetch(url, { ...options, credentials: 'include', headers });
+
   if (response.status === 401) {
     const refreshed = await attemptTokenRefresh();
     if (refreshed) {
       response = await fetch(url, { ...options, credentials: 'include', headers });
     }
+  } else if (response.status === 403 && isMutating) {
+    // CSRF token may be stale — reset, get a fresh one, and retry once.
+    resetCsrfToken();
+    headers = await buildHeaders();
+    response = await fetch(url, { ...options, credentials: 'include', headers });
   }
-  // A 403 may indicate an expired/invalid CSRF token — reset so the next call re-fetches.
-  if (response.status === 403) resetCsrfToken();
+
   return response;
 };
 

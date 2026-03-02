@@ -339,6 +339,11 @@ export interface Translations {
   providerProfile: string;
   contactInfo: string;
   workingSchedule: string;
+  workDaysLabel: string;
+  workDaysDesc: string;
+  workHoursLabel: string;
+  scheduleUpdated: string;
+  scheduleUpdateFailed: string;
   customerReviews: string;
   noReviewsYet: string;
   specialties: string;
@@ -735,6 +740,11 @@ export const translations: Record<Language, Translations> = {
     workSchedule: 'Work Schedule',
     startTime: 'Start Time',
     endTime: 'End Time',
+    workDaysLabel: 'Working Days',
+    workDaysDesc: 'Select the days you are open for business.',
+    workHoursLabel: 'Working Hours',
+    scheduleUpdated: 'Schedule updated successfully.',
+    scheduleUpdateFailed: 'Failed to update schedule.',
     wilaya: 'Wilaya',
     commune: 'Commune',
     selectPlaceholder: 'Select...',
@@ -1181,6 +1191,11 @@ export const translations: Record<Language, Translations> = {
     workSchedule: 'Horaires de Travail',
     startTime: 'Heure de Début',
     endTime: 'Heure de Fin',
+    workDaysLabel: 'Jours de Travail',
+    workDaysDesc: 'Sélectionnez les jours où vous êtes ouvert.',
+    workHoursLabel: 'Heures de Travail',
+    scheduleUpdated: 'Horaires mis à jour avec succès.',
+    scheduleUpdateFailed: 'Échec de la mise à jour des horaires.',
     wilaya: 'Wilaya',
     commune: 'Commune',
     selectPlaceholder: 'Sélectionner...',
@@ -1628,6 +1643,11 @@ export const translations: Record<Language, Translations> = {
     workSchedule: 'جدول العمل',
     startTime: 'وقت البداية',
     endTime: 'وقت النهاية',
+    workDaysLabel: 'أيام العمل',
+    workDaysDesc: 'حدد الأيام التي تكون فيها مفتوحًا للعمل.',
+    workHoursLabel: 'ساعات العمل',
+    scheduleUpdated: 'تم تحديث الجدول بنجاح.',
+    scheduleUpdateFailed: 'فشل تحديث الجدول.',
     wilaya: 'الولاية',
     commune: 'البلدية',
     selectPlaceholder: 'اختر...',

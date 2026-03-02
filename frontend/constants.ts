@@ -1,4 +1,4 @@
-import { ServiceProvider, UserRole, Wilaya, PageView } from './types';
+import { Wilaya, PageView } from './types';
 
 // Full list of 58 Wilayas
 export const WILAYAS: Wilaya[] = [

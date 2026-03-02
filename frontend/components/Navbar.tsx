@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Menu, X, Car, LogIn, Moon, Sun, Bell, User as UserIcon, LayoutDashboard, LogOut, Languages } from 'lucide-react';
-import { NAV_LINKS } from '../constants';
+import React, { useState } from 'react';
+import { Menu, X, Car, LogIn, Moon, Sun, Bell, LayoutDashboard, LogOut, Languages } from 'lucide-react';
+
 import { PageView, User, Notification } from '../types';
 import { Language, translations } from '../translations';
 import NotificationDropdown from './NotificationDropdown';
@@ -26,7 +26,7 @@ const Navbar: React.FC<NavbarProps> = ({
   currentView, 
   onChangeView, 
   onLoginClick, 
-  onProClick, 
+  onProClick: _onProClick, 
   isDarkMode, 
   toggleTheme,
   language,

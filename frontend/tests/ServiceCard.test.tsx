@@ -5,7 +5,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import React from 'react';
 import ServiceCard from '../components/ServiceCard';
 import { ServiceProvider, UserRole } from '../types';
 
@@ -25,7 +24,7 @@ const createProvider = (overrides: Partial<ServiceProvider> = {}): ServiceProvid
   rating: 4.5,
   phone: '0555123456',
   specialty: ['Toyota', 'Peugeot'],
-  image: '',
+  profileImage: '',
   isAvailable: true,
   workingDays: [0, 1, 2, 3, 4, 6],
   workingHours: { start: '08:00', end: '17:00' },

@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { X, Mail, Lock, User as UserIcon, Briefcase, Phone, MapPin, Check, ChevronRight, Shield, Wrench, Truck, ShoppingBag, Navigation, Settings, FileText, Clock, Calendar } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Mail, Lock, User as UserIcon, Briefcase, Phone, MapPin, Check, ChevronRight, Shield, Wrench, Truck, ShoppingBag, Navigation, Settings, FileText } from 'lucide-react';
 import { UserRole, GarageType, User } from '../types';
 import { WILAYAS, COMMUNES, CAR_BRANDS } from '../constants';
 import { authAPI } from '../api';
@@ -110,7 +110,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
           workingHours: isPro ? { start: startTime, end: endTime } : undefined
         };
         
-        const data = await authAPI.register(userData);
+        await authAPI.register(userData);
         // Show verify email view instead of auto-login
         setRegisteredEmail(email);
         setView('VERIFY_EMAIL_SENT');

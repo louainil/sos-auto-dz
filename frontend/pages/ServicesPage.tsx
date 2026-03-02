@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, MapPin, Filter, AlertTriangle, Navigation, Wrench, Zap, PaintBucket, Car, X, ChevronDown, Map, List } from 'lucide-react';
+import { Search, MapPin, Filter, AlertTriangle, Navigation, Wrench, Car, X, ChevronDown, Map, List } from 'lucide-react';
 import { WILAYAS, COMMUNES, CAR_BRANDS } from '../constants';
 import { ServiceProvider, UserRole, GarageType } from '../types';
 import { Language, translations } from '../translations';

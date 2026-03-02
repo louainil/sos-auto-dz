@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { User, UserRole, Booking } from '../types';
-import { Calendar, Clock, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertCircle, TrendingUp, DollarSign, User as UserIcon, Shield, Wrench, Camera } from 'lucide-react';
+import { Calendar, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertCircle, TrendingUp, DollarSign, User as UserIcon, Shield, Wrench, Camera } from 'lucide-react';
 import { bookingsAPI, authAPI, providersAPI, adminAPI, reviewsAPI } from '../api';
 import { Language, translations } from '../translations';
 import ReviewModal from '../components/ReviewModal';
@@ -20,9 +20,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const [isAvailable, setIsAvailable] = useState(user.isAvailable ?? true);
   const [providerId, setProviderId] = useState<string | null>(null);
   const [providerRating, setProviderRating] = useState(0);
-  const [providerTotalReviews, setProviderTotalReviews] = useState(0);
+  const [_providerTotalReviews, setProviderTotalReviews] = useState(0);
   const [availabilityUpdating, setAvailabilityUpdating] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [adminStats, setAdminStats] = useState<{ totalUsers: number; totalProviders: number; pendingProviders: number } | null>(null);
   const [pendingProviders, setPendingProviders] = useState<any[]>([]);
   const [adminLoading, setAdminLoading] = useState(false);

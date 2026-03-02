@@ -207,6 +207,7 @@ export interface Translations {
   declineReason: string;
   declineReasonPlaceholder: string;
   declineConfirm: string;
+  cancel: string;
   cancelledReason: string;
   acceptJob: string;
 
@@ -654,6 +655,7 @@ export const translations: Record<Language, Translations> = {
     declineReason: 'Reason for declining (optional)',
     declineReasonPlaceholder: 'e.g. Fully booked, out of service area...',
     declineConfirm: 'Confirm Decline',
+    cancel: 'Cancel',
     cancelledReason: 'Reason',
     acceptJob: 'Accept Job',
 
@@ -1099,6 +1101,7 @@ export const translations: Record<Language, Translations> = {
     declineReason: 'Raison du refus (optionnel)',
     declineReasonPlaceholder: 'ex. Complet, hors zone de service...',
     declineConfirm: 'Confirmer le refus',
+    cancel: 'Annuler',
     cancelledReason: 'Raison',
     acceptJob: 'Accepter',
 
@@ -1545,6 +1548,7 @@ export const translations: Record<Language, Translations> = {
     declineReason: 'سبب الرفض (اختياري)',
     declineReasonPlaceholder: 'مثلاً: محجوز بالكامل، خارج منطقة الخدمة...',
     declineConfirm: 'تأكيد الرفض',
+    cancel: 'إلغاء',
     cancelledReason: 'السبب',
     acceptJob: 'قبول العمل',
 

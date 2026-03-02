@@ -1,6 +1,6 @@
 import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Star, Phone, MapPin, Clock, MessageCircle, Wrench, Truck, ArrowLeft, ShieldCheck, Image, X, Edit3 } from 'lucide-react';
+import { Star, Phone, MapPin, Clock, MessageCircle, Wrench, Truck, ArrowLeft, Image, X, Edit3 } from 'lucide-react';
 import { ServiceProvider, User, UserRole, Booking } from '../types';
 import { Language, translations } from '../translations';
 import { providersAPI, reviewsAPI, bookingsAPI } from '../api';

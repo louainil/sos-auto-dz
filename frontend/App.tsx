@@ -58,12 +58,26 @@ const App: React.FC = () => {
   const [resetToken, setResetToken] = useState<string | undefined>(undefined);
   const [resetEmail, setResetEmail] = useState<string | undefined>(undefined);
 
-  // Dark Mode State - Default to true
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  
-  // Language State - Default to English
-  const [language, setLanguage] = useState<Language>('en');
+  // Dark Mode State — persisted in localStorage (defaults to dark if no preference saved)
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() =>
+    localStorage.getItem('darkMode') !== 'false'
+  );
+
+  // Language State — persisted in localStorage (defaults to English)
+  const [language, setLanguage] = useState<Language>(() =>
+    (localStorage.getItem('language') as Language) || 'en'
+  );
   const t = translations[language];
+
+  // Persist dark mode preference whenever it changes
+  useEffect(() => {
+    localStorage.setItem('darkMode', String(isDarkMode));
+  }, [isDarkMode]);
+
+  // Persist language preference whenever it changes
+  useEffect(() => {
+    localStorage.setItem('language', language);
+  }, [language]);
 
   // Apply Dark Mode Class to HTML tag
   useEffect(() => {
@@ -176,8 +190,6 @@ const App: React.FC = () => {
     // Determine socket URL: strip /api suffix from the backend base URL
     const backendUrl = (import.meta.env.VITE_REACT_APP_BACKEND_BASEURL || '').replace(/\/api\/?$/, '');
 
-    let socketConnected = false;
-
     if (backendUrl) {
       const socket = io(backendUrl, {
         withCredentials: true,
@@ -187,7 +199,6 @@ const App: React.FC = () => {
       });
 
       socket.on('connect', () => {
-        socketConnected = true;
         // Stop polling — we have a live connection
         if (pollIntervalRef.current) {
           clearInterval(pollIntervalRef.current);
@@ -200,7 +211,6 @@ const App: React.FC = () => {
       });
 
       socket.on('disconnect', () => {
-        socketConnected = false;
         // Start polling as fallback
         if (!pollIntervalRef.current) {
           pollIntervalRef.current = setInterval(fetchNotifications, 30000);

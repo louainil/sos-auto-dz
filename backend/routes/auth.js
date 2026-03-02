@@ -289,6 +289,14 @@ router.get('/verify-email', async (req, res) => {
     user.emailVerificationExpire = undefined;
     await user.save({ validateBeforeSave: false });
 
+    // Auto-verify the provider profile so they appear in search results
+    if (['MECHANIC', 'PARTS_SHOP', 'TOWING'].includes(user.role)) {
+      await ServiceProvider.findOneAndUpdate(
+        { userId: user._id },
+        { isVerified: true }
+      );
+    }
+
     res.json({ message: 'Email verified successfully. You can now log in.' });
   } catch (error) {
     console.error('Email verification error:', error);

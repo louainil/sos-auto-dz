@@ -230,6 +230,28 @@ export interface Translations {
   rejectionReasonPlaceholder: string;
   providerApproved: string;
   providerRejected: string;
+  usersTab: string;
+  allProvidersTab: string;
+  adminBookingsTab: string;
+  totalBookings: string;
+  totalReviews: string;
+  bannedUsers: string;
+  banUser: string;
+  unbanUser: string;
+  userBanned: string;
+  userUnbanned: string;
+  bannedBadge: string;
+  searchUsers: string;
+  emailCol: string;
+  roleCol: string;
+  registeredCol: string;
+  dateCol: string;
+  clientCol: string;
+  providerCol: string;
+  statusCol: string;
+  allStatuses: string;
+  noUsersFound: string;
+  noPendingApprovals: string;
 
   // Dashboard – Bookings tab
   bookingHistory: string;
@@ -710,6 +732,28 @@ export const translations: Record<Language, Translations> = {
     rejectionReasonPlaceholder: 'Reason for rejection…',
     providerApproved: 'Provider approved.',
     providerRejected: 'Provider rejected.',
+    usersTab: 'Users',
+    allProvidersTab: 'All Providers',
+    adminBookingsTab: 'All Bookings',
+    totalBookings: 'Total Bookings',
+    totalReviews: 'Total Reviews',
+    bannedUsers: 'Banned Users',
+    banUser: 'Ban',
+    unbanUser: 'Unban',
+    userBanned: 'User has been banned.',
+    userUnbanned: 'User ban has been lifted.',
+    bannedBadge: 'Banned',
+    searchUsers: 'Search users...',
+    emailCol: 'Email',
+    roleCol: 'Role',
+    registeredCol: 'Registered',
+    dateCol: 'Date',
+    clientCol: 'Client',
+    providerCol: 'Provider',
+    statusCol: 'Status',
+    allStatuses: 'All',
+    noUsersFound: 'No users found.',
+    noPendingApprovals: 'No pending approvals. All providers have been reviewed.',
 
     // Dashboard – Bookings tab
     bookingHistory: 'Booking History',
@@ -1188,6 +1232,28 @@ export const translations: Record<Language, Translations> = {
     rejectionReasonPlaceholder: 'Raison du rejet…',
     providerApproved: 'Prestataire approuvé.',
     providerRejected: 'Prestataire rejeté.',
+    usersTab: 'Utilisateurs',
+    allProvidersTab: 'Tous les Prestataires',
+    adminBookingsTab: 'Toutes les Réservations',
+    totalBookings: 'Total Réservations',
+    totalReviews: 'Total Avis',
+    bannedUsers: 'Utilisateurs Bannis',
+    banUser: 'Bannir',
+    unbanUser: 'Débannir',
+    userBanned: "L'utilisateur a été banni.",
+    userUnbanned: "L'interdiction a été levée.",
+    bannedBadge: 'Banni',
+    searchUsers: 'Rechercher des utilisateurs...',
+    emailCol: 'Email',
+    roleCol: 'Rôle',
+    registeredCol: 'Inscription',
+    dateCol: 'Date',
+    clientCol: 'Client',
+    providerCol: 'Prestataire',
+    statusCol: 'Statut',
+    allStatuses: 'Tous',
+    noUsersFound: 'Aucun utilisateur trouvé.',
+    noPendingApprovals: 'Aucune approbation en attente. Tous les prestataires ont été examinés.',
 
     // Dashboard – Bookings tab
     bookingHistory: 'Historique des Réservations',
@@ -1667,6 +1733,28 @@ export const translations: Record<Language, Translations> = {
     rejectionReasonPlaceholder: 'سبب الرفض…',
     providerApproved: 'تمت الموافقة على مقدم الخدمة.',
     providerRejected: 'تم رفض مقدم الخدمة.',
+    usersTab: 'المستخدمون',
+    allProvidersTab: 'جميع مقدمي الخدمات',
+    adminBookingsTab: 'جميع الحجوزات',
+    totalBookings: 'إجمالي الحجوزات',
+    totalReviews: 'إجمالي التقييمات',
+    bannedUsers: 'المستخدمون المحظورون',
+    banUser: 'حظر',
+    unbanUser: 'رفع الحظر',
+    userBanned: 'تم حظر المستخدم.',
+    userUnbanned: 'تم رفع الحظر عن المستخدم.',
+    bannedBadge: 'محظور',
+    searchUsers: 'البحث عن مستخدمين...',
+    emailCol: 'البريد الإلكتروني',
+    roleCol: 'الدور',
+    registeredCol: 'تاريخ التسجيل',
+    dateCol: 'التاريخ',
+    clientCol: 'العميل',
+    providerCol: 'مقدم الخدمة',
+    statusCol: 'الحالة',
+    allStatuses: 'الكل',
+    noUsersFound: 'لم يتم العثور على مستخدمين.',
+    noPendingApprovals: 'لا توجد موافقات معلقة. تمت مراجعة جميع مقدمي الخدمات.',
 
     // Dashboard – Bookings tab
     bookingHistory: 'سجل الحجوزات',

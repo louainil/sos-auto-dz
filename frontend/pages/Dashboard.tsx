@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { User, UserRole, Booking, BookingUpdatePayload, ServiceItem } from '../types';
-import { Calendar, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertCircle, TrendingUp, User as UserIcon, Shield, Wrench, Camera, Clock, Tag, Plus, Trash2 } from 'lucide-react';
+import { Calendar, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertCircle, TrendingUp, User as UserIcon, Shield, Wrench, Camera, Clock, Tag, Plus, Trash2, Users, BookOpen, Ban, Search } from 'lucide-react';
 import { bookingsAPI, authAPI, providersAPI, adminAPI, reviewsAPI } from '../api';
 import { Language, translations } from '../translations';
 import ReviewModal from '../components/ReviewModal';
@@ -15,7 +15,7 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, language = 'en' }) => {
   const t = translations[language];
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'BOOKINGS' | 'SETTINGS' | 'PROVIDERS'>('OVERVIEW');
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'BOOKINGS' | 'SETTINGS' | 'PROVIDERS' | 'USERS' | 'ALL_PROVIDERS' | 'ADMIN_BOOKINGS'>('OVERVIEW');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isAvailable, setIsAvailable] = useState(user.isAvailable ?? true);
   const [providerId, setProviderId] = useState<string | null>(null);
@@ -23,12 +23,26 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const [_providerTotalReviews, setProviderTotalReviews] = useState(0);
   const [availabilityUpdating, setAvailabilityUpdating] = useState(false);
   const [_loading, setLoading] = useState(true);
-  const [adminStats, setAdminStats] = useState<{ totalUsers: number; totalProviders: number; pendingProviders: number } | null>(null);
+  const [adminStats, setAdminStats] = useState<{ totalUsers: number; totalProviders: number; pendingProviders: number; totalBookings: number; totalReviews: number; bannedUsers: number } | null>(null);
   const [pendingProviders, setPendingProviders] = useState<any[]>([]);
   const [adminLoading, setAdminLoading] = useState(false);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [adminActionMsg, setAdminActionMsg] = useState<string | null>(null);
+  // Admin – Users tab
+  const [adminUsers, setAdminUsers] = useState<any[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersSearch, setUsersSearch] = useState('');
+  const [banningUserId, setBanningUserId] = useState<string | null>(null);
+  const [userActionMsg, setUserActionMsg] = useState<string | null>(null);
+  // Admin – All Providers tab
+  const [allProviders, setAllProviders] = useState<any[]>([]);
+  const [allProvidersLoading, setAllProvidersLoading] = useState(false);
+  const [allProvidersFilter, setAllProvidersFilter] = useState<string>('ALL');
+  // Admin – All Bookings tab
+  const [adminBookings, setAdminBookings] = useState<any[]>([]);
+  const [adminBookingsLoading, setAdminBookingsLoading] = useState(false);
+  const [adminBookingsFilter, setAdminBookingsFilter] = useState<string>('');
   const [profilePic, setProfilePic] = useState<string | null>(user.avatar?.url || null);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [profileName, setProfileName] = useState(user.name);
@@ -253,6 +267,58 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
     fetchAdminData();
   }, [user.role]);
 
+  // Fetch admin users
+  useEffect(() => {
+    if (user.role !== UserRole.ADMIN) return;
+    const fetchUsers = async () => {
+      setUsersLoading(true);
+      try {
+        const data = await adminAPI.getUsers(usersSearch || undefined);
+        setAdminUsers(data.data ?? data);
+      } catch (err) {
+        console.error('Failed to fetch admin users:', err);
+      } finally {
+        setUsersLoading(false);
+      }
+    };
+    const debounce = setTimeout(fetchUsers, 300);
+    return () => clearTimeout(debounce);
+  }, [user.role, usersSearch]);
+
+  // Fetch all providers (admin)
+  useEffect(() => {
+    if (user.role !== UserRole.ADMIN) return;
+    const fetchAllProviders = async () => {
+      setAllProvidersLoading(true);
+      try {
+        const data = await adminAPI.getAllProviders(allProvidersFilter === 'ALL' ? undefined : allProvidersFilter);
+        setAllProviders(data.data ?? data);
+      } catch (err) {
+        console.error('Failed to fetch all providers:', err);
+      } finally {
+        setAllProvidersLoading(false);
+      }
+    };
+    fetchAllProviders();
+  }, [user.role, allProvidersFilter]);
+
+  // Fetch all bookings (admin)
+  useEffect(() => {
+    if (user.role !== UserRole.ADMIN) return;
+    const fetchAdminBookings = async () => {
+      setAdminBookingsLoading(true);
+      try {
+        const data = await adminAPI.getAllBookings(1, 30, adminBookingsFilter || undefined);
+        setAdminBookings(data.data ?? data);
+      } catch (err) {
+        console.error('Failed to fetch admin bookings:', err);
+      } finally {
+        setAdminBookingsLoading(false);
+      }
+    };
+    fetchAdminBookings();
+  }, [user.role, adminBookingsFilter]);
+
   const handleApproveProvider = async (id: string) => {
     try {
       await adminAPI.approveProvider(id);
@@ -284,6 +350,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
       setTimeout(() => setAdminActionMsg(null), 3000);
     } catch (err) {
       console.error('Failed to reject provider:', err);
+    }
+  };
+
+  const handleBanUser = async (id: string, ban: boolean) => {
+    setBanningUserId(id);
+    setUserActionMsg(null);
+    try {
+      const updated = await adminAPI.banUser(id, ban);
+      setAdminUsers(prev => prev.map((u: any) => u._id === id ? { ...u, isBanned: updated.isBanned } : u));
+      setUserActionMsg(ban ? t.userBanned : t.userUnbanned);
+      setTimeout(() => setUserActionMsg(null), 3000);
+    } catch (err) {
+      console.error('Failed to ban/unban user:', err);
+    } finally {
+      setBanningUserId(null);
     }
   };
 
@@ -605,35 +686,72 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
          </div>
        ) : (
          <>
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-             <StatCard title={t.totalUsers} value={adminStats?.totalUsers ?? '—'} icon={UserIcon} color="bg-blue-500" />
+           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+             <StatCard title={t.totalUsers}      value={adminStats?.totalUsers      ?? '—'} icon={UserIcon}     color="bg-blue-500" />
              <StatCard title={t.verifiedProviders} value={adminStats?.totalProviders ?? '—'} icon={CheckCircle} color="bg-green-500" />
-             <StatCard title={t.pendingApprovals} value={adminStats?.pendingProviders ?? '—'} icon={AlertCircle} color="bg-orange-500" />
+             <StatCard title={t.pendingApprovals}  value={adminStats?.pendingProviders ?? '—'} icon={AlertCircle} color="bg-orange-500" />
+             <StatCard title={t.totalBookings}     value={adminStats?.totalBookings   ?? '—'} icon={Calendar}    color="bg-purple-500" />
+             <StatCard title={t.totalReviews}      value={adminStats?.totalReviews    ?? '—'} icon={BookOpen}    color="bg-teal-500" />
+             <StatCard title={t.bannedUsers}       value={adminStats?.bannedUsers     ?? '—'} icon={Ban}         color="bg-red-500" />
            </div>
 
-           {/* Quick-access card to Providers tab */}
-           <button
-             onClick={() => setActiveTab('PROVIDERS')}
-             className="w-full flex items-center justify-between bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-5 hover:border-orange-400 dark:hover:border-orange-500 transition-colors group"
-           >
-             <div className="flex items-center gap-4">
-               <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                 <Shield size={20} className="text-orange-600 dark:text-orange-400" />
+           {/* Quick-access cards */}
+           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+             <button
+               onClick={() => setActiveTab('PROVIDERS')}
+               className="flex items-center justify-between bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-5 hover:border-orange-400 dark:hover:border-orange-500 transition-colors group"
+             >
+               <div className="flex items-center gap-4">
+                 <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                   <Shield size={20} className="text-orange-600 dark:text-orange-400" />
+                 </div>
+                 <div className="text-left">
+                   <p className="font-semibold text-slate-900 dark:text-white">{t.providersTab}</p>
+                   <p className="text-sm text-slate-500 dark:text-slate-400">{t.pendingProviderApprovals}</p>
+                 </div>
                </div>
-               <div className="text-left">
-                 <p className="font-semibold text-slate-900 dark:text-white">{t.providersTab}</p>
-                 <p className="text-sm text-slate-500 dark:text-slate-400">{t.pendingProviderApprovals}</p>
+               <div className="flex items-center gap-3">
+                 {(adminStats?.pendingProviders ?? 0) > 0 && (
+                   <span className="px-2.5 py-1 bg-orange-500 text-white text-xs font-bold rounded-full">
+                     {adminStats!.pendingProviders}
+                   </span>
+                 )}
+                 <span className="text-slate-400 group-hover:text-orange-500 transition-colors">→</span>
                </div>
-             </div>
-             <div className="flex items-center gap-3">
-               {(adminStats?.pendingProviders ?? 0) > 0 && (
-                 <span className="px-2.5 py-1 bg-orange-500 text-white text-xs font-bold rounded-full">
-                   {adminStats!.pendingProviders}
-                 </span>
-               )}
-               <span className="text-slate-400 group-hover:text-orange-500 transition-colors">→</span>
-             </div>
-           </button>
+             </button>
+
+             <button
+               onClick={() => setActiveTab('USERS')}
+               className="flex items-center justify-between bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-5 hover:border-blue-400 dark:hover:border-blue-500 transition-colors group"
+             >
+               <div className="flex items-center gap-4">
+                 <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                   <Users size={20} className="text-blue-600 dark:text-blue-400" />
+                 </div>
+                 <div className="text-left">
+                   <p className="font-semibold text-slate-900 dark:text-white">{t.usersTab}</p>
+                   <p className="text-sm text-slate-500 dark:text-slate-400">{adminStats?.totalUsers ?? '—'} {t.totalUsers.toLowerCase()}</p>
+                 </div>
+               </div>
+               <span className="text-slate-400 group-hover:text-blue-500 transition-colors">→</span>
+             </button>
+
+             <button
+               onClick={() => setActiveTab('ADMIN_BOOKINGS')}
+               className="flex items-center justify-between bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-5 hover:border-purple-400 dark:hover:border-purple-500 transition-colors group"
+             >
+               <div className="flex items-center gap-4">
+                 <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                   <BookOpen size={20} className="text-purple-600 dark:text-purple-400" />
+                 </div>
+                 <div className="text-left">
+                   <p className="font-semibold text-slate-900 dark:text-white">{t.adminBookingsTab}</p>
+                   <p className="text-sm text-slate-500 dark:text-slate-400">{adminStats?.totalBookings ?? '—'} {t.totalBookings.toLowerCase()}</p>
+                 </div>
+               </div>
+               <span className="text-slate-400 group-hover:text-purple-500 transition-colors">→</span>
+             </button>
+           </div>
          </>
        )}
     </div>
@@ -729,6 +847,228 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
     </div>
   );
 
+  const statusBadgeColor = (status: string) => {
+    switch (status) {
+      case 'APPROVED': return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+      case 'REJECTED': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+      case 'PENDING':  return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
+      default:         return 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300';
+    }
+  };
+
+  const AdminUsers = () => (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6">
+        <h3 className="font-bold text-lg mb-4">{t.usersTab}</h3>
+        {userActionMsg && (
+          <p className="mb-4 px-4 py-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg text-sm">{userActionMsg}</p>
+        )}
+        {/* Search */}
+        <div className="relative mb-4">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={usersSearch}
+            onChange={e => setUsersSearch(e.target.value)}
+            placeholder={t.searchUsers}
+            className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        {usersLoading ? (
+          <div className="flex justify-center py-12">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : adminUsers.length === 0 ? (
+          <div className="text-center py-12 text-slate-400">{t.noUsersFound}</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-slate-700 text-slate-500">
+                  <th className="pb-3 pr-4 font-medium">{t.nameCol}</th>
+                  <th className="pb-3 pr-4 font-medium">{t.emailCol}</th>
+                  <th className="pb-3 pr-4 font-medium">{t.roleCol}</th>
+                  <th className="pb-3 pr-4 font-medium">{t.registeredCol}</th>
+                  <th className="pb-3 pr-4 font-medium">{t.statusCol}</th>
+                  <th className="pb-3 text-right font-medium">{t.actionCol}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                {adminUsers.map((u: any) => (
+                  <tr key={u._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <td className="py-3 pr-4 font-medium">{u.name}</td>
+                    <td className="py-3 pr-4 text-slate-500 truncate max-w-[160px]">{u.email}</td>
+                    <td className="py-3 pr-4">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300">{u.role}</span>
+                    </td>
+                    <td className="py-3 pr-4 text-slate-500">{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—'}</td>
+                    <td className="py-3 pr-4">
+                      {u.isBanned ? (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">{t.bannedBadge}</span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Active</span>
+                      )}
+                    </td>
+                    <td className="py-3 text-right">
+                      {u.isBanned ? (
+                        <button
+                          disabled={banningUserId === u._id}
+                          onClick={() => handleBanUser(u._id, false)}
+                          className="px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-xs font-medium rounded-lg transition-colors inline-flex items-center gap-1"
+                        >
+                          <CheckCircle size={12} /> {t.unbanUser}
+                        </button>
+                      ) : (
+                        <button
+                          disabled={banningUserId === u._id}
+                          onClick={() => handleBanUser(u._id, true)}
+                          className="px-3 py-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 text-xs font-medium rounded-lg transition-colors inline-flex items-center gap-1"
+                        >
+                          <Ban size={12} /> {t.banUser}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const AdminAllProviders = () => (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-lg">{t.allProvidersTab}</h3>
+          {/* Status filter */}
+          <div className="flex gap-2">
+            {(['ALL', 'PENDING', 'APPROVED', 'REJECTED'] as const).map(s => (
+              <button
+                key={s}
+                onClick={() => setAllProvidersFilter(s)}
+                className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                  allProvidersFilter === s
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                }`}
+              >
+                {s === 'ALL' ? t.allStatuses : s}
+              </button>
+            ))}
+          </div>
+        </div>
+        {allProvidersLoading ? (
+          <div className="flex justify-center py-12">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : allProviders.length === 0 ? (
+          <div className="text-center py-12 text-slate-400">No providers found.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-slate-700 text-slate-500">
+                  <th className="pb-3 pr-4 font-medium">{t.nameCol}</th>
+                  <th className="pb-3 pr-4 font-medium">{t.typeCol}</th>
+                  <th className="pb-3 pr-4 font-medium">{t.wilayaCol}</th>
+                  <th className="pb-3 pr-4 font-medium">Phone</th>
+                  <th className="pb-3 pr-4 font-medium">{t.statusCol}</th>
+                  <th className="pb-3 text-right font-medium">{t.actionCol}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                {allProviders.map((p: any) => (
+                  <tr key={p._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <td className="py-3 pr-4 font-medium">{p.name}</td>
+                    <td className="py-3 pr-4 text-slate-500">{p.role}</td>
+                    <td className="py-3 pr-4 text-slate-500">{p.wilayaId}</td>
+                    <td className="py-3 pr-4 text-slate-500">{p.phone || '—'}</td>
+                    <td className="py-3 pr-4">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusBadgeColor(p.isVerified)}`}>{p.isVerified}</span>
+                    </td>
+                    <td className="py-3 text-right">
+                      {p.isVerified === 'PENDING' && (
+                        <div className="flex gap-2 justify-end">
+                          <button
+                            onClick={() => handleApproveProvider(p._id)}
+                            className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors inline-flex items-center gap-1"
+                          >
+                            <CheckCircle size={12} /> {t.approveProvider}
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const AdminAllBookings = () => (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-lg">{t.adminBookingsTab}</h3>
+          {/* Status filter */}
+          <select
+            value={adminBookingsFilter}
+            onChange={e => setAdminBookingsFilter(e.target.value)}
+            className="px-3 py-1.5 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">{t.allStatuses}</option>
+            <option value="PENDING">PENDING</option>
+            <option value="CONFIRMED">CONFIRMED</option>
+            <option value="COMPLETED">COMPLETED</option>
+            <option value="CANCELLED">CANCELLED</option>
+          </select>
+        </div>
+        {adminBookingsLoading ? (
+          <div className="flex justify-center py-12">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : adminBookings.length === 0 ? (
+          <div className="text-center py-12 text-slate-400">{t.noBookingsFound}</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-slate-700 text-slate-500">
+                  <th className="pb-3 pr-4 font-medium">{t.clientCol}</th>
+                  <th className="pb-3 pr-4 font-medium">{t.providerCol}</th>
+                  <th className="pb-3 pr-4 font-medium">{t.dateCol}</th>
+                  <th className="pb-3 pr-4 font-medium">{t.statusCol}</th>
+                  <th className="pb-3 pr-4 font-medium">Issue</th>
+                  <th className="pb-3 text-right font-medium">Price</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                {adminBookings.map((b: any) => (
+                  <tr key={b._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <td className="py-3 pr-4 font-medium">{b.clientName || '—'}</td>
+                    <td className="py-3 pr-4 text-slate-500">{b.providerName || '—'}</td>
+                    <td className="py-3 pr-4 text-slate-500">{b.date ? new Date(b.date).toLocaleDateString() : '—'}</td>
+                    <td className="py-3 pr-4">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${getStatusColor(b.status)}`}>{b.status}</span>
+                    </td>
+                    <td className="py-3 pr-4 text-slate-500 max-w-[160px] truncate">{b.issue || '—'}</td>
+                    <td className="py-3 text-right text-slate-500">{b.price ? `${b.price} DA` : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pt-6 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -765,23 +1105,58 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                  </button>
 
                  {user.role === UserRole.ADMIN ? (
-                   /* Admin-only: Providers tab with pending badge */
-                   <button
-                     onClick={() => setActiveTab('PROVIDERS')}
-                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
-                       activeTab === 'PROVIDERS'
-                       ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
-                       : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
-                     }`}
-                   >
-                     <Shield size={20} />
-                     <span className="flex-1 text-left">{t.providersTab}</span>
-                     {(adminStats?.pendingProviders ?? 0) > 0 && (
-                       <span className="px-2 py-0.5 bg-orange-500 text-white text-xs font-bold rounded-full">
-                         {adminStats!.pendingProviders}
-                       </span>
-                     )}
-                   </button>
+                   /* Admin nav tabs */
+                   <>
+                     <button
+                       onClick={() => setActiveTab('PROVIDERS')}
+                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
+                         activeTab === 'PROVIDERS'
+                         ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
+                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                       }`}
+                     >
+                       <Shield size={20} />
+                       <span className="flex-1 text-left">{t.providersTab}</span>
+                       {(adminStats?.pendingProviders ?? 0) > 0 && (
+                         <span className="px-2 py-0.5 bg-orange-500 text-white text-xs font-bold rounded-full">
+                           {adminStats!.pendingProviders}
+                         </span>
+                       )}
+                     </button>
+                     <button
+                       onClick={() => setActiveTab('ALL_PROVIDERS')}
+                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
+                         activeTab === 'ALL_PROVIDERS'
+                         ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                       }`}
+                     >
+                       <Wrench size={20} />
+                       <span className="flex-1 text-left">{t.allProvidersTab}</span>
+                     </button>
+                     <button
+                       onClick={() => setActiveTab('USERS')}
+                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
+                         activeTab === 'USERS'
+                         ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                       }`}
+                     >
+                       <Users size={20} />
+                       <span className="flex-1 text-left">{t.usersTab}</span>
+                     </button>
+                     <button
+                       onClick={() => setActiveTab('ADMIN_BOOKINGS')}
+                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
+                         activeTab === 'ADMIN_BOOKINGS'
+                         ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
+                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                       }`}
+                     >
+                       <BookOpen size={20} />
+                       <span className="flex-1 text-left">{t.adminBookingsTab}</span>
+                     </button>
+                   </>
                  ) : (
                    /* Non-admin: Bookings tab */
                    <button
@@ -838,6 +1213,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
             {activeTab === 'PROVIDERS' && user.role === UserRole.ADMIN && (
               <div className="animate-fade-in">
                 <AdminProviders />
+              </div>
+            )}
+
+            {activeTab === 'ALL_PROVIDERS' && user.role === UserRole.ADMIN && (
+              <div className="animate-fade-in">
+                <AdminAllProviders />
+              </div>
+            )}
+
+            {activeTab === 'USERS' && user.role === UserRole.ADMIN && (
+              <div className="animate-fade-in">
+                <AdminUsers />
+              </div>
+            )}
+
+            {activeTab === 'ADMIN_BOOKINGS' && user.role === UserRole.ADMIN && (
+              <div className="animate-fade-in">
+                <AdminAllBookings />
               </div>
             )}
 

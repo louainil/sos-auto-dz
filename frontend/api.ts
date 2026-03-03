@@ -458,5 +458,34 @@ export const adminAPI = {
       body: JSON.stringify({ rejectionReason }),
     });
     return handleResponse(response);
-  }
+  },
+
+  getUsers: async (search?: string, page = 1, limit = 20) => {
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    if (search) params.set('search', search);
+    const response = await authFetch(`${API_URL}/admin/users?${params}`);
+    return handleResponse(response);
+  },
+
+  getAllProviders: async (status?: string, page = 1, limit = 20) => {
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    if (status) params.set('status', status);
+    const response = await authFetch(`${API_URL}/admin/providers?${params}`);
+    return handleResponse(response);
+  },
+
+  getAllBookings: async (page = 1, limit = 20, status?: string) => {
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    if (status) params.set('status', status);
+    const response = await authFetch(`${API_URL}/admin/bookings?${params}`);
+    return handleResponse(response);
+  },
+
+  banUser: async (id: string, isBanned: boolean) => {
+    const response = await authFetch(`${API_URL}/admin/users/${id}/ban`, {
+      method: 'PUT',
+      body: JSON.stringify({ isBanned }),
+    });
+    return handleResponse(response);
+  },
 };

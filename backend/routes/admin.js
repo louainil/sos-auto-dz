@@ -1,7 +1,9 @@
 ﻿import express from 'express';
-import { param, body } from 'express-validator';
+import { param, body, query } from 'express-validator';
 import User from '../models/User.js';
 import ServiceProvider from '../models/ServiceProvider.js';
+import Booking from '../models/Booking.js';
+import Review from '../models/Review.js';
 import Notification from '../models/Notification.js';
 import { protect, isAdmin } from '../middleware/auth.js';
 import validate from '../middleware/validate.js';
@@ -14,12 +16,15 @@ const router = express.Router();
 // @access  Private (Admin)
 router.get('/stats', protect, isAdmin, async (req, res) => {
   try {
-    const [totalUsers, totalProviders, pendingProviders] = await Promise.all([
-      User.countDocuments(),
+    const [totalUsers, totalProviders, pendingProviders, totalBookings, totalReviews, bannedUsers] = await Promise.all([
+      User.countDocuments({ role: { $ne: 'ADMIN' } }),
       ServiceProvider.countDocuments({ isVerified: 'APPROVED' }),
       ServiceProvider.countDocuments({ isVerified: 'PENDING' }),
+      Booking.countDocuments(),
+      Review.countDocuments(),
+      User.countDocuments({ isBanned: true }),
     ]);
-    res.json({ totalUsers, totalProviders, pendingProviders });
+    res.json({ totalUsers, totalProviders, pendingProviders, totalBookings, totalReviews, bannedUsers });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error', ...devError(error) });
@@ -95,6 +100,137 @@ router.put('/providers/:id/reject', protect, isAdmin, [
       type: 'SYSTEM'
     });
     res.json(provider);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', ...devError(error) });
+  }
+});
+
+// @route   GET /api/admin/users
+// @desc    List all non-admin users (paginated + search)
+// @access  Private (Admin)
+router.get('/users', protect, isAdmin, [
+  query('page').optional().isInt({ min: 1 }),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+  query('search').optional().isString().trim(),
+  validate
+], async (req, res) => {
+  try {
+    const page  = parseInt(req.query.page)  || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip  = (page - 1) * limit;
+    const search = req.query.search?.trim();
+    const filter = { role: { $ne: 'ADMIN' } };
+    if (search) {
+      filter.$or = [
+        { name:  { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+      ];
+    }
+    const [users, total] = await Promise.all([
+      User.find(filter)
+        .select('name email role phone isBanned isEmailVerified createdAt')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      User.countDocuments(filter),
+    ]);
+    res.json({ data: users, total, page, pages: Math.ceil(total / limit) });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', ...devError(error) });
+  }
+});
+
+// @route   GET /api/admin/providers
+// @desc    List all providers (optional status filter, paginated)
+// @access  Private (Admin)
+router.get('/providers', protect, isAdmin, [
+  query('status').optional().isIn(['PENDING', 'APPROVED', 'REJECTED', 'ALL']),
+  query('page').optional().isInt({ min: 1 }),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+  validate
+], async (req, res) => {
+  try {
+    const page   = parseInt(req.query.page)  || 1;
+    const limit  = parseInt(req.query.limit) || 20;
+    const skip   = (page - 1) * limit;
+    const status = req.query.status;
+    const filter = (status && status !== 'ALL') ? { isVerified: status } : {};
+    const [providers, total] = await Promise.all([
+      ServiceProvider.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      ServiceProvider.countDocuments(filter),
+    ]);
+    res.json({ data: providers, total, page, pages: Math.ceil(total / limit) });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', ...devError(error) });
+  }
+});
+
+// @route   GET /api/admin/bookings
+// @desc    Get all platform bookings (paginated, sorted newest first)
+// @access  Private (Admin)
+router.get('/bookings', protect, isAdmin, [
+  query('page').optional().isInt({ min: 1 }),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+  query('status').optional().isString(),
+  validate
+], async (req, res) => {
+  try {
+    const page   = parseInt(req.query.page)  || 1;
+    const limit  = parseInt(req.query.limit) || 20;
+    const skip   = (page - 1) * limit;
+    const filter = {};
+    if (req.query.status) filter.status = req.query.status;
+    const [bookings, total] = await Promise.all([
+      Booking.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Booking.countDocuments(filter),
+    ]);
+    res.json({ data: bookings, total, page, pages: Math.ceil(total / limit) });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', ...devError(error) });
+  }
+});
+
+// @route   PUT /api/admin/users/:id/ban
+// @desc    Ban or unban a user
+// @access  Private (Admin)
+router.put('/users/:id/ban', protect, isAdmin, [
+  param('id').isMongoId().withMessage('Valid user ID is required'),
+  body('isBanned').isBoolean().withMessage('isBanned must be a boolean'),
+  validate
+], async (req, res) => {
+  try {
+    const { isBanned } = req.body;
+    // Prevent admin from banning themselves
+    if (req.user._id.toString() === req.params.id) {
+      return res.status(400).json({ message: 'You cannot ban your own account.' });
+    }
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { isBanned },
+      { new: true, select: 'name email role isBanned' }
+    );
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    // Notify the user
+    await Notification.create({
+      userId: req.params.id,
+      message: isBanned
+        ? 'Your account has been suspended by an administrator.'
+        : 'Your account suspension has been lifted.',
+      type: 'SYSTEM'
+    });
+    res.json(user);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error', ...devError(error) });

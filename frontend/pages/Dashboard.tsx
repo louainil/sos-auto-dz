@@ -323,10 +323,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
     try {
       await adminAPI.approveProvider(id);
       setPendingProviders(prev => prev.filter((p: any) => p._id !== id));
+      setAllProviders(prev => prev.map((p: any) => p._id === id ? { ...p, isVerified: 'APPROVED', rejectionReason: '' } : p));
       setAdminStats(prev => prev ? {
         ...prev,
         totalProviders: prev.totalProviders + 1,
-        pendingProviders: prev.pendingProviders - 1,
+        pendingProviders: Math.max(0, prev.pendingProviders - 1),
       } : prev);
       setAdminActionMsg(t.providerApproved);
       setTimeout(() => setAdminActionMsg(null), 3000);
@@ -339,10 +340,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
     if (!rejectReason.trim()) return;
     try {
       await adminAPI.rejectProvider(id, rejectReason.trim());
+      const wasInPending = pendingProviders.some((p: any) => p._id === id);
       setPendingProviders(prev => prev.filter((p: any) => p._id !== id));
+      setAllProviders(prev => prev.map((p: any) => p._id === id ? { ...p, isVerified: 'REJECTED', rejectionReason: rejectReason.trim() } : p));
       setAdminStats(prev => prev ? {
         ...prev,
-        pendingProviders: prev.pendingProviders - 1,
+        pendingProviders: wasInPending ? Math.max(0, prev.pendingProviders - 1) : prev.pendingProviders,
+        totalProviders: prev.totalProviders > 0 && !wasInPending ? Math.max(0, prev.totalProviders - 1) : prev.totalProviders,
       } : prev);
       setRejectingId(null);
       setRejectReason('');
@@ -351,6 +355,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
     } catch (err) {
       console.error('Failed to reject provider:', err);
     }
+  };
+
+  // Clears rejection state when switching tabs so the inline reject input
+  // doesn't bleed through to the All Providers / Pending Approvals tabs.
+  const switchTab = (tab: typeof activeTab) => {
+    setActiveTab(tab);
+    setRejectingId(null);
+    setRejectReason('');
   };
 
   const handleBanUser = async (id: string, ban: boolean) => {
@@ -698,7 +710,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
            {/* Quick-access cards */}
            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
              <button
-               onClick={() => setActiveTab('PROVIDERS')}
+               onClick={() => switchTab('PROVIDERS')}
                className="flex items-center justify-between bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-5 hover:border-orange-400 dark:hover:border-orange-500 transition-colors group"
              >
                <div className="flex items-center gap-4">
@@ -721,7 +733,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
              </button>
 
              <button
-               onClick={() => setActiveTab('USERS')}
+               onClick={() => switchTab('USERS')}
                className="flex items-center justify-between bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-5 hover:border-blue-400 dark:hover:border-blue-500 transition-colors group"
              >
                <div className="flex items-center gap-4">
@@ -737,7 +749,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
              </button>
 
              <button
-               onClick={() => setActiveTab('ADMIN_BOOKINGS')}
+               onClick={() => switchTab('ADMIN_BOOKINGS')}
                className="flex items-center justify-between bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-5 hover:border-purple-400 dark:hover:border-purple-500 transition-colors group"
              >
                <div className="flex items-center gap-4">
@@ -944,7 +956,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-lg">{t.allProvidersTab}</h3>
           {/* Status filter */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {(['ALL', 'PENDING', 'APPROVED', 'REJECTED'] as const).map(s => (
               <button
                 key={s}
@@ -960,6 +972,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
             ))}
           </div>
         </div>
+        {adminActionMsg && (
+          <p className="mb-4 px-4 py-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg text-sm">{adminActionMsg}</p>
+        )}
         {allProvidersLoading ? (
           <div className="flex justify-center py-12">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -988,16 +1003,54 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                     <td className="py-3 pr-4 text-slate-500">{p.phone || '—'}</td>
                     <td className="py-3 pr-4">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusBadgeColor(p.isVerified)}`}>{p.isVerified}</span>
+                      {p.isVerified === 'REJECTED' && p.rejectionReason && (
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 max-w-[140px] truncate" title={p.rejectionReason}>{p.rejectionReason}</p>
+                      )}
                     </td>
                     <td className="py-3 text-right">
-                      {p.isVerified === 'PENDING' && (
-                        <div className="flex gap-2 justify-end">
+                      {rejectingId === p._id ? (
+                        <div className="flex items-center gap-2 justify-end flex-wrap">
+                          <input
+                            type="text"
+                            value={rejectReason}
+                            onChange={e => setRejectReason(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleRejectProvider(p._id)}
+                            placeholder={t.rejectionReasonPlaceholder}
+                            className="px-2 py-1 text-xs border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white w-44 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            autoFocus
+                          />
                           <button
-                            onClick={() => handleApproveProvider(p._id)}
-                            className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors inline-flex items-center gap-1"
+                            onClick={() => handleRejectProvider(p._id)}
+                            disabled={!rejectReason.trim()}
+                            className="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white text-xs font-medium rounded-lg transition-colors"
                           >
-                            <CheckCircle size={12} /> {t.approveProvider}
+                            {t.rejectProvider}
                           </button>
+                          <button
+                            onClick={() => { setRejectingId(null); setRejectReason(''); }}
+                            className="px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-xs font-medium rounded-lg transition-colors"
+                          >
+                            {t.cancel}
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2 justify-end">
+                          {p.isVerified !== 'APPROVED' && (
+                            <button
+                              onClick={() => handleApproveProvider(p._id)}
+                              className="px-2.5 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors inline-flex items-center gap-1"
+                            >
+                              <CheckCircle size={12} /> {t.approveProvider}
+                            </button>
+                          )}
+                          {p.isVerified !== 'REJECTED' && (
+                            <button
+                              onClick={() => { setRejectingId(p._id); setRejectReason(''); }}
+                              className="px-2.5 py-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 text-xs font-medium rounded-lg transition-colors inline-flex items-center gap-1"
+                            >
+                              <XCircle size={12} /> {t.rejectProvider}
+                            </button>
+                          )}
                         </div>
                       )}
                     </td>
@@ -1094,7 +1147,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-4 shadow-sm sticky top-24">
                <nav className="space-y-2">
                  <button
-                   onClick={() => setActiveTab('OVERVIEW')}
+                   onClick={() => switchTab('OVERVIEW')}
                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
                      activeTab === 'OVERVIEW'
                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
@@ -1108,7 +1161,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                    /* Admin nav tabs */
                    <>
                      <button
-                       onClick={() => setActiveTab('PROVIDERS')}
+                       onClick={() => switchTab('PROVIDERS')}
                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
                          activeTab === 'PROVIDERS'
                          ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
@@ -1124,7 +1177,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                        )}
                      </button>
                      <button
-                       onClick={() => setActiveTab('ALL_PROVIDERS')}
+                       onClick={() => switchTab('ALL_PROVIDERS')}
                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
                          activeTab === 'ALL_PROVIDERS'
                          ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
@@ -1135,7 +1188,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                        <span className="flex-1 text-left">{t.allProvidersTab}</span>
                      </button>
                      <button
-                       onClick={() => setActiveTab('USERS')}
+                       onClick={() => switchTab('USERS')}
                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
                          activeTab === 'USERS'
                          ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
@@ -1146,7 +1199,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                        <span className="flex-1 text-left">{t.usersTab}</span>
                      </button>
                      <button
-                       onClick={() => setActiveTab('ADMIN_BOOKINGS')}
+                       onClick={() => switchTab('ADMIN_BOOKINGS')}
                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
                          activeTab === 'ADMIN_BOOKINGS'
                          ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
@@ -1173,7 +1226,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                  )}
 
                  <button
-                   onClick={() => setActiveTab('SETTINGS')}
+                   onClick={() => switchTab('SETTINGS')}
                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
                      activeTab === 'SETTINGS'
                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
@@ -1204,33 +1257,33 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
           <div className="flex-1">
             {activeTab === 'OVERVIEW' && (
               <div className="animate-fade-in">
-                {user.role === UserRole.CLIENT && <ClientOverview />}
-                {(user.role === UserRole.MECHANIC || user.role === UserRole.TOWING || user.role === UserRole.PARTS_SHOP) && <ProfessionalOverview />}
-                {user.role === UserRole.ADMIN && <AdminOverview />}
+                {user.role === UserRole.CLIENT && ClientOverview()}
+                {(user.role === UserRole.MECHANIC || user.role === UserRole.TOWING || user.role === UserRole.PARTS_SHOP) && ProfessionalOverview()}
+                {user.role === UserRole.ADMIN && AdminOverview()}
               </div>
             )}
 
             {activeTab === 'PROVIDERS' && user.role === UserRole.ADMIN && (
               <div className="animate-fade-in">
-                <AdminProviders />
+                {AdminProviders()}
               </div>
             )}
 
             {activeTab === 'ALL_PROVIDERS' && user.role === UserRole.ADMIN && (
               <div className="animate-fade-in">
-                <AdminAllProviders />
+                {AdminAllProviders()}
               </div>
             )}
 
             {activeTab === 'USERS' && user.role === UserRole.ADMIN && (
               <div className="animate-fade-in">
-                <AdminUsers />
+                {AdminUsers()}
               </div>
             )}
 
             {activeTab === 'ADMIN_BOOKINGS' && user.role === UserRole.ADMIN && (
               <div className="animate-fade-in">
-                <AdminAllBookings />
+                {AdminAllBookings()}
               </div>
             )}
 

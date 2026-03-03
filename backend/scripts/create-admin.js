@@ -12,10 +12,16 @@ import 'dotenv/config';
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 
-const ADMIN_EMAIL    = process.env.ADMIN_EMAIL    || 'admin@example.com';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+const ADMIN_EMAIL    = process.env.ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const ADMIN_NAME     = process.env.ADMIN_NAME     || 'Admin';
-const ADMIN_PHONE    = process.env.ADMIN_PHONE    || '0550000001';
+const ADMIN_PHONE    = process.env.ADMIN_PHONE    || '';
+
+if (!PROMOTE_EMAIL && (!ADMIN_EMAIL || !ADMIN_PASSWORD)) {
+  console.error('Missing required env vars: ADMIN_EMAIL and ADMIN_PASSWORD');
+  console.error('Set them in your .env file.');
+  process.exit(1);
+}
 const PROMOTE_EMAIL  = process.env.PROMOTE_EMAIL;   // optional: promote existing user
 
 async function run() {

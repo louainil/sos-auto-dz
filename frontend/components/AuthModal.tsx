@@ -110,8 +110,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'L
           password,
           role: selectedRole,
           phone: isPro ? phone : undefined,
-          garageType: selectedRole === UserRole.MECHANIC ? selectedGarageType : undefined,
-          wilayaId: isPro ? selectedWilaya : undefined,
+          garageType: selectedRole === UserRole.MECHANIC && selectedGarageType ? selectedGarageType : undefined,
+          wilayaId: isPro && selectedWilaya !== '' ? selectedWilaya : undefined,
           commune: isPro ? selectedCommune : undefined,
           // Professional-only fields
           description: isPro && description.trim() ? description.trim() : undefined,

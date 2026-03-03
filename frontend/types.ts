@@ -40,6 +40,11 @@ export interface Wilaya {
   longitude: number;
 }
 
+export interface ServiceItem {
+  name: string;
+  price: number;
+}
+
 export interface ServiceProvider {
   id: string;
   name: string;
@@ -61,6 +66,7 @@ export interface ServiceProvider {
     start: string; // "09:00"
     end: string;   // "17:00"
   };
+  services?: ServiceItem[];
 }
 
 export interface Booking {
@@ -74,6 +80,61 @@ export interface Booking {
   date: string;
   issue: string;
   status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+  cancellationReason?: string;
+  price?: number;
+}
+
+// ---------------------------------------------------------------------------
+// API request payload types
+// ---------------------------------------------------------------------------
+
+export interface RegisterPayload {
+  name: string;
+  email: string;
+  password: string;
+  role: UserRole;
+  phone?: string;
+  garageType?: GarageType;
+  wilayaId?: number;
+  commune?: string;
+  description?: string;
+  specialty?: string[];
+  workingDays?: number[];
+  workingHours?: { start: string; end: string };
+}
+
+export interface ProviderFilters {
+  role?: string;
+  wilayaId?: string | number;
+  commune?: string;
+  garageType?: string;
+  specialty?: string;
+  search?: string;
+  [key: string]: string | number | undefined;
+}
+
+export interface ProviderUpdatePayload {
+  isAvailable?: boolean;
+  workingDays?: number[];
+  workingHours?: { start: string; end: string };
+  name?: string;
+  phone?: string;
+  description?: string;
+  specialty?: string[];
+  garageType?: GarageType;
+  wilayaId?: number;
+  commune?: string;
+  services?: ServiceItem[];
+}
+
+export interface CreateBookingPayload {
+  providerId: string;
+  date: string;
+  issue: string;
+}
+
+export interface BookingUpdatePayload {
+  status?: 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
   cancellationReason?: string;
   price?: number;
 }

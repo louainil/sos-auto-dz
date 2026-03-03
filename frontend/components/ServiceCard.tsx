@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Phone, MapPin, Wrench, Truck, Clock, MessageCircle, ExternalLink } from 'lucide-react';
+import { Star, Phone, MapPin, Wrench, Truck, Clock, MessageCircle, ExternalLink, Tag } from 'lucide-react';
 import { ServiceProvider, UserRole } from '../types';
 import { Language, translations } from '../translations';
 import DistanceIndicator from './DistanceIndicator';
@@ -130,6 +130,17 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBoo
             ))}
           </div>
         )}
+
+        {/* Minimum price indicator */}
+        {provider.services && provider.services.length > 0 && (() => {
+          const minPrice = Math.min(...provider.services.map(s => s.price));
+          return (
+            <div className="flex items-center gap-1 mb-3 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+              <Tag size={12} />
+              <span>{t.fromPrice} {minPrice.toLocaleString()} DZD</span>
+            </div>
+          );
+        })()}
 
         <div className="space-y-2 mb-4">
           <div className="flex items-center text-slate-600 dark:text-slate-400 text-sm">

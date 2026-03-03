@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, MapPin, Filter, AlertTriangle, Navigation, Wrench, Car, X, ChevronDown, Map, List } from 'lucide-react';
 import { WILAYAS, COMMUNES, CAR_BRANDS } from '../constants';
-import { ServiceProvider, UserRole, GarageType } from '../types';
+import { ServiceProvider, UserRole, GarageType, ProviderFilters } from '../types';
 import { Language, translations } from '../translations';
 import ServiceCard from '../components/ServiceCard';
 import { providersAPI } from '../api';
@@ -48,7 +48,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
     const fetchProviders = async () => {
       setLoading(true);
       try {
-        const filters: any = {};
+        const filters: ProviderFilters = {};
         if (type) filters.role = type;
         if (selectedWilaya !== 'all') filters.wilayaId = selectedWilaya;
         if (selectedCommune !== 'all') filters.commune = selectedCommune;

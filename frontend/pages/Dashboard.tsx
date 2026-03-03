@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { User, UserRole, Booking } from '../types';
-import { Calendar, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertCircle, TrendingUp, User as UserIcon, Shield, Wrench, Camera, Clock } from 'lucide-react';
+import { User, UserRole, Booking, BookingUpdatePayload, ServiceItem } from '../types';
+import { Calendar, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertCircle, TrendingUp, User as UserIcon, Shield, Wrench, Camera, Clock, Tag, Plus, Trash2 } from 'lucide-react';
 import { bookingsAPI, authAPI, providersAPI, adminAPI, reviewsAPI } from '../api';
 import { Language, translations } from '../translations';
 import ReviewModal from '../components/ReviewModal';
@@ -26,6 +26,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const [adminStats, setAdminStats] = useState<{ totalUsers: number; totalProviders: number; pendingProviders: number } | null>(null);
   const [pendingProviders, setPendingProviders] = useState<any[]>([]);
   const [adminLoading, setAdminLoading] = useState(false);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [adminActionMsg, setAdminActionMsg] = useState<string | null>(null);
   const [profilePic, setProfilePic] = useState<string | null>(user.avatar?.url || null);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [profileName, setProfileName] = useState(user.name);
@@ -37,6 +40,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const [confirmPw, setConfirmPw] = useState('');
   const [pwSaving, setPwSaving] = useState(false);
   const [pwMsg, setPwMsg] = useState<{ text: string; ok: boolean } | null>(null);
+
+  // Delete account state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmPw, setDeleteConfirmPw] = useState('');
+  const [deleteAccountBusy, setDeleteAccountBusy] = useState(false);
+  const [deleteAccountMsg, setDeleteAccountMsg] = useState<string | null>(null);
   const picInputRef = useRef<HTMLInputElement>(null);
   const [shopImage, setShopImage] = useState<string | null>(null);
   const [shopImageUploading, setShopImageUploading] = useState(false);
@@ -52,6 +61,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const [workingHoursEnd, setWorkingHoursEnd] = useState('17:00');
   const [scheduleSaving, setScheduleSaving] = useState(false);
   const [scheduleMsg, setScheduleMsg] = useState<{ text: string; ok: boolean } | null>(null);
+
+  // Services & Pricing state
+  const [providerServices, setProviderServices] = useState<ServiceItem[]>([]);
+  const [newServiceName, setNewServiceName] = useState('');
+  const [newServicePrice, setNewServicePrice] = useState('');
+  const [servicesSaving, setServicesSaving] = useState(false);
+  const [servicesMsg, setServicesMsg] = useState<{ text: string; ok: boolean } | null>(null);
 
   // Review modal state
   const [reviewBooking, setReviewBooking] = useState<Booking | null>(null);
@@ -85,6 +101,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
           if (data.workingHours.start) setWorkingHoursStart(data.workingHours.start);
           if (data.workingHours.end) setWorkingHoursEnd(data.workingHours.end);
         }
+        if (data.services) setProviderServices(data.services);
       } catch (err) {
         console.error('Failed to fetch provider profile:', err);
       }
@@ -186,6 +203,35 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
     }
   };
 
+  const handleAddService = () => {
+    const name = newServiceName.trim();
+    const price = parseFloat(newServicePrice);
+    if (!name || isNaN(price) || price < 0) return;
+    setProviderServices(prev => [...prev, { name, price }]);
+    setNewServiceName('');
+    setNewServicePrice('');
+  };
+
+  const handleRemoveService = (index: number) => {
+    setProviderServices(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleServicesSave = async () => {
+    if (!providerId) return;
+    setServicesSaving(true);
+    setServicesMsg(null);
+    try {
+      await providersAPI.update(providerId, { services: providerServices });
+      setServicesMsg({ text: t.servicesSaved, ok: true });
+      setTimeout(() => setServicesMsg(null), 3000);
+    } catch (err) {
+      console.error('Services save failed:', err);
+      setServicesMsg({ text: t.servicesSaveFailed, ok: false });
+    } finally {
+      setServicesSaving(false);
+    }
+  };
+
   // Fetch admin stats and pending providers
   useEffect(() => {
     if (user.role !== UserRole.ADMIN) return;
@@ -216,8 +262,28 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
         totalProviders: prev.totalProviders + 1,
         pendingProviders: prev.pendingProviders - 1,
       } : prev);
+      setAdminActionMsg(t.providerApproved);
+      setTimeout(() => setAdminActionMsg(null), 3000);
     } catch (err) {
       console.error('Failed to approve provider:', err);
+    }
+  };
+
+  const handleRejectProvider = async (id: string) => {
+    if (!rejectReason.trim()) return;
+    try {
+      await adminAPI.rejectProvider(id, rejectReason.trim());
+      setPendingProviders(prev => prev.filter((p: any) => p._id !== id));
+      setAdminStats(prev => prev ? {
+        ...prev,
+        pendingProviders: prev.pendingProviders - 1,
+      } : prev);
+      setRejectingId(null);
+      setRejectReason('');
+      setAdminActionMsg(t.providerRejected);
+      setTimeout(() => setAdminActionMsg(null), 3000);
+    } catch (err) {
+      console.error('Failed to reject provider:', err);
     }
   };
 
@@ -260,6 +326,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
       setPwMsg({ text: err.message || 'Failed to update password.', ok: false });
     } finally {
       setPwSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deleteConfirmPw) return;
+    setDeleteAccountBusy(true);
+    setDeleteAccountMsg(null);
+    try {
+      await authAPI.deleteAccount(deleteConfirmPw);
+      // Account is gone — force full logout on the frontend immediately
+      onLogout();
+    } catch (err: any) {
+      setDeleteAccountMsg(err.message || t.deleteAccountFailed);
+      setDeleteAccountBusy(false);
     }
   };
 
@@ -331,7 +411,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
 
   const handleStatusChange = async (id: string, newStatus: 'CONFIRMED' | 'CANCELLED' | 'COMPLETED', cancellationReason?: string) => {
     try {
-      const payload: any = { status: newStatus };
+      const payload: BookingUpdatePayload = { status: newStatus };
       if (newStatus === 'CANCELLED' && cancellationReason) payload.cancellationReason = cancellationReason;
       await bookingsAPI.update(id, payload);
       setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus, cancellationReason: cancellationReason || b.cancellationReason } : b));
@@ -533,6 +613,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
 
            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6">
              <h3 className="font-bold mb-4">{t.pendingProviderApprovals}</h3>
+             {adminActionMsg && (
+               <p className="mb-3 text-sm text-green-600 dark:text-green-400">{adminActionMsg}</p>
+             )}
              {pendingProviders.length === 0 ? (
                <p className="text-slate-500 dark:text-slate-400 text-sm py-4 text-center">No pending approvals</p>
              ) : (
@@ -552,12 +635,47 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                        <td className="py-4 text-sm text-slate-500">{p.role}</td>
                        <td className="py-4 text-sm text-slate-500">{p.wilayaId}</td>
                        <td className="py-4 text-right">
-                         <button
-                           onClick={() => handleApproveProvider(p._id)}
-                           className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
-                         >
-                           {t.reviewAction}
-                         </button>
+                         {rejectingId === p._id ? (
+                           <div className="flex items-center gap-2 justify-end flex-wrap">
+                             <input
+                               type="text"
+                               value={rejectReason}
+                               onChange={e => setRejectReason(e.target.value)}
+                               onKeyDown={e => e.key === 'Enter' && handleRejectProvider(p._id)}
+                               placeholder={t.rejectionReasonPlaceholder}
+                               className="px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white w-48 focus:outline-none focus:ring-2 focus:ring-red-500"
+                               autoFocus
+                             />
+                             <button
+                               onClick={() => handleRejectProvider(p._id)}
+                               disabled={!rejectReason.trim()}
+                               className="px-3 py-1 bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white text-sm font-medium rounded-lg transition-colors"
+                             >
+                               {t.rejectProvider}
+                             </button>
+                             <button
+                               onClick={() => { setRejectingId(null); setRejectReason(''); }}
+                               className="px-3 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-lg transition-colors"
+                             >
+                               {t.cancel}
+                             </button>
+                           </div>
+                         ) : (
+                           <div className="flex items-center gap-2 justify-end">
+                             <button
+                               onClick={() => handleApproveProvider(p._id)}
+                               className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
+                             >
+                               {t.approveProvider}
+                             </button>
+                             <button
+                               onClick={() => { setRejectingId(p._id); setRejectReason(''); }}
+                               className="px-3 py-1 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 text-sm font-medium rounded-lg transition-colors"
+                             >
+                               {t.rejectProvider}
+                             </button>
+                           </div>
+                         )}
                        </td>
                      </tr>
                    ))}
@@ -910,6 +1028,85 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                    </div>
                  )}
 
+                 {/* Services & Pricing (Professionals only) */}
+                 {providerId && (
+                   <div className="mb-6 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40">
+                     <div className="flex items-center gap-2 mb-1">
+                       <Tag size={16} className="text-emerald-600 dark:text-emerald-400" />
+                       <p className="text-sm font-semibold text-slate-800 dark:text-white">{t.servicesAndPricing}</p>
+                     </div>
+                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">{t.servicesListDesc}</p>
+
+                     {/* Existing services list */}
+                     {providerServices.length === 0 ? (
+                       <p className="text-sm text-slate-400 dark:text-slate-500 italic mb-3">{t.noServicesListed}</p>
+                     ) : (
+                       <div className="space-y-2 mb-3">
+                         {providerServices.map((svc, idx) => (
+                           <div key={idx} className="flex items-center justify-between gap-2 bg-white dark:bg-slate-800 rounded-lg px-3 py-2 border border-slate-200 dark:border-slate-700">
+                             <span className="text-sm text-slate-800 dark:text-white flex-1 truncate">{svc.name}</span>
+                             <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">{svc.price.toLocaleString()} DZD</span>
+                             <button
+                               type="button"
+                               onClick={() => handleRemoveService(idx)}
+                               className="ml-1 text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-colors shrink-0"
+                               aria-label={t.removeService}
+                             >
+                               <Trash2 size={14} />
+                             </button>
+                           </div>
+                         ))}
+                       </div>
+                     )}
+
+                     {/* Add new service row */}
+                     <div className="flex flex-wrap gap-2 mb-4">
+                       <input
+                         type="text"
+                         value={newServiceName}
+                         onChange={(e) => setNewServiceName(e.target.value)}
+                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddService(); } }}
+                         placeholder={t.serviceNamePlaceholder}
+                         className="flex-1 min-w-[160px] px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                       />
+                       <input
+                         type="number"
+                         value={newServicePrice}
+                         onChange={(e) => setNewServicePrice(e.target.value)}
+                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddService(); } }}
+                         placeholder={t.servicePrice}
+                         min="0"
+                         className="w-32 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                       />
+                       <button
+                         type="button"
+                         onClick={handleAddService}
+                         disabled={!newServiceName.trim() || newServicePrice === '' || parseFloat(newServicePrice) < 0}
+                         className="px-3 py-1.5 text-sm font-medium rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 disabled:cursor-not-allowed text-white transition-colors flex items-center gap-1"
+                       >
+                         <Plus size={14} />
+                         {t.addService}
+                       </button>
+                     </div>
+
+                     {/* Save services */}
+                     <div className="flex items-center gap-4">
+                       <button
+                         type="button"
+                         onClick={handleServicesSave}
+                         disabled={servicesSaving}
+                         className="px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white transition-colors flex items-center gap-2"
+                       >
+                         {servicesSaving && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                         {servicesSaving ? t.saving : t.saveServices}
+                       </button>
+                       {servicesMsg && (
+                         <p className={`text-sm ${servicesMsg.ok ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>{servicesMsg.text}</p>
+                       )}
+                     </div>
+                   </div>
+                 )}
+
                  <form className="space-y-4 max-w-lg" onSubmit={handleProfileSave}>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.fullName}</label>
@@ -1010,6 +1207,61 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                        )}
                      </div>
                    </form>
+
+                   {/* ── Danger Zone ── */}
+                   <div className="mt-10 rounded-xl border border-red-200 dark:border-red-900/40 overflow-hidden">
+                     <div className="px-4 py-3 bg-red-50 dark:bg-red-950/30 border-b border-red-200 dark:border-red-900/40 flex items-center gap-2">
+                       <AlertCircle size={16} className="text-red-600 dark:text-red-400 shrink-0" />
+                       <span className="text-sm font-bold text-red-700 dark:text-red-400">{t.dangerZone}</span>
+                     </div>
+                     <div className="p-4 bg-white dark:bg-slate-800">
+                       <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{t.deleteAccountDesc}</p>
+                       {!showDeleteConfirm ? (
+                         <button
+                           type="button"
+                           onClick={() => { setShowDeleteConfirm(true); setDeleteAccountMsg(null); }}
+                           className="px-4 py-2 text-sm font-medium rounded-lg border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                         >
+                           {t.deleteAccount}
+                         </button>
+                       ) : (
+                         <div className="space-y-3 max-w-sm">
+                           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                             {t.deleteAccountConfirmLabel}
+                           </label>
+                           <input
+                             type="password"
+                             value={deleteConfirmPw}
+                             onChange={(e) => setDeleteConfirmPw(e.target.value)}
+                             onKeyDown={(e) => { if (e.key === 'Enter') handleDeleteAccount(); }}
+                             autoFocus
+                             className="w-full px-3 py-2 rounded-lg border border-red-300 dark:border-red-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                           />
+                           {deleteAccountMsg && (
+                             <p className="text-sm text-red-600 dark:text-red-400">{deleteAccountMsg}</p>
+                           )}
+                           <div className="flex gap-3">
+                             <button
+                               type="button"
+                               onClick={handleDeleteAccount}
+                               disabled={deleteAccountBusy || !deleteConfirmPw}
+                               className="px-4 py-2 text-sm font-medium rounded-lg bg-red-600 hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed text-white transition-colors flex items-center gap-2"
+                             >
+                               {deleteAccountBusy && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                               {deleteAccountBusy ? t.deleteAccountDeleting : t.deleteAccountConfirmButton}
+                             </button>
+                             <button
+                               type="button"
+                               onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmPw(''); setDeleteAccountMsg(null); }}
+                               className="px-4 py-2 text-sm font-medium rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                             >
+                               {t.cancel}
+                             </button>
+                           </div>
+                         </div>
+                       )}
+                     </div>
+                   </div>
                  </div>
               </div>
             )}

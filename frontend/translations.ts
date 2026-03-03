@@ -224,6 +224,11 @@ export interface Translations {
   wilayaCol: string;
   actionCol: string;
   reviewAction: string;
+  approveProvider: string;
+  rejectProvider: string;
+  rejectionReasonPlaceholder: string;
+  providerApproved: string;
+  providerRejected: string;
 
   // Dashboard – Bookings tab
   bookingHistory: string;
@@ -242,6 +247,18 @@ export interface Translations {
   galleryFull: string;
   photoGallery: string;
   noPhotos: string;
+  servicesAndPricing: string;
+  servicesListDesc: string;
+  serviceName: string;
+  servicePrice: string;
+  serviceNamePlaceholder: string;
+  addService: string;
+  removeService: string;
+  noServicesListed: string;
+  saveServices: string;
+  servicesSaved: string;
+  servicesSaveFailed: string;
+  fromPrice: string;
   emailLabel: string;
   emailCannotChange: string;
   phoneLabel: string;
@@ -254,6 +271,13 @@ export interface Translations {
   newPassword: string;
   confirmNewPassword: string;
   updatePassword: string;
+  dangerZone: string;
+  deleteAccount: string;
+  deleteAccountDesc: string;
+  deleteAccountConfirmLabel: string;
+  deleteAccountConfirmButton: string;
+  deleteAccountDeleting: string;
+  deleteAccountFailed: string;
 
   // AuthModal – tabs & header
   signInTab: string;
@@ -679,6 +703,11 @@ export const translations: Record<Language, Translations> = {
     wilayaCol: 'Wilaya',
     actionCol: 'Action',
     reviewAction: 'Review',
+    approveProvider: 'Approve',
+    rejectProvider: 'Reject',
+    rejectionReasonPlaceholder: 'Reason for rejection…',
+    providerApproved: 'Provider approved.',
+    providerRejected: 'Provider rejected.',
 
     // Dashboard – Bookings tab
     bookingHistory: 'Booking History',
@@ -697,6 +726,18 @@ export const translations: Record<Language, Translations> = {
     galleryFull: 'Gallery is full (max 8 photos)',
     photoGallery: 'Photo Gallery',
     noPhotos: 'No photos yet',
+    servicesAndPricing: 'Services & Pricing',
+    servicesListDesc: 'List your services with estimated prices so clients can compare costs before booking.',
+    serviceName: 'Service Name',
+    servicePrice: 'Price (DZD)',
+    serviceNamePlaceholder: 'e.g. Oil Change, Brake Repair...',
+    addService: 'Add Service',
+    removeService: 'Remove',
+    noServicesListed: 'No services listed yet.',
+    saveServices: 'Save Services',
+    servicesSaved: 'Services saved successfully.',
+    servicesSaveFailed: 'Failed to save services.',
+    fromPrice: 'from',
     emailLabel: 'Email',
     emailCannotChange: 'Email address cannot be changed.',
     phoneLabel: 'Phone',
@@ -709,6 +750,13 @@ export const translations: Record<Language, Translations> = {
     newPassword: 'New Password',
     confirmNewPassword: 'Confirm New Password',
     updatePassword: 'Update Password',
+    dangerZone: 'Danger Zone',
+    deleteAccount: 'Delete My Account',
+    deleteAccountDesc: 'This action is permanent and cannot be undone. All your data — bookings, reviews, and profile — will be deleted forever.',
+    deleteAccountConfirmLabel: 'Enter your password to confirm',
+    deleteAccountConfirmButton: 'Yes, permanently delete my account',
+    deleteAccountDeleting: 'Deleting...',
+    deleteAccountFailed: 'Failed to delete account. Check your password and try again.',
 
     // AuthModal – tabs & header
     signInTab: 'SIGN IN',
@@ -1132,6 +1180,11 @@ export const translations: Record<Language, Translations> = {
     wilayaCol: 'Wilaya',
     actionCol: 'Action',
     reviewAction: 'Examiner',
+    approveProvider: 'Approuver',
+    rejectProvider: 'Rejeter',
+    rejectionReasonPlaceholder: 'Raison du rejet…',
+    providerApproved: 'Prestataire approuvé.',
+    providerRejected: 'Prestataire rejeté.',
 
     // Dashboard – Bookings tab
     bookingHistory: 'Historique des Réservations',
@@ -1150,6 +1203,18 @@ export const translations: Record<Language, Translations> = {
     galleryFull: 'Galerie pleine (max 8 photos)',
     photoGallery: 'Galerie Photos',
     noPhotos: 'Aucune photo pour le moment',
+    servicesAndPricing: 'Services & Tarifs',
+    servicesListDesc: 'Listez vos services avec les tarifs estimés pour permettre aux clients de comparer avant de réserver.',
+    serviceName: 'Nom du Service',
+    servicePrice: 'Prix (DZD)',
+    serviceNamePlaceholder: 'ex. Vidange, Réparation freins...',
+    addService: 'Ajouter un Service',
+    removeService: 'Supprimer',
+    noServicesListed: 'Aucun service listé pour le moment.',
+    saveServices: 'Enregistrer les Services',
+    servicesSaved: 'Services enregistrés avec succès.',
+    servicesSaveFailed: 'Échec de l\'enregistrement des services.',
+    fromPrice: 'à partir de',
     emailLabel: 'E-mail',
     emailCannotChange: "L'adresse e-mail ne peut pas être modifiée.",
     phoneLabel: 'Téléphone',
@@ -1162,6 +1227,13 @@ export const translations: Record<Language, Translations> = {
     newPassword: 'Nouveau Mot de Passe',
     confirmNewPassword: 'Confirmer le Nouveau Mot de Passe',
     updatePassword: 'Mettre à Jour le Mot de Passe',
+    dangerZone: 'Zone Dangereuse',
+    deleteAccount: 'Supprimer mon Compte',
+    deleteAccountDesc: 'Cette action est permanente et irréversible. Toutes vos données — réservations, avis et profil — seront supprimées définitivement.',
+    deleteAccountConfirmLabel: 'Entrez votre mot de passe pour confirmer',
+    deleteAccountConfirmButton: 'Oui, supprimer définitivement mon compte',
+    deleteAccountDeleting: 'Suppression...',
+    deleteAccountFailed: 'Échec de la suppression. Vérifiez votre mot de passe et réessayez.',
 
     // AuthModal – tabs & header
     signInTab: 'CONNEXION',
@@ -1586,6 +1658,11 @@ export const translations: Record<Language, Translations> = {
     wilayaCol: 'الولاية',
     actionCol: 'الإجراء',
     reviewAction: 'مراجعة',
+    approveProvider: 'موافقة',
+    rejectProvider: 'رفض',
+    rejectionReasonPlaceholder: 'سبب الرفض…',
+    providerApproved: 'تمت الموافقة على مقدم الخدمة.',
+    providerRejected: 'تم رفض مقدم الخدمة.',
 
     // Dashboard – Bookings tab
     bookingHistory: 'سجل الحجوزات',
@@ -1604,6 +1681,18 @@ export const translations: Record<Language, Translations> = {
     galleryFull: 'المعرض ممتلئ (الحد الأقصى 8 صور)',
     photoGallery: 'معرض الصور',
     noPhotos: 'لا توجد صور بعد',
+    servicesAndPricing: 'الخدمات والأسعار',
+    servicesListDesc: 'أدرج خدماتك مع الأسعار التقديرية حتى يتمكن العملاء من المقارنة قبل الحجز.',
+    serviceName: 'اسم الخدمة',
+    servicePrice: 'السعر (دج)',
+    serviceNamePlaceholder: 'مثال: تغيير الزيت، إصلاح الفرامل...',
+    addService: 'إضافة خدمة',
+    removeService: 'حذف',
+    noServicesListed: 'لا توجد خدمات مدرجة بعد.',
+    saveServices: 'حفظ الخدمات',
+    servicesSaved: 'تم حفظ الخدمات بنجاح.',
+    servicesSaveFailed: 'فشل حفظ الخدمات.',
+    fromPrice: 'ابتداءً من',
     emailLabel: 'البريد الإلكتروني',
     emailCannotChange: 'لا يمكن تغيير عنوان البريد الإلكتروني.',
     phoneLabel: 'الهاتف',
@@ -1616,6 +1705,13 @@ export const translations: Record<Language, Translations> = {
     newPassword: 'كلمة المرور الجديدة',
     confirmNewPassword: 'تأكيد كلمة المرور الجديدة',
     updatePassword: 'تحديث كلمة المرور',
+    dangerZone: 'منطقة الخطر',
+    deleteAccount: 'حذف حسابي',
+    deleteAccountDesc: 'هذا الإجراء دائم ولا يمكن التراجع عنه. سيتم حذف جميع بياناتك — الحجوزات، التقييمات، والملف الشخصي — نهائيًا.',
+    deleteAccountConfirmLabel: 'أدخل كلمة المرور للتأكيد',
+    deleteAccountConfirmButton: 'نعم، احذف حسابي نهائيًا',
+    deleteAccountDeleting: 'جارٍ الحذف...',
+    deleteAccountFailed: 'فشل الحذف. تحقق من كلمة المرور وحاول مرة أخرى.',
 
     // AuthModal – tabs & header
     signInTab: 'تسجيل الدخول',

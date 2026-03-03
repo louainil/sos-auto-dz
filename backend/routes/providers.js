@@ -54,7 +54,7 @@ router.get('/', [
     const { role, wilayaId, commune, garageType, specialty, isAvailable, search } = req.query;
 
     // Build filter object — only show verified providers in public results
-    const filter = { isVerified: true };
+    const filter = { isVerified: 'APPROVED' };
     
     if (role) filter.role = role;
     if (wilayaId) filter.wilayaId = parseInt(wilayaId);
@@ -94,10 +94,10 @@ router.get('/', [
 router.get('/stats', async (req, res) => {
   try {
     const [totalProviders, wilayaIds, ratingResult] = await Promise.all([
-      ServiceProvider.countDocuments({ isVerified: true }),
-      ServiceProvider.distinct('wilayaId', { isVerified: true }),
+      ServiceProvider.countDocuments({ isVerified: 'APPROVED' }),
+      ServiceProvider.distinct('wilayaId', { isVerified: 'APPROVED' }),
       ServiceProvider.aggregate([
-        { $match: { isVerified: true, totalReviews: { $gt: 0 } } },
+        { $match: { isVerified: 'APPROVED', totalReviews: { $gt: 0 } } },
         { $group: { _id: null, avgRating: { $avg: '$rating' } } }
       ])
     ]);
@@ -148,6 +148,9 @@ router.put('/:id', protect, isProfessional, [
   body('workingDays').optional().isArray().withMessage('Working days must be an array'),
   body('workingHours.start').optional().matches(/^\d{2}:\d{2}$/).withMessage('workingHours.start must be HH:MM'),
   body('workingHours.end').optional().matches(/^\d{2}:\d{2}$/).withMessage('workingHours.end must be HH:MM'),
+  body('services').optional().isArray({ max: 50 }).withMessage('services must be an array of at most 50 items'),
+  body('services.*.name').optional().trim().isLength({ min: 1, max: 100 }).withMessage('Service name must be 1-100 characters'),
+  body('services.*.price').optional().isFloat({ min: 0 }).withMessage('Service price must be a non-negative number'),
   validate
 ], async (req, res) => {
   try {
@@ -170,7 +173,8 @@ router.put('/:id', protect, isProfessional, [
       profileImage,
       isAvailable,
       workingDays,
-      workingHours
+      workingHours,
+      services
     } = req.body;
 
     // Update fields
@@ -182,6 +186,7 @@ router.put('/:id', protect, isProfessional, [
     if (isAvailable !== undefined) provider.isAvailable = isAvailable;
     if (workingDays) provider.workingDays = workingDays;
     if (workingHours) provider.workingHours = workingHours;
+    if (services !== undefined) provider.services = services;
 
     const updatedProvider = await provider.save();
 

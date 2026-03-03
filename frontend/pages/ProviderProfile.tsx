@@ -1,6 +1,6 @@
 import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Star, Phone, MapPin, Clock, MessageCircle, Wrench, Truck, ArrowLeft, Image, X, Edit3 } from 'lucide-react';
+import { Star, Phone, MapPin, Clock, MessageCircle, Wrench, Truck, ArrowLeft, Image, X, Edit3, Tag } from 'lucide-react';
 import { ServiceProvider, User, UserRole, Booking } from '../types';
 import { Language, translations } from '../translations';
 import { providersAPI, reviewsAPI, bookingsAPI } from '../api';
@@ -288,6 +288,24 @@ const ProviderProfile: React.FC<ProviderProfileProps> = ({ language, userLocatio
                   <span key={i} className="text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-lg">
                     {spec}
                   </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Services & Pricing */}
+          {provider.services && provider.services.length > 0 && (
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
+                <Tag size={18} className="text-emerald-500" />
+                {t.servicesAndPricing}
+              </h2>
+              <div className="divide-y divide-slate-100 dark:divide-slate-700 rounded-lg border border-slate-100 dark:border-slate-700 overflow-hidden">
+                {provider.services.map((svc, i) => (
+                  <div key={i} className="flex items-center justify-between px-4 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                    <span className="text-sm text-slate-700 dark:text-slate-300">{svc.name}</span>
+                    <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">{svc.price.toLocaleString()} DZD</span>
+                  </div>
                 ))}
               </div>
             </div>

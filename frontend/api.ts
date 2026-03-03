@@ -1,4 +1,6 @@
 /// <reference types="vite/client" />
+import type { RegisterPayload, ProviderFilters, ProviderUpdatePayload, CreateBookingPayload, BookingUpdatePayload } from './types';
+
 const API_URL = `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}`;
 
 // ---------------------------------------------------------------------------
@@ -31,7 +33,7 @@ let _csrfToken: string | null = null;
 
 const getCsrfToken = async (): Promise<string> => {
   if (_csrfToken) return _csrfToken;
-  const res = await fetch(`${API_URL}/csrf-token`, { credentials: 'include' });
+  const res = await safeFetch(`${API_URL}/csrf-token`, { credentials: 'include' });
   const { csrfToken } = await res.json();
   _csrfToken = csrfToken as string;
   return _csrfToken;
@@ -41,6 +43,25 @@ const getCsrfToken = async (): Promise<string> => {
 const resetCsrfToken = () => { _csrfToken = null; };
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'DELETE', 'PATCH']);
+
+// Network-safe fetch with a 15 s timeout.
+// • AbortError  → "Request timed out"
+// • TypeError   → "Network error. Please check your connection."
+const FETCH_TIMEOUT_MS = 15_000;
+const safeFetch = async (url: string, options?: RequestInit): Promise<Response> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error('Request timed out. Please try again.');
+    }
+    throw new Error('Network error. Please check your connection.');
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
 
 // Helper function to handle API responses
 const handleResponse = async (response: Response) => {
@@ -68,7 +89,7 @@ const attemptTokenRefresh = async (): Promise<boolean> => {
       'x-csrf-token': csrfToken,
     };
     if (_accessToken) headers['Authorization'] = `Bearer ${_accessToken}`;
-    const res = await fetch(`${API_URL}/auth/refresh`, {
+    const res = await safeFetch(`${API_URL}/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
       headers,
@@ -105,19 +126,19 @@ const authFetch = async (url: string, options: RequestInit = {}): Promise<Respon
   };
 
   let headers = await buildHeaders();
-  let response = await fetch(url, { ...options, credentials: 'include', headers });
+  let response = await safeFetch(url, { ...options, credentials: 'include', headers });
 
   if (response.status === 401) {
     const refreshed = await attemptTokenRefresh();
     if (refreshed) {
       headers = await buildHeaders(); // rebuild to pick up new access token
-      response = await fetch(url, { ...options, credentials: 'include', headers });
+      response = await safeFetch(url, { ...options, credentials: 'include', headers });
     }
   } else if (response.status === 403 && isMutating) {
     // CSRF token may be stale — reset, get a fresh one, and retry once.
     resetCsrfToken();
     headers = await buildHeaders();
-    response = await fetch(url, { ...options, credentials: 'include', headers });
+    response = await safeFetch(url, { ...options, credentials: 'include', headers });
   }
 
   return response;
@@ -138,7 +159,7 @@ const csrfFetch = async (
       ...(options.headers as Record<string, string> || {}),
       'x-csrf-token': csrfToken,
     };
-    return fetch(url, { ...options, credentials: 'include', headers });
+    return safeFetch(url, { ...options, credentials: 'include', headers });
   };
   let response = await attempt();
   if (response.status === 403) {
@@ -151,7 +172,7 @@ const csrfFetch = async (
 
 // Auth API
 export const authAPI = {
-  register: async (userData: any) => {
+  register: async (userData: RegisterPayload) => {
     const response = await csrfFetch(`${API_URL}/auth/register`, {
       method: 'POST',
       body: JSON.stringify(userData),
@@ -209,6 +230,14 @@ export const authAPI = {
     return handleResponse(response);
   },
 
+  deleteAccount: async (password: string) => {
+    const response = await authFetch(`${API_URL}/auth/account`, {
+      method: 'DELETE',
+      body: JSON.stringify({ password }),
+    });
+    return handleResponse(response);
+  },
+
   forgotPassword: async (email: string) => {
     const response = await csrfFetch(`${API_URL}/auth/forgot-password`, {
       method: 'POST',
@@ -226,7 +255,7 @@ export const authAPI = {
   },
 
   verifyEmail: async (token: string, email: string) => {
-    const response = await fetch(`${API_URL}/auth/verify-email?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`);
+    const response = await safeFetch(`${API_URL}/auth/verify-email?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`);
     return handleResponse(response);
   },
 
@@ -241,25 +270,25 @@ export const authAPI = {
 
 // Providers API
 export const providersAPI = {
-  getAll: async (filters?: any) => {
+  getAll: async (filters?: ProviderFilters) => {
     const params = new URLSearchParams();
     if (filters) {
       Object.keys(filters).forEach(key => {
         if (filters[key] !== undefined && filters[key] !== 'all') {
-          params.append(key, filters[key]);
+          params.append(key, String(filters[key]));
         }
       });
     }
-    const response = await fetch(`${API_URL}/providers?${params}`);
+    const response = await safeFetch(`${API_URL}/providers?${params}`);
     return handleResponse(response);
   },
 
   getById: async (id: string) => {
-    const response = await fetch(`${API_URL}/providers/${id}`);
+    const response = await safeFetch(`${API_URL}/providers/${id}`);
     return handleResponse(response);
   },
 
-  update: async (id: string, data: any) => {
+  update: async (id: string, data: ProviderUpdatePayload) => {
     const response = await authFetch(`${API_URL}/providers/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
@@ -303,7 +332,7 @@ export const providersAPI = {
 
 // Bookings API
 export const bookingsAPI = {
-  create: async (bookingData: any) => {
+  create: async (bookingData: CreateBookingPayload) => {
     const response = await authFetch(`${API_URL}/bookings`, {
       method: 'POST',
       body: JSON.stringify(bookingData)
@@ -321,7 +350,7 @@ export const bookingsAPI = {
     return handleResponse(response);
   },
 
-  update: async (id: string, data: any) => {
+  update: async (id: string, data: BookingUpdatePayload) => {
     const response = await authFetch(`${API_URL}/bookings/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
@@ -378,7 +407,7 @@ export const notificationsAPI = {
 // Public Stats API
 export const publicStatsAPI = {
   get: async () => {
-    const response = await fetch(`${API_URL}/providers/stats`);
+    const response = await safeFetch(`${API_URL}/providers/stats`);
     return handleResponse(response);
   }
 };
@@ -394,7 +423,7 @@ export const reviewsAPI = {
   },
 
   getByProvider: async (providerId: string) => {
-    const response = await fetch(`${API_URL}/reviews/provider/${providerId}`);
+    const response = await safeFetch(`${API_URL}/reviews/provider/${providerId}`);
     return handleResponse(response);
   },
 
@@ -419,6 +448,14 @@ export const adminAPI = {
   approveProvider: async (id: string) => {
     const response = await authFetch(`${API_URL}/admin/providers/${id}/approve`, {
       method: 'PUT'
+    });
+    return handleResponse(response);
+  },
+
+  rejectProvider: async (id: string, rejectionReason: string) => {
+    const response = await authFetch(`${API_URL}/admin/providers/${id}/reject`, {
+      method: 'PUT',
+      body: JSON.stringify({ rejectionReason }),
     });
     return handleResponse(response);
   }

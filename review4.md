@@ -512,7 +512,7 @@ interface CreateBookingPayload { providerId: string; date: string; issue: string
 
 ---
 
-### 4.4 — No network error handling in API calls (MEDIUM)
+### 4.4 — No network error handling in API calls (MEDIUM)//
 
 **File:** `frontend/api.ts`
 

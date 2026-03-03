@@ -8,6 +8,8 @@ import { body } from 'express-validator';
 import User from '../models/User.js';
 import ServiceProvider from '../models/ServiceProvider.js';
 import Notification from '../models/Notification.js';
+import Booking from '../models/Booking.js';
+import Review from '../models/Review.js';
 import { protect } from '../middleware/auth.js';
 import validate from '../middleware/validate.js';
 import cloudinary from '../config/cloudinary.js';
@@ -580,6 +582,56 @@ router.post('/logout', protect, async (req, res) => {
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
     console.error('Logout error:', error);
+    res.status(500).json({ message: 'Server error', ...devError(error) });
+  }
+});
+
+// @route   DELETE /api/auth/account
+// @desc    Permanently delete own account and all associated data (cascade)
+// @access  Private
+router.delete('/account', protect, [
+  body('password').notEmpty().withMessage('Password is required to confirm account deletion'),
+  validate
+], async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('+password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const isMatch = await user.matchPassword(req.body.password);
+    if (!isMatch) return res.status(401).json({ message: 'Incorrect password. Account not deleted.' });
+
+    const userId = user._id;
+
+    // Find provider profile (if any) to clean up Cloudinary gallery images
+    const provider = await ServiceProvider.findOne({ userId });
+    if (provider) {
+      for (const img of provider.images || []) {
+        try { await cloudinary.uploader.destroy(img.publicId); } catch { /* ignore – best-effort */ }
+      }
+    }
+
+    // Cascade delete all related documents in parallel
+    await Promise.all([
+      ServiceProvider.deleteOne({ userId }),
+      Booking.deleteMany({
+        $or: [
+          { clientId: userId },
+          ...(provider ? [{ providerId: provider._id }] : [])
+        ]
+      }),
+      Notification.deleteMany({ userId }),
+      Review.deleteMany({ clientId: userId }),
+      ...(provider ? [Review.deleteMany({ providerId: provider._id })] : []),
+    ]);
+
+    // Delete the user account itself
+    await user.deleteOne();
+
+    // Clear auth cookies so the browser session ends immediately
+    clearAuthCookies(res);
+    res.json({ message: 'Account deleted successfully.' });
+  } catch (error) {
+    console.error('Account deletion error:', error);
     res.status(500).json({ message: 'Server error', ...devError(error) });
   }
 });

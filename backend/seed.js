@@ -154,7 +154,7 @@ const seedDatabase = async () => {
       await ServiceProvider.create({
         ...providerData,
         userId: user._id,
-        isVerified: true
+        isVerified: 'APPROVED'
       });
 
       console.log(`Created: ${providerData.name}`);

@@ -79,9 +79,18 @@ const serviceProviderSchema = new mongoose.Schema({
     default: 0
   },
   isVerified: {
-    type: Boolean,
-    default: false
-  }
+    type: String,
+    enum: ['PENDING', 'APPROVED', 'REJECTED'],
+    default: 'PENDING'
+  },
+  rejectionReason: {
+    type: String,
+    default: ''
+  },
+  services: [{
+    name: { type: String, required: true, trim: true },
+    price: { type: Number, required: true, min: 0 }
+  }]
 }, {
   timestamps: true
 });

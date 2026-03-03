@@ -62,7 +62,7 @@ export const createMockProvider = (overrides = {}) => {
     workingDays: [0, 1, 2, 3, 4, 6],
     workingHours: { start: '08:00', end: '17:00' },
     totalReviews: 5,
-    isVerified: true,
+    isVerified: 'APPROVED',
     save: async function () { return this; },
     toObject: function () { return { ...this }; },
     populate: function () { return this; },

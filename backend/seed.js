@@ -171,8 +171,20 @@ const seedDatabase = async () => {
 
     console.log('Created test client user');
 
+    // Create an admin user
+    await User.create({
+      name: 'Admin',
+      email: 'admin@example.com',
+      password: 'admin123',
+      role: 'ADMIN',
+      phone: '0550000001'
+    });
+
+    console.log('Created admin user');
+
     console.log('✅ Database seeded successfully!');
     console.log('\nTest Accounts:');
+    console.log('Admin:  admin@example.com / admin123');
     console.log('Client: client@example.com / password123');
     sampleProviders.forEach(p => {
       console.log(`${p.role}: ${p.name.toLowerCase().replace(/\s+/g, '')}@example.com / password123`);

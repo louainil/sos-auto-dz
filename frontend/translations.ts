@@ -219,6 +219,7 @@ export interface Translations {
   pendingApprovals: string;
   reports: string;
   pendingProviderApprovals: string;
+  providersTab: string;
   nameCol: string;
   typeCol: string;
   wilayaCol: string;
@@ -698,6 +699,7 @@ export const translations: Record<Language, Translations> = {
     pendingApprovals: 'Pending Approvals',
     reports: 'Reports',
     pendingProviderApprovals: 'Pending Provider Approvals',
+    providersTab: 'Manage Providers',
     nameCol: 'Name',
     typeCol: 'Type',
     wilayaCol: 'Wilaya',
@@ -1175,6 +1177,7 @@ export const translations: Record<Language, Translations> = {
     pendingApprovals: 'Approbations en Attente',
     reports: 'Rapports',
     pendingProviderApprovals: 'Approbations de Prestataires en Attente',
+    providersTab: 'Gérer les Prestataires',
     nameCol: 'Nom',
     typeCol: 'Type',
     wilayaCol: 'Wilaya',
@@ -1653,6 +1656,7 @@ export const translations: Record<Language, Translations> = {
     pendingApprovals: 'الموافقات المعلقة',
     reports: 'التقارير',
     pendingProviderApprovals: 'موافقات مقدمي الخدمة المعلقة',
+    providersTab: 'إدارة مقدمي الخدمة',
     nameCol: 'الاسم',
     typeCol: 'النوع',
     wilayaCol: 'الولاية',

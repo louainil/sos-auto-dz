@@ -15,7 +15,7 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, language = 'en' }) => {
   const t = translations[language];
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'BOOKINGS' | 'SETTINGS'>('OVERVIEW');
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'BOOKINGS' | 'SETTINGS' | 'PROVIDERS'>('OVERVIEW');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isAvailable, setIsAvailable] = useState(user.isAvailable ?? true);
   const [providerId, setProviderId] = useState<string | null>(null);
@@ -611,80 +611,121 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
              <StatCard title={t.pendingApprovals} value={adminStats?.pendingProviders ?? '—'} icon={AlertCircle} color="bg-orange-500" />
            </div>
 
-           <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6">
-             <h3 className="font-bold mb-4">{t.pendingProviderApprovals}</h3>
-             {adminActionMsg && (
-               <p className="mb-3 text-sm text-green-600 dark:text-green-400">{adminActionMsg}</p>
-             )}
-             {pendingProviders.length === 0 ? (
-               <p className="text-slate-500 dark:text-slate-400 text-sm py-4 text-center">No pending approvals</p>
-             ) : (
-               <table className="w-full text-left">
-                 <thead>
-                   <tr className="border-b border-slate-200 dark:border-slate-700 text-sm text-slate-500">
-                     <th className="pb-3">{t.nameCol}</th>
-                     <th className="pb-3">{t.typeCol}</th>
-                     <th className="pb-3">{t.wilayaCol}</th>
-                     <th className="pb-3 text-right">{t.actionCol}</th>
-                   </tr>
-                 </thead>
-                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                   {pendingProviders.map((p: any) => (
-                     <tr key={p._id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                       <td className="py-4 font-medium">{p.name}</td>
-                       <td className="py-4 text-sm text-slate-500">{p.role}</td>
-                       <td className="py-4 text-sm text-slate-500">{p.wilayaId}</td>
-                       <td className="py-4 text-right">
-                         {rejectingId === p._id ? (
-                           <div className="flex items-center gap-2 justify-end flex-wrap">
-                             <input
-                               type="text"
-                               value={rejectReason}
-                               onChange={e => setRejectReason(e.target.value)}
-                               onKeyDown={e => e.key === 'Enter' && handleRejectProvider(p._id)}
-                               placeholder={t.rejectionReasonPlaceholder}
-                               className="px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white w-48 focus:outline-none focus:ring-2 focus:ring-red-500"
-                               autoFocus
-                             />
-                             <button
-                               onClick={() => handleRejectProvider(p._id)}
-                               disabled={!rejectReason.trim()}
-                               className="px-3 py-1 bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white text-sm font-medium rounded-lg transition-colors"
-                             >
-                               {t.rejectProvider}
-                             </button>
-                             <button
-                               onClick={() => { setRejectingId(null); setRejectReason(''); }}
-                               className="px-3 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-lg transition-colors"
-                             >
-                               {t.cancel}
-                             </button>
-                           </div>
-                         ) : (
-                           <div className="flex items-center gap-2 justify-end">
-                             <button
-                               onClick={() => handleApproveProvider(p._id)}
-                               className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
-                             >
-                               {t.approveProvider}
-                             </button>
-                             <button
-                               onClick={() => { setRejectingId(p._id); setRejectReason(''); }}
-                               className="px-3 py-1 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 text-sm font-medium rounded-lg transition-colors"
-                             >
-                               {t.rejectProvider}
-                             </button>
-                           </div>
-                         )}
-                       </td>
-                     </tr>
-                   ))}
-                 </tbody>
-               </table>
-             )}
-           </div>
+           {/* Quick-access card to Providers tab */}
+           <button
+             onClick={() => setActiveTab('PROVIDERS')}
+             className="w-full flex items-center justify-between bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-5 hover:border-orange-400 dark:hover:border-orange-500 transition-colors group"
+           >
+             <div className="flex items-center gap-4">
+               <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                 <Shield size={20} className="text-orange-600 dark:text-orange-400" />
+               </div>
+               <div className="text-left">
+                 <p className="font-semibold text-slate-900 dark:text-white">{t.providersTab}</p>
+                 <p className="text-sm text-slate-500 dark:text-slate-400">{t.pendingProviderApprovals}</p>
+               </div>
+             </div>
+             <div className="flex items-center gap-3">
+               {(adminStats?.pendingProviders ?? 0) > 0 && (
+                 <span className="px-2.5 py-1 bg-orange-500 text-white text-xs font-bold rounded-full">
+                   {adminStats!.pendingProviders}
+                 </span>
+               )}
+               <span className="text-slate-400 group-hover:text-orange-500 transition-colors">→</span>
+             </div>
+           </button>
          </>
        )}
+    </div>
+  );
+
+  const AdminProviders = () => (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6">
+        <h3 className="font-bold text-lg mb-1">{t.pendingProviderApprovals}</h3>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{t.adminSubtitle}</p>
+        {adminActionMsg && (
+          <p className="mb-4 px-4 py-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg text-sm">{adminActionMsg}</p>
+        )}
+        {adminLoading ? (
+          <div className="flex justify-center py-12">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : pendingProviders.length === 0 ? (
+          <div className="flex flex-col items-center py-12 gap-3 text-slate-400">
+            <CheckCircle size={40} className="text-green-400" />
+            <p className="font-medium">No pending approvals</p>
+            <p className="text-sm">All providers have been reviewed.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-slate-700 text-sm text-slate-500">
+                  <th className="pb-3 pr-4">{t.nameCol}</th>
+                  <th className="pb-3 pr-4">{t.typeCol}</th>
+                  <th className="pb-3 pr-4">{t.wilayaCol}</th>
+                  <th className="pb-3 pr-4">Phone</th>
+                  <th className="pb-3 text-right">{t.actionCol}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                {pendingProviders.map((p: any) => (
+                  <tr key={p._id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <td className="py-4 pr-4 font-medium">{p.name}</td>
+                    <td className="py-4 pr-4 text-sm text-slate-500">{p.role}</td>
+                    <td className="py-4 pr-4 text-sm text-slate-500">{p.wilayaId}</td>
+                    <td className="py-4 pr-4 text-sm text-slate-500">{p.phone || '—'}</td>
+                    <td className="py-4 text-right">
+                      {rejectingId === p._id ? (
+                        <div className="flex items-center gap-2 justify-end flex-wrap">
+                          <input
+                            type="text"
+                            value={rejectReason}
+                            onChange={e => setRejectReason(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleRejectProvider(p._id)}
+                            placeholder={t.rejectionReasonPlaceholder}
+                            className="px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white w-52 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            autoFocus
+                          />
+                          <button
+                            onClick={() => handleRejectProvider(p._id)}
+                            disabled={!rejectReason.trim()}
+                            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white text-sm font-medium rounded-lg transition-colors"
+                          >
+                            {t.rejectProvider}
+                          </button>
+                          <button
+                            onClick={() => { setRejectingId(null); setRejectReason(''); }}
+                            className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-lg transition-colors"
+                          >
+                            {t.cancel}
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 justify-end">
+                          <button
+                            onClick={() => handleApproveProvider(p._id)}
+                            className="px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1"
+                          >
+                            <CheckCircle size={14} /> {t.approveProvider}
+                          </button>
+                          <button
+                            onClick={() => { setRejectingId(p._id); setRejectReason(''); }}
+                            className="px-4 py-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 text-sm font-medium rounded-lg transition-colors flex items-center gap-1"
+                          >
+                            <XCircle size={14} /> {t.rejectProvider}
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 
@@ -712,34 +753,57 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
           <div className="w-full md:w-64 flex-shrink-0">
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-4 shadow-sm sticky top-24">
                <nav className="space-y-2">
-                 <button 
-                    onClick={() => setActiveTab('OVERVIEW')}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
-                      activeTab === 'OVERVIEW' 
-                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
-                    }`}
+                 <button
+                   onClick={() => setActiveTab('OVERVIEW')}
+                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
+                     activeTab === 'OVERVIEW'
+                     ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                   }`}
                  >
                    <TrendingUp size={20} /> {t.overview}
                  </button>
-                 <button 
-                    onClick={() => setActiveTab('BOOKINGS')}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
-                      activeTab === 'BOOKINGS' 
-                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
-                    }`}
-                 >
-                   <Calendar size={20} /> 
-                   {user.role === UserRole.CLIENT ? t.myBookings : t.requests}
-                 </button>
-                 <button 
-                    onClick={() => setActiveTab('SETTINGS')}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
-                      activeTab === 'SETTINGS' 
-                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
-                    }`}
+
+                 {user.role === UserRole.ADMIN ? (
+                   /* Admin-only: Providers tab with pending badge */
+                   <button
+                     onClick={() => setActiveTab('PROVIDERS')}
+                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
+                       activeTab === 'PROVIDERS'
+                       ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
+                       : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                     }`}
+                   >
+                     <Shield size={20} />
+                     <span className="flex-1 text-left">{t.providersTab}</span>
+                     {(adminStats?.pendingProviders ?? 0) > 0 && (
+                       <span className="px-2 py-0.5 bg-orange-500 text-white text-xs font-bold rounded-full">
+                         {adminStats!.pendingProviders}
+                       </span>
+                     )}
+                   </button>
+                 ) : (
+                   /* Non-admin: Bookings tab */
+                   <button
+                     onClick={() => setActiveTab('BOOKINGS')}
+                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
+                       activeTab === 'BOOKINGS'
+                       ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                       : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                     }`}
+                   >
+                     <Calendar size={20} />
+                     {user.role === UserRole.CLIENT ? t.myBookings : t.requests}
+                   </button>
+                 )}
+
+                 <button
+                   onClick={() => setActiveTab('SETTINGS')}
+                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
+                     activeTab === 'SETTINGS'
+                     ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                   }`}
                  >
                    <Settings size={20} /> {t.settings}
                  </button>
@@ -768,6 +832,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                 {user.role === UserRole.CLIENT && <ClientOverview />}
                 {(user.role === UserRole.MECHANIC || user.role === UserRole.TOWING || user.role === UserRole.PARTS_SHOP) && <ProfessionalOverview />}
                 {user.role === UserRole.ADMIN && <AdminOverview />}
+              </div>
+            )}
+
+            {activeTab === 'PROVIDERS' && user.role === UserRole.ADMIN && (
+              <div className="animate-fade-in">
+                <AdminProviders />
               </div>
             )}
 

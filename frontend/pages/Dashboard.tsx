@@ -29,12 +29,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [adminActionMsg, setAdminActionMsg] = useState<string | null>(null);
+  const [adminActionError, setAdminActionError] = useState<string | null>(null);
+  const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [rejectSubmitting, setRejectSubmitting] = useState(false);
   // Admin – Users tab
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersSearch, setUsersSearch] = useState('');
   const [banningUserId, setBanningUserId] = useState<string | null>(null);
   const [userActionMsg, setUserActionMsg] = useState<string | null>(null);
+  const [userActionIsError, setUserActionIsError] = useState(false);
   // Admin – All Providers tab
   const [allProviders, setAllProviders] = useState<any[]>([]);
   const [allProvidersLoading, setAllProvidersLoading] = useState(false);
@@ -320,6 +324,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   }, [user.role, adminBookingsFilter]);
 
   const handleApproveProvider = async (id: string) => {
+    setApprovingId(id);
+    setAdminActionError(null);
     try {
       await adminAPI.approveProvider(id);
       setPendingProviders(prev => prev.filter((p: any) => p._id !== id));
@@ -331,13 +337,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
       } : prev);
       setAdminActionMsg(t.providerApproved);
       setTimeout(() => setAdminActionMsg(null), 3000);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to approve provider:', err);
+      setAdminActionError(err?.message || 'Failed to approve provider.');
+      setTimeout(() => setAdminActionError(null), 5000);
+    } finally {
+      setApprovingId(null);
     }
   };
 
   const handleRejectProvider = async (id: string) => {
     if (!rejectReason.trim()) return;
+    setRejectSubmitting(true);
+    setAdminActionError(null);
     try {
       await adminAPI.rejectProvider(id, rejectReason.trim());
       const wasInPending = pendingProviders.some((p: any) => p._id === id);
@@ -352,8 +364,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
       setRejectReason('');
       setAdminActionMsg(t.providerRejected);
       setTimeout(() => setAdminActionMsg(null), 3000);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to reject provider:', err);
+      setAdminActionError(err?.message || 'Failed to reject provider.');
+      setTimeout(() => setAdminActionError(null), 5000);
+    } finally {
+      setRejectSubmitting(false);
     }
   };
 
@@ -368,13 +384,18 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const handleBanUser = async (id: string, ban: boolean) => {
     setBanningUserId(id);
     setUserActionMsg(null);
+    setUserActionIsError(false);
     try {
       const updated = await adminAPI.banUser(id, ban);
       setAdminUsers(prev => prev.map((u: any) => u._id === id ? { ...u, isBanned: updated.isBanned } : u));
+      setUserActionIsError(false);
       setUserActionMsg(ban ? t.userBanned : t.userUnbanned);
       setTimeout(() => setUserActionMsg(null), 3000);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to ban/unban user:', err);
+      setUserActionIsError(true);
+      setUserActionMsg(err?.message || 'Action failed. Please try again.');
+      setTimeout(() => { setUserActionMsg(null); setUserActionIsError(false); }, 5000);
     } finally {
       setBanningUserId(null);
     }
@@ -777,6 +798,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
         {adminActionMsg && (
           <p className="mb-4 px-4 py-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg text-sm">{adminActionMsg}</p>
         )}
+        {adminActionError && (
+          <p className="mb-4 px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm">{adminActionError}</p>
+        )}
         {adminLoading ? (
           <div className="flex justify-center py-12">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -813,20 +837,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                             type="text"
                             value={rejectReason}
                             onChange={e => setRejectReason(e.target.value)}
-                            onKeyDown={e => e.key === 'Enter' && handleRejectProvider(p._id)}
+                            onKeyDown={e => { if (e.key === 'Enter' && !rejectSubmitting) handleRejectProvider(p._id); }}
                             placeholder={t.rejectionReasonPlaceholder}
                             className="px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white w-52 focus:outline-none focus:ring-2 focus:ring-red-500"
                             autoFocus
                           />
                           <button
+                            type="button"
                             onClick={() => handleRejectProvider(p._id)}
-                            disabled={!rejectReason.trim()}
-                            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white text-sm font-medium rounded-lg transition-colors"
+                            disabled={!rejectReason.trim() || rejectSubmitting}
+                            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white text-sm font-medium rounded-lg transition-colors inline-flex items-center gap-1"
                           >
+                            {rejectSubmitting && <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />}
                             {t.rejectProvider}
                           </button>
                           <button
+                            type="button"
                             onClick={() => { setRejectingId(null); setRejectReason(''); }}
+                            disabled={rejectSubmitting}
                             className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-lg transition-colors"
                           >
                             {t.cancel}
@@ -835,12 +863,18 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                       ) : (
                         <div className="flex items-center gap-2 justify-end">
                           <button
+                            type="button"
                             onClick={() => handleApproveProvider(p._id)}
-                            className="px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1"
+                            disabled={approvingId === p._id}
+                            className="px-4 py-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1"
                           >
-                            <CheckCircle size={14} /> {t.approveProvider}
+                            {approvingId === p._id
+                              ? <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              : <CheckCircle size={14} />}
+                            {t.approveProvider}
                           </button>
                           <button
+                            type="button"
                             onClick={() => { setRejectingId(p._id); setRejectReason(''); }}
                             className="px-4 py-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 text-sm font-medium rounded-lg transition-colors flex items-center gap-1"
                           >
@@ -873,7 +907,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6">
         <h3 className="font-bold text-lg mb-4">{t.usersTab}</h3>
         {userActionMsg && (
-          <p className="mb-4 px-4 py-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg text-sm">{userActionMsg}</p>
+          <p className={`mb-4 px-4 py-2 rounded-lg text-sm ${
+            userActionIsError
+              ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+              : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+          }`}>{userActionMsg}</p>
         )}
         {/* Search */}
         <div className="relative mb-4">
@@ -924,19 +962,27 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                     <td className="py-3 text-right">
                       {u.isBanned ? (
                         <button
+                          type="button"
                           disabled={banningUserId === u._id}
                           onClick={() => handleBanUser(u._id, false)}
                           className="px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-xs font-medium rounded-lg transition-colors inline-flex items-center gap-1"
                         >
-                          <CheckCircle size={12} /> {t.unbanUser}
+                          {banningUserId === u._id
+                            ? <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            : <CheckCircle size={12} />}
+                          {t.unbanUser}
                         </button>
                       ) : (
                         <button
+                          type="button"
                           disabled={banningUserId === u._id}
                           onClick={() => handleBanUser(u._id, true)}
                           className="px-3 py-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 text-xs font-medium rounded-lg transition-colors inline-flex items-center gap-1"
                         >
-                          <Ban size={12} /> {t.banUser}
+                          {banningUserId === u._id
+                            ? <span className="w-3 h-3 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+                            : <Ban size={12} />}
+                          {t.banUser}
                         </button>
                       )}
                     </td>
@@ -974,6 +1020,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
         </div>
         {adminActionMsg && (
           <p className="mb-4 px-4 py-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg text-sm">{adminActionMsg}</p>
+        )}
+        {adminActionError && (
+          <p className="mb-4 px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm">{adminActionError}</p>
         )}
         {allProvidersLoading ? (
           <div className="flex justify-center py-12">
@@ -1014,20 +1063,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                             type="text"
                             value={rejectReason}
                             onChange={e => setRejectReason(e.target.value)}
-                            onKeyDown={e => e.key === 'Enter' && handleRejectProvider(p._id)}
+                            onKeyDown={e => { if (e.key === 'Enter' && !rejectSubmitting) handleRejectProvider(p._id); }}
                             placeholder={t.rejectionReasonPlaceholder}
                             className="px-2 py-1 text-xs border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white w-44 focus:outline-none focus:ring-2 focus:ring-red-500"
                             autoFocus
                           />
                           <button
+                            type="button"
                             onClick={() => handleRejectProvider(p._id)}
-                            disabled={!rejectReason.trim()}
-                            className="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white text-xs font-medium rounded-lg transition-colors"
+                            disabled={!rejectReason.trim() || rejectSubmitting}
+                            className="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white text-xs font-medium rounded-lg transition-colors inline-flex items-center gap-1"
                           >
+                            {rejectSubmitting && <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />}
                             {t.rejectProvider}
                           </button>
                           <button
+                            type="button"
                             onClick={() => { setRejectingId(null); setRejectReason(''); }}
+                            disabled={rejectSubmitting}
                             className="px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-xs font-medium rounded-lg transition-colors"
                           >
                             {t.cancel}
@@ -1037,14 +1090,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                         <div className="flex gap-2 justify-end">
                           {p.isVerified !== 'APPROVED' && (
                             <button
+                              type="button"
                               onClick={() => handleApproveProvider(p._id)}
-                              className="px-2.5 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors inline-flex items-center gap-1"
+                              disabled={approvingId === p._id}
+                              className="px-2.5 py-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-xs font-medium rounded-lg transition-colors inline-flex items-center gap-1"
                             >
-                              <CheckCircle size={12} /> {t.approveProvider}
+                              {approvingId === p._id
+                                ? <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                : <CheckCircle size={12} />}
+                              {t.approveProvider}
                             </button>
                           )}
                           {p.isVerified !== 'REJECTED' && (
                             <button
+                              type="button"
                               onClick={() => { setRejectingId(p._id); setRejectReason(''); }}
                               className="px-2.5 py-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 text-xs font-medium rounded-lg transition-colors inline-flex items-center gap-1"
                             >

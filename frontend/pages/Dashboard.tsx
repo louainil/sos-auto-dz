@@ -95,6 +95,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const [declineBooking, setDeclineBooking] = useState<Booking | null>(null);
   const [declineReason, setDeclineReason] = useState('');
 
+  // Client cancel booking
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+
   // Sync local state when parent user prop updates (e.g. after avatar upload)
   useEffect(() => {
     setProfilePic(user.avatar?.url || null);
@@ -541,6 +544,18 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
     setDeclineReason('');
   };
 
+  const handleCancelBooking = async (id: string) => {
+    setCancellingId(id);
+    try {
+      await bookingsAPI.delete(id, t.cancelledByClient);
+      setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'CANCELLED', cancellationReason: t.cancelledByClient } : b));
+    } catch (error) {
+      console.error('Failed to cancel booking:', error);
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch(status) {
       case 'PENDING': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
@@ -609,6 +624,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                   )}
                 </div>
               </div>
+              {booking.status === 'PENDING' && (
+                <button
+                  type="button"
+                  disabled={cancellingId === booking.id}
+                  onClick={() => handleCancelBooking(booking.id)}
+                  className="px-4 py-2 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-60 flex items-center gap-2"
+                >
+                  {cancellingId === booking.id ? (
+                    <span className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <XCircle size={16} />
+                  )}
+                  {t.cancelBooking}
+                </button>
+              )}
               {booking.status === 'COMPLETED' && (
                 reviewedBookingIds.has(booking.id) ? (
                   <span className="px-4 py-2 text-sm font-medium text-green-600 dark:text-green-400 flex items-center gap-1">
@@ -1394,6 +1424,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                                      {t.leaveReview}
                                    </button>
                                  )
+                               )}
+                               {user.role === UserRole.CLIENT && b.status === 'PENDING' && (
+                                 <button
+                                   type="button"
+                                   disabled={cancellingId === b.id}
+                                   onClick={() => handleCancelBooking(b.id)}
+                                   className="px-3 py-1.5 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg text-xs font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-60 flex items-center gap-1"
+                                 >
+                                   {cancellingId === b.id ? (
+                                     <span className="w-3 h-3 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                                   ) : (
+                                     <XCircle size={13} />
+                                   )}
+                                   {t.cancelBooking}
+                                 </button>
                                )}
                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(b.status)}`}>{b.status}</span>
                                {user.role === UserRole.CLIENT && (b.providerPhone || b.clientPhone) && (() => {

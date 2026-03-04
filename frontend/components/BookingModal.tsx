@@ -1,8 +1,20 @@
 import React, { useState } from 'react';
-import { X, Calendar, MessageCircle, CheckCircle } from 'lucide-react';
+import { X, Calendar, MessageCircle, CheckCircle, Car, ChevronDown } from 'lucide-react';
 import { ServiceProvider } from '../types';
 import { bookingsAPI } from '../api';
 import { Language, translations } from '../translations';
+import { CAR_BRANDS } from '../constants';
+
+const BREAKDOWN_TYPES = [
+  'Flat Tyre',
+  'Dead Battery',
+  'Engine Problem',
+  'Overheating',
+  'Accident',
+  'Electrical',
+  'Body Damage',
+  'Other',
+] as const;
 
 interface BookingModalProps {
   provider: ServiceProvider;
@@ -17,8 +29,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ provider, onClose, language
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     date: '',
-    description: ''
+    description: '',
+    carBrand: '',
+    carModel: '',
+    breakdownType: '',
   });
+  const [showBrandDropdown, setShowBrandDropdown] = useState(false);
+  const [brandSearch, setBrandSearch] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,10 +43,20 @@ const BookingModal: React.FC<BookingModalProps> = ({ provider, onClose, language
     setError('');
     
     try {
+      const issueParts: string[] = [];
+      if (formData.breakdownType) issueParts.push(`[${formData.breakdownType.toUpperCase()}]`);
+      if (formData.carBrand || formData.carModel) {
+        issueParts.push(`${formData.carBrand} ${formData.carModel}`.trim());
+      }
+      if (formData.description.trim()) {
+        issueParts.push(issueParts.length > 0 ? `— ${formData.description.trim()}` : formData.description.trim());
+      }
+      const issue = issueParts.join(' ') || formData.description;
+
       await bookingsAPI.create({
         providerId: provider.id,
         date: formData.date,
-        issue: formData.description
+        issue
       });
       setStep(2);
     } catch (err: any) {
@@ -41,7 +68,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ provider, onClose, language
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative border border-slate-200 dark:border-slate-800">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto relative border border-slate-200 dark:border-slate-800">
         <button 
           onClick={onClose}
           className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
@@ -72,6 +99,71 @@ const BookingModal: React.FC<BookingModalProps> = ({ provider, onClose, language
                     className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
                     value={formData.date}
                     onChange={e => setFormData({...formData, date: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              {/* Breakdown Type Chips */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.breakdownTypeLabel}</label>
+                <div className="flex flex-wrap gap-2">
+                  {BREAKDOWN_TYPES.map(type => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setFormData({...formData, breakdownType: formData.breakdownType === type ? '' : type})}
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                        formData.breakdownType === type
+                          ? 'bg-blue-600 border-blue-600 text-white'
+                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-blue-400'
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Vehicle Info */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.vehicleInfo}</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Car Brand Dropdown */}
+                  <div className="relative">
+                    <Car className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                    <input
+                      type="text"
+                      placeholder={t.searchCarBrand}
+                      className="w-full pl-9 pr-8 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none"
+                      value={brandSearch}
+                      onChange={e => { setBrandSearch(e.target.value); setShowBrandDropdown(true); if (!e.target.value) setFormData({...formData, carBrand: ''}); }}
+                      onFocus={() => setShowBrandDropdown(true)}
+                    />
+                    <ChevronDown className="absolute right-2.5 top-2.5 text-slate-400 pointer-events-none" size={16} />
+                    {showBrandDropdown && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setShowBrandDropdown(false)} />
+                        <div className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl max-h-40 overflow-y-auto">
+                          {CAR_BRANDS.filter(b => b.toLowerCase().includes(brandSearch.toLowerCase())).slice(0, 20).map(brand => (
+                            <div
+                              key={brand}
+                              className="px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer text-slate-700 dark:text-slate-200"
+                              onClick={() => { setFormData({...formData, carBrand: brand}); setBrandSearch(brand); setShowBrandDropdown(false); }}
+                            >
+                              {brand}
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {/* Car Model */}
+                  <input
+                    type="text"
+                    placeholder={t.carModelLabel}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none"
+                    value={formData.carModel}
+                    onChange={e => setFormData({...formData, carModel: e.target.value})}
                   />
                 </div>
               </div>

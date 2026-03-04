@@ -499,6 +499,20 @@ export interface Translations {
   pricingPerMonth: string;
   pricingPerTwoMonths: string;
   pricingMostPopular: string;
+  // Cancel booking
+  cancelBooking: string;
+  cancelBookingConfirm: string;
+  cancelledByClient: string;
+  // Vehicle info in booking
+  vehicleInfo: string;
+  carModelLabel: string;
+  breakdownTypeLabel: string;
+  // Sort modes
+  sortByNearest: string;
+  sortByRating: string;
+  // 404 page
+  notFoundTitle: string;
+  notFoundMessage: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -1001,6 +1015,16 @@ export const translations: Record<Language, Translations> = {
     pricingPerMonth: '/month',
     pricingPerTwoMonths: '/ 2 months',
     pricingMostPopular: 'Most Popular',
+    cancelBooking: 'Cancel Booking',
+    cancelBookingConfirm: 'Are you sure you want to cancel this booking?',
+    cancelledByClient: 'Cancelled by client',
+    vehicleInfo: 'Vehicle Info (optional)',
+    carModelLabel: 'Car Model',
+    breakdownTypeLabel: 'Type of Problem',
+    sortByNearest: 'Nearest',
+    sortByRating: 'Top Rated',
+    notFoundTitle: 'Page Not Found',
+    notFoundMessage: 'The page you are looking for does not exist or has been moved.',
   },
   fr: {
     // Navbar
@@ -1501,6 +1525,16 @@ export const translations: Record<Language, Translations> = {
     pricingPerMonth: '/mois',
     pricingPerTwoMonths: '/ 2 mois',
     pricingMostPopular: 'Le Plus Populaire',
+    cancelBooking: 'Annuler la réservation',
+    cancelBookingConfirm: 'Êtes-vous sûr de vouloir annuler cette réservation ?',
+    cancelledByClient: 'Annulé par le client',
+    vehicleInfo: 'Infos véhicule (optionnel)',
+    carModelLabel: 'Modèle du véhicule',
+    breakdownTypeLabel: 'Type de panne',
+    sortByNearest: 'Le plus proche',
+    sortByRating: 'Mieux noté',
+    notFoundTitle: 'Page introuvable',
+    notFoundMessage: "La page que vous recherchez n'existe pas ou a été déplacée.",
   },
 
   ar: {
@@ -2002,5 +2036,15 @@ export const translations: Record<Language, Translations> = {
     pricingPerMonth: '/شهر',
     pricingPerTwoMonths: '/ شهرين',
     pricingMostPopular: 'الأكثر شعبية',
+    cancelBooking: 'إلغاء الحجز',
+    cancelBookingConfirm: 'هل أنت متأكد أنك تريد إلغاء هذا الحجز؟',
+    cancelledByClient: 'ألغاه العميل',
+    vehicleInfo: 'معلومات السيارة (اختياري)',
+    carModelLabel: 'موديل السيارة',
+    breakdownTypeLabel: 'نوع العطل',
+    sortByNearest: 'الأقرب',
+    sortByRating: 'الأعلى تقييماً',
+    notFoundTitle: 'الصفحة غير موجودة',
+    notFoundMessage: 'الصفحة التي تبحث عنها غير موجودة أو تم نقلها.',
   },
 };

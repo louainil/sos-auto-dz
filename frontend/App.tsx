@@ -13,6 +13,7 @@ import TermsOfService from './pages/TermsOfService';
 import AboutUs from './pages/AboutUs';
 import ForProfessionals from './pages/ForProfessionals';
 import Pricing from './pages/Pricing';
+import NotFound from './pages/NotFound';
 import BookingModal from './components/BookingModal';
 import AuthModal from './components/AuthModal';
 import { PageView, ServiceProvider, UserRole, User, Notification } from './types';
@@ -391,7 +392,7 @@ const App: React.FC = () => {
           <Route path="/about" element={<AboutUs language={language} />} />
           <Route path="/for-professionals" element={<ForProfessionals language={language} onOpenSignUp={handleProClick} />} />
           <Route path="/pricing" element={<Pricing language={language} />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound language={language} />} />
         </Routes>
       </main>
 

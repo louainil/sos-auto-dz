@@ -29,6 +29,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
   const [providers, setProviders] = useState<ServiceProvider[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [sortMode, setSortMode] = useState<'rating' | 'nearest'>('rating');
   
   const t = translations[language];
   
@@ -105,9 +106,26 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
 
   const filteredProviders = useMemo(() => {
     // Search filtering is now handled server-side via the search query param.
-    // Client-side filtering is kept as an empty passthrough for future local filters.
+    // Client-side: optionally sort by proximity using wilaya centroids.
+    if (sortMode === 'nearest' && userLocation) {
+      const haversine = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) ** 2 +
+          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      };
+      return [...providers].sort((a, b) => {
+        const wa = WILAYAS.find(w => w.id === a.wilayaId);
+        const wb = WILAYAS.find(w => w.id === b.wilayaId);
+        const da = wa ? haversine(userLocation.lat, userLocation.lng, wa.latitude, wa.longitude) : Infinity;
+        const db = wb ? haversine(userLocation.lat, userLocation.lng, wb.latitude, wb.longitude) : Infinity;
+        return da - db;
+      });
+    }
     return providers;
-  }, [providers]);
+  }, [providers, sortMode, userLocation]);
 
   const availableCommunes = selectedWilaya !== 'all' ? COMMUNES[selectedWilaya] || [] : [];
 
@@ -272,8 +290,34 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
           <div className="flex justify-end mb-6">
             <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
               <button
-                onClick={() => setViewMode('list')}
+                type="button"
+                onClick={() => setSortMode('rating')}
                 className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                  sortMode === 'rating'
+                    ? 'bg-slate-900 text-white dark:bg-blue-600'
+                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                }`}
+              >
+                {t.sortByRating}
+              </button>
+              <button
+                type="button"
+                onClick={() => userLocation && setSortMode('nearest')}
+                disabled={!userLocation}
+                title={!userLocation ? 'Enable location to sort by nearest' : undefined}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                  sortMode === 'nearest'
+                    ? 'bg-slate-900 text-white dark:bg-blue-600'
+                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                } disabled:opacity-40 disabled:cursor-not-allowed`}
+              >
+                <Navigation size={14} />
+                {t.sortByNearest}
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors border-l border-slate-200 dark:border-slate-700 ${
                   viewMode === 'list'
                     ? 'bg-slate-900 text-white dark:bg-blue-600'
                     : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
@@ -283,6 +327,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
                 {t.listView}
               </button>
               <button
+                type="button"
                 onClick={() => setViewMode('map')}
                 className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
                   viewMode === 'map'

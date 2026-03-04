@@ -4,6 +4,7 @@ import { ArrowRight, Search, Map, Shield, Calendar, Wrench, Settings, Truck } fr
 import { PageView } from '../types';
 import { Language, translations } from '../translations';
 import { publicStatsAPI } from '../api';
+import useScrollReveal from '../utils/useScrollReveal';
 
 interface HomeProps {
   onChangeView: (view: PageView) => void;
@@ -27,6 +28,9 @@ const Home: React.FC<HomeProps> = ({ onChangeView, language }) => {
       .then((data) => setStats(data))
       .catch(() => {});
   }, []);
+
+  // Animate elements as they scroll into view
+  useScrollReveal([]);
   
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
@@ -96,7 +100,7 @@ const Home: React.FC<HomeProps> = ({ onChangeView, language }) => {
       {/* Services Grid */}
       <section className="py-24 bg-white dark:bg-slate-900 transition-colors duration-300">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 scroll-reveal">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">{t.servicesTitle}</h2>
             <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto">{t.servicesSubtitle}</p>
           </div>
@@ -104,7 +108,7 @@ const Home: React.FC<HomeProps> = ({ onChangeView, language }) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div 
               onClick={() => onChangeView(PageView.GARAGE)}
-              className="group p-8 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:border-blue-100 dark:hover:border-blue-900 hover:shadow-xl hover:shadow-blue-900/5 transition-all cursor-pointer"
+              className="group p-8 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:border-blue-100 dark:hover:border-blue-900 hover:shadow-xl hover:shadow-blue-900/5 transition-all cursor-pointer card-lift scroll-reveal scroll-reveal-delay-1"
             >
               <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6 group-hover:scale-110 transition-transform duration-300">
                 <Wrench size={28} />
@@ -118,7 +122,7 @@ const Home: React.FC<HomeProps> = ({ onChangeView, language }) => {
 
             <div 
               onClick={() => onChangeView(PageView.PARTS)}
-              className="group p-8 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:border-emerald-100 dark:hover:border-emerald-900 hover:shadow-xl hover:shadow-emerald-900/5 transition-all cursor-pointer"
+              className="group p-8 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:border-emerald-100 dark:hover:border-emerald-900 hover:shadow-xl hover:shadow-emerald-900/5 transition-all cursor-pointer card-lift scroll-reveal scroll-reveal-delay-2"
             >
               <div className="w-14 h-14 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-6 group-hover:scale-110 transition-transform duration-300">
                 <Settings size={28} />
@@ -132,7 +136,7 @@ const Home: React.FC<HomeProps> = ({ onChangeView, language }) => {
 
             <div 
               onClick={() => onChangeView(PageView.TOWING)}
-              className="group p-8 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:border-orange-100 dark:hover:border-orange-900 hover:shadow-xl hover:shadow-orange-900/5 transition-all cursor-pointer"
+              className="group p-8 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:border-orange-100 dark:hover:border-orange-900 hover:shadow-xl hover:shadow-orange-900/5 transition-all cursor-pointer card-lift scroll-reveal scroll-reveal-delay-3"
             >
               <div className="w-14 h-14 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center text-orange-600 dark:text-orange-400 mb-6 group-hover:scale-110 transition-transform duration-300">
                 <Truck size={28} />
@@ -152,7 +156,7 @@ const Home: React.FC<HomeProps> = ({ onChangeView, language }) => {
         <div className="absolute top-0 right-0 w-1/3 h-full bg-blue-600/10 transform skew-x-12"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-            <div>
+            <div className="scroll-reveal">
               <h2 className="text-3xl md:text-4xl font-bold mb-6">{t.whyChooseTitle}</h2>
               <div className="space-y-8">
                 <div className="flex gap-4">
@@ -185,7 +189,7 @@ const Home: React.FC<HomeProps> = ({ onChangeView, language }) => {
               </div>
             </div>
             
-            <div className="bg-slate-800 dark:bg-slate-900 p-8 rounded-3xl border border-slate-700">
+            <div className="bg-slate-800 dark:bg-slate-900 p-8 rounded-3xl border border-slate-700 scroll-reveal scroll-reveal-delay-2">
               <div className="grid grid-cols-2 gap-6">
                  <div className="text-center p-6 bg-slate-900/50 rounded-2xl">
                    <div className="text-4xl font-bold text-blue-400 mb-2">{stats.wilayasCovered || '—'}</div>

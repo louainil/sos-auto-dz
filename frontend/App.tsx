@@ -362,7 +362,8 @@ const App: React.FC = () => {
       />
       
       <main className="flex-grow">
-        <Routes>
+        <div key={location.pathname} className="page-enter">
+          <Routes>
           <Route path="/" element={<Home onChangeView={handleViewChange} language={language} />} />
           <Route path="/garage" element={
             <ServicesPage key="garage" type={UserRole.MECHANIC} title={t.garageServicesTitle} subtitle={t.garageServicesDesc} userLocation={userLocation} onBook={handleBook} language={language} />
@@ -394,6 +395,7 @@ const App: React.FC = () => {
           <Route path="/pricing" element={<Pricing language={language} />} />
           <Route path="*" element={<NotFound language={language} />} />
         </Routes>
+        </div>
       </main>
 
       {currentView !== PageView.DASHBOARD && <Footer language={language} onChangeView={handleViewChange} />}

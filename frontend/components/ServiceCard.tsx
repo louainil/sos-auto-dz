@@ -49,7 +49,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBoo
   const status = getStatus();
   
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-slate-100 dark:border-slate-700 overflow-hidden group">
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-slate-100 dark:border-slate-700 overflow-hidden group card-lift">
       
       {/* Conditionally render Image or Placeholder for Towing */}
       {provider.role === UserRole.TOWING ? (

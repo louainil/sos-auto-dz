@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu, X, Car, LogIn, Moon, Sun, Bell, LayoutDashboard, LogOut, Languages } from 'lucide-react';
 
 import { PageView, User, Notification } from '../types';
@@ -42,11 +42,18 @@ const Navbar: React.FC<NavbarProps> = ({
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   const unreadCount = notifications.filter(n => !n.isRead).length;
   const t = translations[language];
 
   return (
-    <nav className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
+    <nav className={`sticky top-0 z-40 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-all duration-300 ${isScrolled ? 'bg-white/95 dark:bg-slate-900/95 navbar-scrolled' : 'bg-white/80 dark:bg-slate-900/80 shadow-sm'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}

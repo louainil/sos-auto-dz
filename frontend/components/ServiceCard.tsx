@@ -56,6 +56,12 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBoo
         <div className="relative h-32 bg-gradient-to-r from-orange-400 to-red-500 flex items-center justify-center overflow-hidden">
            <div className="absolute inset-0 bg-white/10 opacity-20" style={{ backgroundImage: 'radial-gradient(circle, #fff 10%, transparent 10%)', backgroundSize: '10px 10px' }}></div>
            <Truck size={48} className="text-white drop-shadow-lg" />
+
+           {/* Rating Badge – top left */}
+           <div className="absolute top-3 left-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-bold text-slate-800 dark:text-white shadow-sm flex items-center">
+             <Star size={12} className="text-yellow-400 mr-1 fill-yellow-400" />
+             {provider.rating}
+           </div>
            
            {/* Dynamic Status Badge for Towing */}
            <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm flex items-center backdrop-blur-md ${status.color}`}>
@@ -79,6 +85,18 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBoo
                </div>
              );
            })()}
+
+           {/* Price Badge – bottom right */}
+           {provider.services && provider.services.length > 0 && (() => {
+             const minPrice = Math.min(...provider.services.map(s => s.price));
+             if (minPrice <= 0) return null;
+             return (
+               <div className="absolute bottom-3 right-3 flex items-center gap-1 bg-black/50 backdrop-blur-sm text-white px-2.5 py-1 rounded-full text-xs font-bold">
+                 <Tag size={11} />
+                 <span>{t.fromPrice} {minPrice.toLocaleString()} DZD</span>
+               </div>
+             );
+           })()}
         </div>
       ) : (
         <div className="relative h-48 overflow-hidden">
@@ -99,6 +117,18 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBoo
           <div className={`absolute bottom-3 right-3 px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm flex items-center backdrop-blur-md border border-white/20 ${status.color}`}>
              {status.text}
           </div>
+
+          {/* Price Badge Over Image (bottom-left) */}
+          {provider.services && provider.services.length > 0 && (() => {
+            const minPrice = Math.min(...provider.services.map(s => s.price));
+            if (minPrice <= 0) return null;
+            return (
+              <div className="absolute bottom-3 left-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-emerald-600 dark:text-emerald-400 shadow-sm flex items-center gap-1">
+                <Tag size={11} />
+                <span>{t.fromPrice} {minPrice.toLocaleString()} DZD</span>
+              </div>
+            );
+          })()}
 
           {!status.isBookable && (
             <div className="absolute inset-0 bg-slate-900/60 flex items-center justify-center backdrop-blur-[1px]">
@@ -152,9 +182,10 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBoo
         {/* Minimum price indicator */}
         {provider.services && provider.services.length > 0 && (() => {
           const minPrice = Math.min(...provider.services.map(s => s.price));
+          if (minPrice <= 0) return null;
           return (
-            <div className="flex items-center gap-1 mb-3 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-              <Tag size={12} />
+            <div className="inline-flex items-center gap-1.5 mb-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+              <Tag size={11} />
               <span>{t.fromPrice} {minPrice.toLocaleString()} DZD</span>
             </div>
           );

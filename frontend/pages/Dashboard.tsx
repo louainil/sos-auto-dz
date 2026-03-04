@@ -16,6 +16,7 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, language = 'en' }) => {
   const t = translations[language];
+  const isRTL = language === 'ar';
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'BOOKINGS' | 'SETTINGS' | 'PROVIDERS' | 'USERS' | 'ALL_PROVIDERS' | 'ADMIN_BOOKINGS'>('OVERVIEW');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isAvailable, setIsAvailable] = useState(user.isAvailable ?? true);
@@ -98,6 +99,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
 
   // Client cancel booking
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null);
 
   // Sync local state when parent user prop updates (e.g. after avatar upload)
   useEffect(() => {
@@ -664,7 +666,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                 <button
                   type="button"
                   disabled={cancellingId === booking.id}
-                  onClick={() => handleCancelBooking(booking.id)}
+                  onClick={() => setCancelConfirmId(booking.id)}
                   className="px-4 py-2 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-60 flex items-center gap-2"
                 >
                   {cancellingId === booking.id ? (
@@ -981,13 +983,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
         )}
         {/* Search */}
         <div className="relative mb-4">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={16} className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 text-slate-400`} />
           <input
             type="text"
             value={usersSearch}
             onChange={e => setUsersSearch(e.target.value)}
             placeholder={t.searchUsers}
-            className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`w-full ${isRTL ? 'pr-9 pl-4' : 'pl-9 pr-4'} py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500`}
           />
         </div>
         {usersLoading ? (
@@ -1490,7 +1492,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                                  <button
                                    type="button"
                                    disabled={cancellingId === b.id}
-                                   onClick={() => handleCancelBooking(b.id)}
+                                   onClick={() => setCancelConfirmId(b.id)}
                                    className="px-3 py-1.5 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg text-xs font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-60 flex items-center gap-1"
                                  >
                                    {cancellingId === b.id ? (
@@ -1961,6 +1963,36 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
             setReviewedBookingIds(prev => new Set(prev).add(bookingId));
           }}
         />
+      )}
+
+      {/* Cancel Booking Confirmation Modal */}
+      {cancelConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setCancelConfirmId(null)}>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
+              <XCircle size={20} className="text-red-500" /> {t.cancelBooking}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+              {t.cancelBookingConfirm}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setCancelConfirmId(null)}
+                className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                {t.cancel}
+              </button>
+              <button
+                disabled={cancellingId === cancelConfirmId}
+                onClick={async () => { const id = cancelConfirmId; setCancelConfirmId(null); await handleCancelBooking(id); }}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-60 flex items-center gap-2"
+              >
+                {cancellingId === cancelConfirmId && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                {t.cancelBooking}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Decline Modal */}

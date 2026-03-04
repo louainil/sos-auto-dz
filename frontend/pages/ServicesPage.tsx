@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, MapPin, Filter, AlertTriangle, Navigation, Wrench, Car, X, ChevronDown, Map, List } from 'lucide-react';
-import { WILAYAS, COMMUNES, CAR_BRANDS } from '../constants';
+import { WILAYAS, COMMUNES, PRIORITY_COMMUNES, CAR_BRANDS } from '../constants';
 import { ServiceProvider, UserRole, GarageType, ProviderFilters } from '../types';
 import { Language, translations } from '../translations';
 import ServiceCard from '../components/ServiceCard';
@@ -32,6 +32,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
   const [sortMode, setSortMode] = useState<'rating' | 'nearest'>('rating');
   
   const t = translations[language];
+  const isRTL = language === 'ar';
   
   // Brand Search State
   const [selectedBrand, setSelectedBrand] = useState<string>('all');
@@ -127,7 +128,13 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
     return providers;
   }, [providers, sortMode, userLocation]);
 
-  const availableCommunes = selectedWilaya !== 'all' ? COMMUNES[selectedWilaya] || [] : [];
+  const availableCommunes = useMemo(() => {
+    if (selectedWilaya === 'all') return [];
+    const all = COMMUNES[selectedWilaya] || [];
+    const priority = (PRIORITY_COMMUNES[selectedWilaya] || []).filter(c => all.includes(c));
+    const rest = all.filter(c => !priority.includes(c)).sort((a, b) => a.localeCompare(b));
+    return [...priority, ...rest];
+  }, [selectedWilaya]);
 
   const filteredBrands = CAR_BRANDS.filter(brand => 
     brand.toLowerCase().includes(brandSearchTerm.toLowerCase())
@@ -155,11 +162,11 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
             {/* Text Search */}
             <div className="md:col-span-5 relative">
-              <Search className="absolute left-3 top-3 text-slate-400" size={20} />
+              <Search className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-3 text-slate-400`} size={20} />
               <input 
                 type="text" 
                 placeholder={`Search ${title.toLowerCase()}...`}
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-500 outline-none transition-all"
+                className={`w-full ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-500 outline-none transition-all`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -167,9 +174,9 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
             
             {/* Wilaya Filter */}
             <div className="md:col-span-4 relative">
-              <MapPin className="absolute left-3 top-3 text-slate-400" size={20} />
+              <MapPin className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-3 text-slate-400`} size={20} />
               <select 
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-500 outline-none appearance-none cursor-pointer"
+                className={`w-full ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-500 outline-none appearance-none cursor-pointer`}
                 value={selectedWilaya}
                 onChange={(e) => setSelectedWilaya(e.target.value === 'all' ? 'all' : Number(e.target.value))}
               >
@@ -182,9 +189,9 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
 
             {/* Commune Filter */}
             <div className="md:col-span-3 relative">
-              <Navigation className="absolute left-3 top-3 text-slate-400" size={20} />
+              <Navigation className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-3 text-slate-400`} size={20} />
               <select 
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-500 outline-none appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`w-full ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-500 outline-none appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
                 value={selectedCommune}
                 onChange={(e) => setSelectedCommune(e.target.value)}
                 disabled={selectedWilaya === 'all'}
@@ -202,9 +209,9 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-2 border-t border-slate-100 dark:border-slate-800">
               {type === UserRole.MECHANIC && (
                 <div className="md:col-span-6 relative">
-                  <Wrench className="absolute left-3 top-3 text-slate-400" size={20} />
+                  <Wrench className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-3 text-slate-400`} size={20} />
                   <select 
-                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-500 outline-none appearance-none cursor-pointer"
+                      className={`w-full ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-500 outline-none appearance-none cursor-pointer`}
                       value={selectedGarageType}
                       onChange={(e) => setSelectedGarageType(e.target.value as GarageType | 'all')}
                   >
@@ -218,13 +225,13 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
 
               {/* Car Brand Filter - Searchable Autocomplete */}
               <div className={`${type === UserRole.MECHANIC ? 'md:col-span-6' : 'md:col-span-12'} relative z-20`}>
-                <Car className="absolute left-3 top-3 text-slate-400" size={20} />
+                <Car className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-3 text-slate-400`} size={20} />
                 
                 <div className="relative">
                   <input 
                       type="text"
                       placeholder={t.searchCarBrand}
-                      className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-500 outline-none transition-all"
+                      className={`w-full ${isRTL ? 'pr-10 pl-10' : 'pl-10 pr-10'} py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-500 outline-none transition-all`}
                       value={brandSearchTerm}
                       onChange={(e) => {
                           setBrandSearchTerm(e.target.value);
@@ -235,7 +242,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
                   />
                   
                   {/* Clear/Dropdown Icon */}
-                  <div className="absolute right-3 top-2.5 text-slate-400 cursor-pointer">
+                  <div className={`absolute ${isRTL ? 'left-3' : 'right-3'} top-2.5 text-slate-400 cursor-pointer`}>
                       {brandSearchTerm ? (
                           <X size={20} onClick={clearBrandSearch} className="hover:text-slate-600 dark:hover:text-slate-200" />
                       ) : (

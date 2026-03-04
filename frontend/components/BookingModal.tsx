@@ -24,6 +24,7 @@ interface BookingModalProps {
 
 const BookingModal: React.FC<BookingModalProps> = ({ provider, onClose, language = 'en' }) => {
   const t = translations[language];
+  const isRTL = language === 'ar';
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -103,12 +104,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ provider, onClose, language
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.preferredDate}</label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-2.5 text-slate-400" size={18} />
+                  <Calendar className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-2.5 text-slate-400`} size={18} />
                   <input 
                     required
                     type="date" 
                     min={new Date().toISOString().slice(0, 10)}
-                    className={`w-full pl-10 pr-4 py-2 rounded-lg border ${dateError ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20'} bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 outline-none transition-all`}
+                    className={`w-full ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-2 rounded-lg border ${dateError ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20'} bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 outline-none transition-all`}
                     value={formData.date}
                     onChange={e => { setFormData({...formData, date: e.target.value}); setDateError(validateDate(e.target.value)); }}
                     onBlur={e => setDateError(validateDate(e.target.value))}
@@ -144,16 +145,16 @@ const BookingModal: React.FC<BookingModalProps> = ({ provider, onClose, language
                 <div className="grid grid-cols-2 gap-3">
                   {/* Car Brand Dropdown */}
                   <div className="relative">
-                    <Car className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                    <Car className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-2.5 text-slate-400`} size={16} />
                     <input
                       type="text"
                       placeholder={t.searchCarBrand}
-                      className="w-full pl-9 pr-8 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none"
+                      className={`w-full ${isRTL ? 'pr-9 pl-8' : 'pl-9 pr-8'} py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none`}
                       value={brandSearch}
                       onChange={e => { setBrandSearch(e.target.value); setShowBrandDropdown(true); if (!e.target.value) setFormData({...formData, carBrand: ''}); }}
                       onFocus={() => setShowBrandDropdown(true)}
                     />
-                    <ChevronDown className="absolute right-2.5 top-2.5 text-slate-400 pointer-events-none" size={16} />
+                    <ChevronDown className={`absolute ${isRTL ? 'left-2.5' : 'right-2.5'} top-2.5 text-slate-400 pointer-events-none`} size={16} />
                     {showBrandDropdown && (
                       <>
                         <div className="fixed inset-0 z-10" onClick={() => setShowBrandDropdown(false)} />
@@ -185,10 +186,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ provider, onClose, language
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.problemDescription}</label>
                 <div className="relative">
-                  <MessageCircle className="absolute left-3 top-3 text-slate-400" size={18} />
+                  <MessageCircle className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-3 text-slate-400`} size={18} />
                   <textarea 
                     required
-                    className={`w-full pl-10 pr-4 py-2 rounded-lg border ${descError ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20'} bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 outline-none transition-all h-24 resize-none`}
+                    className={`w-full ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-2 rounded-lg border ${descError ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20'} bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 outline-none transition-all h-24 resize-none`}
                     placeholder={t.describeIssue}
                     value={formData.description}
                     onChange={e => { setFormData({...formData, description: e.target.value}); if (e.target.value.length > 0) setDescError(validateDesc(e.target.value)); else setDescError(''); }}

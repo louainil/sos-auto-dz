@@ -123,6 +123,32 @@ export const COMMUNES: Record<number, string[]> = {
   58: ['El Meniaa', 'Hassi Gara']
 };
 
+/**
+ * Top communes by population for major wilayas.
+ * These appear first in the commune dropdown; the rest follow alphabetically.
+ */
+export const PRIORITY_COMMUNES: Record<number, string[]> = {
+  // Alger (16) — most-populated communes first
+  16: [
+    'Bab El Oued', 'Hussey Dey', 'Bir Mourad Rais', 'Kouba', 'El Harrach',
+    'Belouizdad', 'Alger Centre', 'Sidi M\'Hamed', 'Bachdjerrah', 'Mohammadia',
+    'Dar El Beida', 'Casbah', 'Bourouba', 'Ben Aknoun', 'Birkhadem',
+  ],
+  // Oran (31)
+  31: [
+    'Oran', 'Es Senia', 'Bir El Djir', 'Ain Turk', 'Sidi Chahmi',
+    'El Kerma', 'Arzew', 'Bethioua',
+  ],
+  // Constantine (25)
+  25: [
+    'Constantine', 'El Khroub', 'Ain Smara', 'Hamma Bouziane', 'Didouche Mourad',
+  ],
+  // Annaba (23)
+  23: [
+    'Annaba', 'El Bouni', 'El Hadjar', 'Sidi Amar', 'Ain Berda',
+  ],
+};
+
 export const CAR_BRANDS = [
   'Abarth', 'Alfa Romeo', 'Aston Martin', 'Audi', 'Bentley', 'BMW', 'Bugatti', 'Cadillac', 'Chery', 'Chevrolet', 
   'Chrysler', 'Citroën', 'Dacia', 'Daewoo', 'DFSK', 'Dodge', 'DS Automobiles', 'Ferrari', 'Fiat', 'Ford', 'Geely', 

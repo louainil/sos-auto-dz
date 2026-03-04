@@ -624,7 +624,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                   )}
                 </div>
               </div>
-              {booking.status === 'PENDING' && (
+              {(booking.status === 'PENDING' || booking.status === 'CONFIRMED') && (
                 <button
                   type="button"
                   disabled={cancellingId === booking.id}
@@ -1425,7 +1425,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                                    </button>
                                  )
                                )}
-                               {user.role === UserRole.CLIENT && b.status === 'PENDING' && (
+                               {user.role === UserRole.CLIENT && (b.status === 'PENDING' || b.status === 'CONFIRMED') && (
                                  <button
                                    type="button"
                                    disabled={cancellingId === b.id}

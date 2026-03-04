@@ -16,7 +16,9 @@ const notificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['INFO', 'SUCCESS', 'WARNING', 'ERROR'],
+    // FIXED: Added 'SYSTEM' to enum — admin.js uses type:'SYSTEM' for approval/ban notifications;
+    // without it Mongoose throws a validation error and the approve/reject/ban endpoints return 500.
+    enum: ['INFO', 'SUCCESS', 'WARNING', 'ERROR', 'SYSTEM'],
     default: 'INFO'
   },
   isRead: {

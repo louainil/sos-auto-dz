@@ -34,12 +34,25 @@ router.get('/stats', protect, isAdmin, async (req, res) => {
 // @route   GET /api/admin/providers/pending
 // @desc    Get providers awaiting verification
 // @access  Private (Admin)
-router.get('/providers/pending', protect, isAdmin, async (req, res) => {
+// FIXED: Added pagination (page/limit query params) — the old hard-coded limit(50) silently dropped
+// data whenever more than 50 providers were pending. Now consistent with all other admin list routes.
+router.get('/providers/pending', protect, isAdmin, [
+  query('page').optional().isInt({ min: 1 }),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+  validate
+], async (req, res) => {
   try {
-    const providers = await ServiceProvider.find({ isVerified: 'PENDING' })
-      .sort({ createdAt: -1 })
-      .limit(50);
-    res.json(providers);
+    const page  = parseInt(req.query.page)  || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+    const skip  = (page - 1) * limit;
+    const [providers, total] = await Promise.all([
+      ServiceProvider.find({ isVerified: 'PENDING' })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      ServiceProvider.countDocuments({ isVerified: 'PENDING' }),
+    ]);
+    res.json({ data: providers, total, page, pages: Math.ceil(total / limit) });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error', ...devError(error) });
@@ -63,8 +76,11 @@ router.put('/providers/:id/approve', protect, isAdmin, [
       return res.status(404).json({ message: 'Provider not found' });
     }
     // Notify the provider
+    // FIXED: Added required 'title' field — Notification schema requires it; missing it caused a Mongoose
+    // validation error that made the approve endpoint return 500 after the provider was already saved.
     await Notification.create({
       userId: provider.userId,
+      title: 'Profile Approved',
       message: 'Your provider profile has been approved! You are now visible to clients.',
       type: 'SYSTEM'
     });
@@ -94,8 +110,10 @@ router.put('/providers/:id/reject', protect, isAdmin, [
       return res.status(404).json({ message: 'Provider not found' });
     }
     // Notify the provider
+    // FIXED: Added required 'title' field — same as approve endpoint, missing title caused 500.
     await Notification.create({
       userId: provider.userId,
+      title: 'Profile Rejected',
       message: `Your provider profile has been rejected. Reason: ${rejectionReason}`,
       type: 'SYSTEM'
     });
@@ -223,8 +241,10 @@ router.put('/users/:id/ban', protect, isAdmin, [
       return res.status(404).json({ message: 'User not found' });
     }
     // Notify the user
+    // FIXED: Added required 'title' field — missing title caused Mongoose validation failure and 500.
     await Notification.create({
       userId: req.params.id,
+      title: isBanned ? 'Account Suspended' : 'Account Reinstated',
       message: isBanned
         ? 'Your account has been suspended by an administrator.'
         : 'Your account suspension has been lifted.',

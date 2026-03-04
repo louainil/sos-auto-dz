@@ -174,8 +174,11 @@ router.put('/:id', protect, [
     const provider = await ServiceProvider.findById(booking.providerId);
     const isClient = booking.clientId.toString() === req.user._id.toString();
     const isProvider = provider && provider.userId.toString() === req.user._id.toString();
+    // FIXED: Added isAdmin check — admin was blocked from updating bookings because neither
+    // isClient nor isProvider was true for them, causing a 403 error.
+    const isAdmin = req.user.role === 'ADMIN';
 
-    if (!isClient && !isProvider) {
+    if (!isClient && !isProvider && !isAdmin) {
       return res.status(403).json({ message: 'Not authorized to update this booking' });
     }
 
@@ -257,6 +260,39 @@ router.delete('/:id', protect, [
     const { cancellationReason } = req.body;
     if (cancellationReason) booking.cancellationReason = cancellationReason;
     await booking.save();
+
+    // FIXED: Notify the provider when a client cancels — the original DELETE handler had no
+    // notification logic at all, so providers never knew a booking was cancelled by the client.
+    const cancelledProvider = await ServiceProvider.findById(booking.providerId);
+    if (cancelledProvider) {
+      const cancelNotif = await Notification.create({
+        userId: cancelledProvider.userId,
+        title: 'Booking Cancelled',
+        message: `${booking.clientName} has cancelled the booking for ${new Date(booking.date).toDateString()}${
+          cancellationReason ? ': ' + cancellationReason : ''
+        }`,
+        type: 'INFO'
+      });
+      emitNotification(cancelledProvider.userId, {
+        _id: cancelNotif._id,
+        title: cancelNotif.title,
+        message: cancelNotif.message,
+        type: cancelNotif.type,
+        isRead: cancelNotif.isRead,
+        createdAt: cancelNotif.createdAt
+      });
+      // Send email to provider (fire-and-forget)
+      const providerUser = await User.findById(cancelledProvider.userId).select('email name');
+      if (providerUser?.email) {
+        sendBookingStatusEmail({
+          recipientEmail: providerUser.email,
+          recipientName: providerUser.name,
+          otherPartyName: booking.clientName,
+          status: 'CANCELLED',
+          date: booking.date,
+        });
+      }
+    }
 
     res.json({ message: 'Booking cancelled', booking });
   } catch (error) {

@@ -719,7 +719,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard title={t.pendingRequests} value={bookings.filter(b => b.status === 'PENDING').length} icon={AlertCircle} color="bg-yellow-500" />
-        <StatCard title={t.todaysJobs} value={bookings.filter(b => b.date === new Date().toISOString().slice(0,10) && (b.status === 'CONFIRMED' || b.status === 'COMPLETED')).length} icon={Calendar} color="bg-blue-500" />
+        {/* FIXED: Use toLocaleDateString('en-CA') instead of toISOString().slice(0,10) so the date
+            comparison uses the local timezone (Algeria = UTC+1). The old UTC-based comparison would
+            give the wrong date after 23:00 local time, causing today's jobs to drop off a day early. */}
+        <StatCard title={t.todaysJobs} value={bookings.filter(b => b.date === new Date().toLocaleDateString('en-CA') && (b.status === 'CONFIRMED' || b.status === 'COMPLETED')).length} icon={Calendar} color="bg-blue-500" />
         <StatCard title={t.ratingLabel} value={providerRating > 0 ? providerRating.toFixed(1) : '—'} icon={TrendingUp} color="bg-purple-500" />
       </div>
 

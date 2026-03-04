@@ -213,8 +213,14 @@ router.get('/user/:userId', protect, [
   validate
 ], async (req, res) => {
   try {
+    // FIXED: Added ownership/admin check — any authenticated user could previously retrieve
+    // another user's full provider profile (including phone) by supplying an arbitrary userId.
+    if (req.user._id.toString() !== req.params.userId && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
     const provider = await ServiceProvider.findOne({ userId: req.params.userId });
-    
+
     if (!provider) {
       return res.status(404).json({ message: 'Provider profile not found' });
     }
@@ -297,10 +303,15 @@ router.post('/:id/gallery', protect, isProfessional, [
     const filesToUpload = req.files.slice(0, available);
     const uploadedImages = [];
 
-    for (let i = 0; i < filesToUpload.length; i++) {
-      const file = filesToUpload[i];
-      const publicId = `provider_${provider._id}_gallery_${Date.now()}_${i}`;
-      const result = await uploadToCloudinary(file.buffer, 'sos-auto-dz/gallery', publicId);
+    // FIXED: Upload gallery images in parallel instead of sequentially — the original for-loop
+    // awaited each Cloudinary upload one-by-one, making 4 uploads take ~4x as long as necessary.
+    const uploadResults = await Promise.all(
+      filesToUpload.map((file, i) => {
+        const publicId = `provider_${provider._id}_gallery_${Date.now()}_${i}`;
+        return uploadToCloudinary(file.buffer, 'sos-auto-dz/gallery', publicId);
+      })
+    );
+    for (const result of uploadResults) {
       uploadedImages.push({ url: result.secure_url, publicId: result.public_id });
     }
 

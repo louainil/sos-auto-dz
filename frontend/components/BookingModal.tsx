@@ -36,9 +36,20 @@ const BookingModal: React.FC<BookingModalProps> = ({ provider, onClose, language
   });
   const [showBrandDropdown, setShowBrandDropdown] = useState(false);
   const [brandSearch, setBrandSearch] = useState('');
+  const [confirmedSummary, setConfirmedSummary] = useState<{ date: string; providerName: string; issue: string } | null>(null);
+  const [dateError, setDateError] = useState('');
+  const [descError, setDescError] = useState('');
+
+  const validateDate = (val: string) => val ? '' : t.dateRequired;
+  const validateDesc = (val: string) => val.trim().length >= 10 ? '' : t.descTooShort;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const dErr = validateDate(formData.date);
+    const vErr = validateDesc(formData.description);
+    setDateError(dErr);
+    setDescError(vErr);
+    if (dErr || vErr) return;
     setIsLoading(true);
     setError('');
     
@@ -58,6 +69,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ provider, onClose, language
         date: formData.date,
         issue
       });
+      setConfirmedSummary({ date: formData.date, providerName: provider.name, issue });
       setStep(2);
     } catch (err: any) {
       setError(err.message || 'Failed to create booking. Please try again.');
@@ -96,11 +108,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ provider, onClose, language
                     required
                     type="date" 
                     min={new Date().toISOString().slice(0, 10)}
-                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                    className={`w-full pl-10 pr-4 py-2 rounded-lg border ${dateError ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20'} bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 outline-none transition-all`}
                     value={formData.date}
-                    onChange={e => setFormData({...formData, date: e.target.value})}
+                    onChange={e => { setFormData({...formData, date: e.target.value}); setDateError(validateDate(e.target.value)); }}
+                    onBlur={e => setDateError(validateDate(e.target.value))}
                   />
                 </div>
+                {dateError && <p className="mt-1 text-xs text-red-500">{dateError}</p>}
               </div>
 
               {/* Breakdown Type Chips */}
@@ -174,12 +188,14 @@ const BookingModal: React.FC<BookingModalProps> = ({ provider, onClose, language
                   <MessageCircle className="absolute left-3 top-3 text-slate-400" size={18} />
                   <textarea 
                     required
-                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all h-24 resize-none"
+                    className={`w-full pl-10 pr-4 py-2 rounded-lg border ${descError ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20'} bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 outline-none transition-all h-24 resize-none`}
                     placeholder={t.describeIssue}
                     value={formData.description}
-                    onChange={e => setFormData({...formData, description: e.target.value})}
+                    onChange={e => { setFormData({...formData, description: e.target.value}); if (e.target.value.length > 0) setDescError(validateDesc(e.target.value)); else setDescError(''); }}
+                    onBlur={e => { if (e.target.value.length > 0 || descError) setDescError(validateDesc(e.target.value)); }}
                   ></textarea>
                 </div>
+                {descError && <p className="mt-1 text-xs text-red-500">{descError}</p>}
               </div>
 
               <button 
@@ -192,15 +208,31 @@ const BookingModal: React.FC<BookingModalProps> = ({ provider, onClose, language
             </form>
           </div>
         ) : (
-          <div className="p-12 flex flex-col items-center text-center animate-fade-in">
+          <div className="p-10 flex flex-col items-center text-center animate-fade-in">
             <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-6 text-green-600 dark:text-green-400">
               <CheckCircle size={32} />
             </div>
-            <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">{t.bookingConfirmed}</h3>
-            <p className="text-slate-500 dark:text-slate-400 mb-6">
-              {t.bookingConfirmedDesc}
-            </p>
-            <button 
+            <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">{t.bookingConfirmed}</h3>
+            <p className="text-slate-500 dark:text-slate-400 mb-6 text-sm">{t.bookingConfirmedDesc}</p>
+
+            {confirmedSummary && (
+              <div className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 mb-6 text-left space-y-3">
+                <div className="flex items-start gap-3">
+                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide w-20 shrink-0 pt-0.5">{t.bookingWith}</span>
+                  <span className="text-sm font-bold text-slate-800 dark:text-white">{confirmedSummary.providerName}</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide w-20 shrink-0 pt-0.5">{t.preferredDate}</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{confirmedSummary.date}</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide w-20 shrink-0 pt-0.5">{t.issueLabel.replace(':', '')}</span>
+                  <span className="text-sm text-slate-600 dark:text-slate-400 break-words min-w-0">{confirmedSummary.issue}</span>
+                </div>
+              </div>
+            )}
+
+            <button
               onClick={onClose}
               className="px-8 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
             >

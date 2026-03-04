@@ -22,7 +22,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   const [providerRating, setProviderRating] = useState(0);
   const [_providerTotalReviews, setProviderTotalReviews] = useState(0);
   const [availabilityUpdating, setAvailabilityUpdating] = useState(false);
-  const [_loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [adminStats, setAdminStats] = useState<{ totalUsers: number; totalProviders: number; pendingProviders: number; totalBookings: number; totalReviews: number; bannedUsers: number } | null>(null);
   const [pendingProviders, setPendingProviders] = useState<any[]>([]);
   const [adminLoading, setAdminLoading] = useState(false);
@@ -594,7 +594,39 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
           <h3 className="font-bold text-lg text-slate-800 dark:text-white">{t.recentActivity}</h3>
         </div>
         <div className="divide-y divide-slate-100 dark:divide-slate-700">
-          {bookings.map(booking => (
+          {loading ? (
+            <div className="divide-y divide-slate-100 dark:divide-slate-700 animate-pulse">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="p-6 flex items-center justify-between gap-4">
+                  <div className="flex items-start gap-4 flex-1">
+                    <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0" />
+                    <div className="space-y-2 flex-1">
+                      <div className="h-4 w-1/3 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                      <div className="h-3 w-2/3 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                      <div className="h-3 w-1/4 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                    </div>
+                  </div>
+                  <div className="h-8 w-24 bg-slate-200 dark:bg-slate-700 rounded-lg shrink-0" />
+                </div>
+              ))}
+            </div>
+          ) : bookings.length === 0 ? (
+            <div className="p-10 flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mb-4 text-blue-500">
+                <Wrench size={28} />
+              </div>
+              <h4 className="font-bold text-slate-800 dark:text-white mb-2">{t.clientOnboardingTitle}</h4>
+              <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xs mb-6">{t.clientOnboardingMessage}</p>
+              <div className="flex flex-wrap gap-3 justify-center">
+                <Link to="/garage" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2">
+                  <Wrench size={15} /> {t.findAProvider}
+                </Link>
+                <Link to="/towing" className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2">
+                  <AlertCircle size={15} /> {t.emergencyTowing}
+                </Link>
+              </div>
+            </div>
+          ) : bookings.map(booking => (
             <div key={booking.id} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
@@ -1382,8 +1414,33 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
                    {user.role === UserRole.CLIENT ? t.bookingHistory : t.serviceRequests}
                  </h2>
                  {/* Reusing the logic from Overview components for simplicity, but expanded */}
-                 {bookings.length === 0 ? (
-                   <div className="text-center py-12 text-slate-400">{t.noBookingsFound}</div>
+                 {loading ? (
+                   <div className="space-y-3 animate-pulse">
+                     {Array.from({ length: 4 }).map((_, i) => (
+                       <div key={i} className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex justify-between items-center gap-3">
+                         <div className="flex-1 space-y-2">
+                           <div className="h-4 w-1/3 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                           <div className="h-3 w-2/3 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                           <div className="h-3 w-1/4 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                         </div>
+                         <div className="h-7 w-20 bg-slate-200 dark:bg-slate-700 rounded-full shrink-0" />
+                       </div>
+                     ))}
+                   </div>
+                 ) : bookings.length === 0 ? (
+                   user.role === UserRole.CLIENT ? (
+                     <div className="py-16 flex flex-col items-center text-center gap-4">
+                       <div className="w-14 h-14 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-blue-500"><Wrench size={24} /></div>
+                       <h4 className="font-bold text-slate-800 dark:text-white">{t.clientOnboardingTitle}</h4>
+                       <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xs">{t.clientOnboardingMessage}</p>
+                       <div className="flex flex-wrap gap-3 justify-center">
+                         <Link to="/garage" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"><Wrench size={14} /> {t.findAProvider}</Link>
+                         <Link to="/towing" className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"><AlertCircle size={14} /> {t.emergencyTowing}</Link>
+                       </div>
+                     </div>
+                   ) : (
+                     <div className="text-center py-12 text-slate-400">{t.noBookingsFound}</div>
+                   )
                  ) : (
                    <div className="space-y-4">
                      {bookings.map(b => (

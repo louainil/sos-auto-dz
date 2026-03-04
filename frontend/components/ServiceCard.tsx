@@ -61,6 +61,24 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBoo
            <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm flex items-center backdrop-blur-md ${status.color}`}>
              {status.text}
            </div>
+
+           {/* ETA Badge */}
+           {userLocation && providerWilaya && (() => {
+             const R = 6371;
+             const dLat = (providerWilaya.latitude - userLocation.lat) * Math.PI / 180;
+             const dLng = (providerWilaya.longitude - userLocation.lng) * Math.PI / 180;
+             const a = Math.sin(dLat / 2) ** 2 + Math.cos(userLocation.lat * Math.PI / 180) * Math.cos(providerWilaya.latitude * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+             const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+             const eta = Math.max(1, Math.round((dist / 50) * 60));
+             return (
+               <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm text-white px-2.5 py-1 rounded-full text-xs font-bold">
+                 <Clock size={11} />
+                 <span>~{eta} {t.etaMinutes}</span>
+                 <span className="text-white/50">·</span>
+                 <span>{dist.toFixed(1)} km</span>
+               </div>
+             );
+           })()}
         </div>
       ) : (
         <div className="relative h-48 overflow-hidden">
@@ -186,8 +204,11 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, userLocation, onBoo
                 <Wrench size={16} />
                 {t.bookNow}
               </button>
-              <a href={`tel:${provider.phone}`} className="w-10 flex items-center justify-center border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors">
+              <a href={`tel:${provider.phone}`} className="w-10 flex items-center justify-center border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors" title={t.callNow}>
                 <Phone size={18} />
+              </a>
+              <a href={`https://wa.me/${(() => { const d = provider.phone.replace(/\D/g, ''); return d.startsWith('0') ? '213' + d.slice(1) : d; })()}`} target="_blank" rel="noopener noreferrer" className="w-10 flex items-center justify-center border border-green-500 bg-green-50 dark:bg-green-900/30 dark:border-green-700 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50 text-green-600 dark:text-green-400 transition-colors" title="WhatsApp">
+                <MessageCircle size={18} />
               </a>
             </>
           )}

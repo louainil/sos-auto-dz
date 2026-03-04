@@ -128,8 +128,10 @@ export const CAR_BRANDS = [
   'Chrysler', 'Citroën', 'Dacia', 'Daewoo', 'DFSK', 'Dodge', 'DS Automobiles', 'Ferrari', 'Fiat', 'Ford', 'Geely', 
   'GMC', 'Great Wall', 'Haval', 'Honda', 'Hummer', 'Hyundai', 'Infiniti', 'Isuzu', 'Iveco', 'JAC', 'Jaguar', 
   'Jeep', 'Kia', 'Lamborghini', 'Lancia', 'Land Rover', 'Lexus', 'Mahindra', 'Maserati', 'Mazda', 'McLaren', 
-  'Mercedes-Benz', 'MG', 'Mini', 'Mitsubishi', 'Nissan', 'Opel', 'Peugeot', 'Porsche', 'Renault', 'Rolls-Royce', 
-  'Seat', 'Skoda', 'Smart', 'SsangYong', 'Subaru', 'Suzuki', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo'
+  'Mercedes-Benz', 'MG', 'Mini', 'Mitsubishi', 'Nissan', 'Opel', 'Peugeot', 'Porsche',
+  'Renault', 'Renault Symbol', 'Rolls-Royce', 
+  'Seat', 'Skoda', 'Smart', 'SsangYong', 'Subaru', 'Suzuki', 'Tesla', 'Toyota',
+  'Volkswagen', 'Volkswagen Polo', 'Volvo'
 ];
 
 export const NAV_LINKS = [

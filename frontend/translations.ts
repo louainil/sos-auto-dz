@@ -161,6 +161,9 @@ export interface Translations {
   confirmBooking: string;
   bookingConfirmed: string;
   bookingConfirmedDesc: string;
+  bookingWith: string;
+  dateRequired: string;
+  descTooShort: string;
   close: string;
 
   // Dashboard – header & sidebar
@@ -257,6 +260,9 @@ export interface Translations {
   bookingHistory: string;
   serviceRequests: string;
   noBookingsFound: string;
+  clientOnboardingTitle: string;
+  clientOnboardingMessage: string;
+  findAProvider: string;
 
   // Dashboard – Settings tab
   accountSettings: string;
@@ -417,6 +423,7 @@ export interface Translations {
   nearYou: string;
   moderateDistance: string;
   farLocation: string;
+  etaMinutes: string;
 
   // About Us page
   aboutHeroTitle: string;
@@ -677,6 +684,9 @@ export const translations: Record<Language, Translations> = {
     confirmBooking: 'Confirm Booking',
     bookingConfirmed: 'Booking Confirmed!',
     bookingConfirmedDesc: 'Your request has been sent. They will contact you shortly.',
+    bookingWith: 'Provider',
+    dateRequired: 'Please select a date.',
+    descTooShort: 'Description must be at least 10 characters.',
     close: 'Close',
 
     // Dashboard – header & sidebar
@@ -773,6 +783,9 @@ export const translations: Record<Language, Translations> = {
     bookingHistory: 'Booking History',
     serviceRequests: 'Service Requests',
     noBookingsFound: 'No bookings found.',
+    clientOnboardingTitle: 'Ready when you need us',
+    clientOnboardingMessage: 'Book a mechanic, find spare parts, or request a tow — all in one place.',
+    findAProvider: 'Find a Provider',
 
     // Dashboard – Settings tab
     accountSettings: 'Account Settings',
@@ -933,6 +946,7 @@ export const translations: Record<Language, Translations> = {
     nearYou: 'Near you',
     moderateDistance: 'Moderate distance',
     farLocation: 'Far location',
+    etaMinutes: 'min',
 
     // About Us page
     aboutHeroTitle: 'About SOS Auto DZ',
@@ -1187,6 +1201,9 @@ export const translations: Record<Language, Translations> = {
     confirmBooking: 'Confirmer la Réservation',
     bookingConfirmed: 'Réservation Confirmée !',
     bookingConfirmedDesc: 'Votre demande a été envoyée. Ils vous contacteront bientôt.',
+    bookingWith: 'Prestataire',
+    dateRequired: 'Veuillez sélectionner une date.',
+    descTooShort: 'La description doit contenir au moins 10 caractères.',
     close: 'Fermer',
 
     // Dashboard – header & sidebar
@@ -1283,6 +1300,9 @@ export const translations: Record<Language, Translations> = {
     bookingHistory: 'Historique des Réservations',
     serviceRequests: 'Demandes de Service',
     noBookingsFound: 'Aucune réservation trouvée.',
+    clientOnboardingTitle: 'Prêts quand vous avez besoin de nous',
+    clientOnboardingMessage: 'Réservez un mécanicien, trouvez des pièces ou demandez un dépannage — tout au même endroit.',
+    findAProvider: 'Trouver un Prestataire',
 
     // Dashboard – Settings tab
     accountSettings: 'Paramètres du Compte',
@@ -1443,6 +1463,7 @@ export const translations: Record<Language, Translations> = {
     nearYou: 'Près de vous',
     moderateDistance: 'Distance moyenne',
     farLocation: 'Emplacement éloigné',
+    etaMinutes: 'min',
 
     // About Us page
     aboutHeroTitle: 'À Propos de SOS Auto DZ',
@@ -1698,6 +1719,9 @@ export const translations: Record<Language, Translations> = {
     confirmBooking: 'تأكيد الحجز',
     bookingConfirmed: 'تم تأكيد الحجز!',
     bookingConfirmedDesc: 'تم إرسال طلبك. سيتصلون بك قريبًا.',
+    bookingWith: 'مزود الخدمة',
+    dateRequired: 'يرجى اختيار تاريخ.',
+    descTooShort: 'يجب أن يكون الوصف 10 أحرف على الأقل.',
     close: 'إغلاق',
 
     // Dashboard – header & sidebar
@@ -1794,6 +1818,9 @@ export const translations: Record<Language, Translations> = {
     bookingHistory: 'سجل الحجوزات',
     serviceRequests: 'طلبات الخدمة',
     noBookingsFound: 'لا توجد حجوزات.',
+    clientOnboardingTitle: 'جاهزون عندما تحتاجنا',
+    clientOnboardingMessage: 'احجز ميكانيكياً، ابحث عن قطع غيار، أو اطلب سحب سيارتك — كل ذلك في مكان واحد.',
+    findAProvider: 'ابحث عن مزود',
 
     // Dashboard – Settings tab
     accountSettings: 'إعدادات الحساب',
@@ -1954,6 +1981,7 @@ export const translations: Record<Language, Translations> = {
     nearYou: 'بالقرب منك',
     moderateDistance: 'مسافة متوسطة',
     farLocation: 'موقع بعيد',
+    etaMinutes: 'دقيقة',
 
     // About Us page
     aboutHeroTitle: 'عن SOS Auto DZ',

@@ -343,9 +343,19 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ type, title, subtitle, user
         )}
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-slate-500 dark:text-slate-400">{t.loadingProviders}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 overflow-hidden animate-pulse">
+                <div className="h-48 bg-slate-200 dark:bg-slate-700" />
+                <div className="p-5 space-y-3">
+                  <div className="h-3 w-1/3 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                  <div className="h-4 w-2/3 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                  <div className="h-3 w-full bg-slate-200 dark:bg-slate-700 rounded-full" />
+                  <div className="h-3 w-4/5 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                  <div className="h-8 w-full bg-slate-200 dark:bg-slate-700 rounded-lg mt-4" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : filteredProviders.length > 0 ? (
           viewMode === 'map' ? (

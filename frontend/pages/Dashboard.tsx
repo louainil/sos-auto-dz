@@ -5,6 +5,7 @@ import { Calendar, MapPin, Phone, Settings, LogOut, CheckCircle, XCircle, AlertC
 import { bookingsAPI, authAPI, providersAPI, adminAPI, reviewsAPI } from '../api';
 import { Language, translations } from '../translations';
 import ReviewModal from '../components/ReviewModal';
+import { compressImage, compressImages } from '../utils/imageCompressor';
 
 interface DashboardProps {
   user: User;
@@ -131,8 +132,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   }, [user.id, user.role]);
 
   const handlePicChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const raw = e.target.files?.[0];
+    if (!raw) return;
+    const file = await compressImage(raw);
     // Optimistic preview
     const reader = new FileReader();
     reader.onload = (ev) => setProfilePic(ev.target?.result as string);
@@ -153,8 +155,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
   };
 
   const handleShopImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !providerId) return;
+    const raw = e.target.files?.[0];
+    if (!raw || !providerId) return;
+    const file = await compressImage(raw);
     // Optimistic preview
     const reader = new FileReader();
     reader.onload = (ev) => setShopImage(ev.target?.result as string);
@@ -176,7 +179,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onUserUpdate, lan
     if (!files || files.length === 0 || !providerId) return;
     setGalleryUploading(true);
     try {
-      const data = await providersAPI.uploadGalleryImages(providerId, Array.from(files));
+      const compressed = await compressImages(Array.from(files));
+      const data = await providersAPI.uploadGalleryImages(providerId, compressed);
       setGalleryImages(data.images);
     } catch (err) {
       console.error('Gallery upload failed:', err);
